@@ -1,5 +1,5 @@
 const level1 = new Level(
-  [...generateChickens(), new Endboss()],
+  [...generateEnemies(), new Endboss()],
   [new Cloud()],
   [
     new BackgroundObject('assets/img/5_background/layers/air.png', -719, 0),
@@ -46,21 +46,23 @@ const level1 = new Level(
   generateBottles()
 );
 
-function generateChickens() {
+function generateEnemies() {
   const result = [];
-  const count = 16;
+  const count = 18;
   const fromX = 700;
   const toX = 4200;
   const rng = mulberry32(4242);
   let attempts = 0;
-  while (result.length < count && attempts < 2000) {
+  while (result.length < count && attempts < 3000) {
     attempts++;
     const x = Math.floor(fromX + rng() * (toX - fromX));
-    const gap = 180 + Math.floor(rng() * 200);
+    const gap = 180 + Math.floor(rng() * 220);
     if (result.every((c) => Math.abs(c.x - x) >= gap)) {
       const t = (x - fromX) / (toX - fromX);
-      const speed = 0.25 + t * 0.2 + rng() * 0.2;
-      result.push(new Chicken(x, speed));
+      const base = 0.22 + t * 0.18 + rng() * 0.18;
+      const isSmall = rng() < 0.45;
+      const speed = isSmall ? base + 0.08 : base;
+      result.push(isSmall ? new ChickenSmall(x, speed) : new Chicken(x, speed));
     }
   }
   result.sort((a, b) => a.x - b.x);
