@@ -17,7 +17,6 @@ class World {
     this.keyboard = keyboard;
     this.draw();
     this.setWorld();
-    // determine total coins available at start for 100% calculation
     this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
     this.run();
   }
@@ -40,7 +39,7 @@ class World {
     this.level.coins = this.level.coins.filter((coin) => {
       if (this.character.isColliding(coin)) {
         this.coinsCollected++;
-        return false; // remove collected coin
+        return false;
       }
       return true;
     });
@@ -65,7 +64,7 @@ class World {
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.translate(this.camera_x, 0); // alle Objekte nach links verschieben
+    this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObjects);
 
     this.ctx.translate(-this.camera_x, 0);
@@ -81,7 +80,6 @@ class World {
 
     this.ctx.translate(-this.camera_x, 0);
 
-    // Draw() wird immer wieder aufgerufen
     requestAnimationFrame(() => this.draw());
   }
 
