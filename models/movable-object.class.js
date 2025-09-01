@@ -5,6 +5,7 @@ class MoveableObject extends DrawableObject {
   acceleration = 3;
   energy = 100;
   lastHit = 0;
+  offset = { top: 0, right: 0, bottom: 0, left: 0 };
 
   applyGravity() {
     setInterval(() => {
@@ -24,9 +25,17 @@ class MoveableObject extends DrawableObject {
   }
 
   isColliding(mo) {
-    return (
-      this.x + this.width > mo.x && this.y + this.height > mo.y && this.x < mo.x + mo.width && this.y < mo.y + mo.height
-    );
+    const aLeft = this.x + (this.offset?.left || 0);
+    const aRight = this.x + this.width - (this.offset?.right || 0);
+    const aTop = this.y + (this.offset?.top || 0);
+    const aBottom = this.y + this.height - (this.offset?.bottom || 0);
+
+    const bLeft = mo.x + (mo.offset?.left || 0);
+    const bRight = mo.x + mo.width - (mo.offset?.right || 0);
+    const bTop = mo.y + (mo.offset?.top || 0);
+    const bBottom = mo.y + mo.height - (mo.offset?.bottom || 0);
+
+    return aRight > bLeft && aBottom > bTop && aLeft < bRight && aTop < bBottom;
   }
 
   hit() {

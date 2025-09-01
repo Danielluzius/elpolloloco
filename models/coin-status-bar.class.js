@@ -20,7 +20,7 @@ class CoinStatusBar extends StatusBar {
     ];
     this.loadImages(this.IMAGES);
     this.x = 40;
-    this.y = 65;
+    this.y = 45;
     this.setPercentage(0);
   }
 }
