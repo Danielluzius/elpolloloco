@@ -42,7 +42,8 @@ const level1 = new Level(
     new BackgroundObject('assets/img/5_background/layers/2_second_layer/2.png', 719 * 7, 0),
     new BackgroundObject('assets/img/5_background/layers/1_first_layer/2.png', 719 * 7, 0),
   ],
-  generateCoins()
+  generateCoins(),
+  generateBottles()
 );
 
 function generateChickens() {
@@ -87,6 +88,27 @@ function generateCoins() {
     }
   }
   return coins;
+}
+
+function generateBottles() {
+  const bottles = [];
+  const count = 8;
+  const seed = 2025;
+  const rng = mulberry32(seed);
+  const minX = 700;
+  const maxX = 4200;
+  const minGap = 320;
+  const y = 360;
+
+  let attempts = 0;
+  while (bottles.length < count && attempts < 1200) {
+    attempts++;
+    const x = Math.floor(minX + rng() * (maxX - minX));
+    if (bottles.every((b) => Math.abs(b.x - x) >= minGap)) {
+      bottles.push(new Bottle(x, y));
+    }
+  }
+  return bottles;
 }
 
 function mulberry32(a) {
