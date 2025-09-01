@@ -1,5 +1,17 @@
 const level1 = new Level(
-  [new Chicken(), new Chicken(), new Chicken(), new Endboss()],
+  [
+    // Chickens spread across the level, starting further from the player
+    new Chicken(700, 0.25),
+    new Chicken(900, 0.3),
+    new Chicken(1100, 0.35),
+    new Chicken(1300, 0.28),
+    new Chicken(1500, 0.4),
+    new Chicken(1700, 0.32),
+    new Chicken(1900, 0.45),
+    new Chicken(2100, 0.38),
+    new Chicken(2300, 0.5),
+    new Endboss(),
+  ],
   [new Cloud()],
   [
     new BackgroundObject('assets/img/5_background/layers/air.png', -719, 0),
