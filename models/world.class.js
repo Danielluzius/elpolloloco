@@ -6,7 +6,10 @@ class World {
   keyboard;
   camera_x = 0;
   statusBar = new StatusBar();
+  coinStatusBar = new CoinStatusBar();
   throwableObjects = [];
+  coinsCollected = 0;
+  coinsTotal = 0;
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
@@ -14,6 +17,8 @@ class World {
     this.keyboard = keyboard;
     this.draw();
     this.setWorld();
+    // determine total coins available at start for 100% calculation
+    this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
     this.run();
   }
 
@@ -25,7 +30,20 @@ class World {
     setInterval(() => {
       this.checkCollisions();
       this.checkThrowableObjects();
+      this.checkCoinCollection();
+      const percent = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
+      this.coinStatusBar.setPercentage(percent);
     }, 200);
+  }
+
+  checkCoinCollection() {
+    this.level.coins = this.level.coins.filter((coin) => {
+      if (this.character.isColliding(coin)) {
+        this.coinsCollected++;
+        return false; // remove collected coin
+      }
+      return true;
+    });
   }
 
   checkThrowableObjects() {
@@ -52,11 +70,13 @@ class World {
 
     this.ctx.translate(-this.camera_x, 0);
     this.addToMap(this.statusBar);
+    this.addToMap(this.coinStatusBar);
     this.ctx.translate(this.camera_x, 0);
 
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.clouds);
+    this.addObjectsToMap(this.level.coins);
     this.addObjectsToMap(this.throwableObjects);
 
     this.ctx.translate(-this.camera_x, 0);
