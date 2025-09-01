@@ -1,7 +1,7 @@
 class Character extends MoveableObject {
   height = 320;
   width = 180;
-  y = 20;
+  y = 120;
   speed = 10;
   IMAGES_WALKING = [
     'assets/img/2_character_pepe/2_walk/W-21.png',
@@ -36,6 +36,10 @@ class Character extends MoveableObject {
     'assets/img/2_character_pepe/5_dead/D-56.png',
     'assets/img/2_character_pepe/5_dead/D-57.png',
   ];
+  jumpFrameIndex = 0;
+  lastJumpFrameTime = 0;
+  JUMP_FRAME_DELAY = 80;
+  isJumping = false;
 
   constructor() {
     super();
@@ -61,8 +65,12 @@ class Character extends MoveableObject {
       }
       this.world.camera_x = -this.x + 100;
 
-      if (this.world.keyboard.SPACE && !this.isAboveGround()) {
+      if (this.world.keyboard.SPACE && !this.isJumping && !this.isAboveGround()) {
         this.jump();
+        this.isJumping = true;
+        this.jumpFrameIndex = 0;
+        this.currentImage = 0;
+        this.lastJumpFrameTime = Date.now();
       }
     }, 1000 / 60);
 
@@ -72,10 +80,26 @@ class Character extends MoveableObject {
       } else if (this.isHurt()) {
         this.playAnimation(this.IMAGES_HURT);
       } else if (this.isAboveGround()) {
-        this.playAnimation(this.IMAGES_JUMPING);
+        const now = Date.now();
+        if (this.jumpFrameIndex < this.IMAGES_JUMPING.length - 1) {
+          if (now - this.lastJumpFrameTime >= this.JUMP_FRAME_DELAY) {
+            this.jumpFrameIndex++;
+            this.lastJumpFrameTime = now;
+          }
+        }
+        const path = this.IMAGES_JUMPING[this.jumpFrameIndex];
+        this.img = this.imageCache[path];
       } else {
+        if (this.isJumping) {
+          this.currentImage = 0;
+        }
+        this.jumpFrameIndex = 0;
+        this.isJumping = false;
         if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
           this.playAnimation(this.IMAGES_WALKING);
+        } else {
+          const path = this.IMAGES_WALKING[0];
+          this.img = this.imageCache[path];
         }
       }
     }, 50);
