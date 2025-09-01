@@ -23,7 +23,7 @@ class World {
     this.draw();
     this.setWorld();
     this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
-  this.bottlesTotal = this.level.bottles && this.level.bottles.length ? this.level.bottles.length : 0;
+    this.bottlesTotal = this.level.bottles && this.level.bottles.length ? this.level.bottles.length : 0;
     this.run();
   }
 
@@ -36,11 +36,11 @@ class World {
       this.checkCollisions();
       this.checkThrowableObjects();
       this.checkCoinCollection();
-  this.checkBottleCollection();
+      this.checkBottleCollection();
       const percent = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
       this.coinStatusBar.setPercentage(percent);
-  const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
-  this.bottleStatusBar.setPercentage(bPercent);
+      const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
+      this.bottleStatusBar.setPercentage(bPercent);
     }, 200);
   }
 
@@ -92,14 +92,14 @@ class World {
     this.ctx.translate(-this.camera_x, 0);
     this.addToMap(this.statusBar);
     this.addToMap(this.coinStatusBar);
-  this.addToMap(this.bottleStatusBar);
+    this.addToMap(this.bottleStatusBar);
     this.ctx.translate(this.camera_x, 0);
 
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.clouds);
     this.addObjectsToMap(this.level.coins);
-  this.addObjectsToMap(this.level.bottles);
+    this.addObjectsToMap(this.level.bottles);
     this.addObjectsToMap(this.throwableObjects);
 
     this.ctx.translate(-this.camera_x, 0);
