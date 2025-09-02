@@ -6,6 +6,7 @@ class BottleGenerator {
     this.endX = settings.endX ?? 4200;
     this.fixedY = settings.fixedY ?? 360;
   }
+
   generate() {
     const res = [];
     const step = (this.endX - this.startX) / this.amount;

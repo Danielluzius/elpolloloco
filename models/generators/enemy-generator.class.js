@@ -6,6 +6,7 @@ class EnemyGenerator {
     this.endX = settings.endX ?? 4200;
     this.smallChance = settings.smallChance ?? 0.45;
   }
+
   generate() {
     const res = [];
     const step = (this.endX - this.startX) / this.amount;

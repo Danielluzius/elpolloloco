@@ -6,6 +6,7 @@ class CoinGenerator {
     this.endX = settings.endX ?? 4200;
     this.tiersY = Array.isArray(settings.tiersY) ? settings.tiersY : [160, 240, 320];
   }
+
   generate() {
     const res = [];
     const step = (this.endX - this.startX) / this.amount;
