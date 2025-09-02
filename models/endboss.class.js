@@ -77,58 +77,113 @@ class Endboss extends MoveableObject {
     this.startWalkLoop();
   }
 
+  wakeIfNear(character) {
+    const dx = Math.abs(character.x + character.width / 2 - (this.x + this.width / 2));
+    if (dx < 500) {
+      this.awake = true;
+      if (!this.alertPlayed && this.state === 'idle') {
+        this.state = 'alert';
+        this.frameIndex = 0;
+        this.lastFrameTime = Date.now();
+      }
+    }
+  }
+
+  checkAndStartAttack(world) {
+    if (!this.awake || world.character.isDead()) return;
+    const now = Date.now();
+    const dx = Math.abs(world.character.x + world.character.width / 2 - (this.x + this.width / 2));
+    const inRange = dx < 140;
+    const cooled = now - (this.lastAttackAt || 0) >= this.attackCooldown;
+    if (!(inRange && cooled) || this.state === 'attack') return;
+    this.state = 'attack';
+    this.frameIndex = 0;
+    this.lastFrameTime = now;
+    this.lastAttackAt = now;
+    this.scheduleAttackHitCheck(world);
+  }
+
+  scheduleAttackHitCheck(world) {
+    const hitWindowStart = 3;
+    setTimeout(() => {
+      if (this.state !== 'attack') return;
+      const cx = world.character.x + world.character.width / 2;
+      const bx = this.x + this.width / 2;
+      const closeNow = Math.abs(cx - bx) < 150;
+      if (closeNow && !world.character.isHurt()) {
+        world.character.hit();
+        world.statusBar.setPercentage(world.character.energy);
+      }
+    }, hitWindowStart * this.ATTACK_DELAY);
+  }
+
   startStateAnimLoop() {
     setInterval(() => {
       const now = Date.now();
       const { images, delay } = this.pickAnim();
-      if (now - this.lastFrameTime >= delay) {
-        this.frameIndex++;
-        this.lastFrameTime = now;
-      }
+      this.advanceFrameIfDue(now, delay);
       this.applyTransitions(images.length);
-      const idx = Math.min(this.frameIndex, images.length - 1);
-      const path = images[idx];
-      this.img = this.imageCache[path];
+      this.setCurrentImage(images);
     }, 50);
   }
 
+  advanceFrameIfDue(now, delay) {
+    if (now - this.lastFrameTime >= delay) {
+      this.frameIndex++;
+      this.lastFrameTime = now;
+    }
+  }
+
   pickAnim() {
-    // Dead overrides everything
     if (this.state === 'dead' || this.dead) return { images: this.IMAGES_DEAD, delay: this.DEAD_DELAY };
-    // Attack overrides walking/hurt
     if (this.state === 'attack') return { images: this.IMAGES_ATTACK, delay: this.ATTACK_DELAY };
-    // Hurt when under 50% health (if values present)
-    const max = this.maxHealthSteps ?? null;
-    const cur = this.healthSteps ?? null;
-    const underHalf = max !== null && cur !== null && cur > 0 && cur <= Math.floor(max / 2);
-    if (underHalf) return { images: this.IMAGES_HURT, delay: this.WALK_DELAY };
+    if (this.isUnderHalfHealth()) return { images: this.IMAGES_HURT, delay: this.WALK_DELAY };
     if (this.state === 'walk') return { images: this.IMAGES_WALKING, delay: this.WALK_DELAY };
     return { images: this.IMAGES_ALERT, delay: this.ALERT_DELAY };
   }
 
+  isUnderHalfHealth() {
+    const max = this.maxHealthSteps ?? null;
+    const cur = this.healthSteps ?? null;
+    return max !== null && cur !== null && cur > 0 && cur <= Math.floor(max / 2);
+  }
+
   applyTransitions(length) {
-    if (this.state === 'dead') {
-      // stop at last frame
-      this.frameIndex = Math.min(this.frameIndex, length - 1);
-    } else if (this.state === 'alert' && this.frameIndex >= length) {
-      this.alertPlayed = true;
-      this.state = 'walk';
-      this.frameIndex = 0;
-    } else if (this.state === 'attack' && this.frameIndex >= length) {
-      this.state = 'walk';
-      this.frameIndex = 0;
-    } else if (this.state === 'walk' && this.frameIndex >= length) {
-      this.frameIndex = 0;
-    } else {
-      // For hurt/alert looping
-      if (this.frameIndex >= length) this.frameIndex = 0;
-    }
+    if (this.state === 'dead') return this.clampOnDead(length);
+    if (this.state === 'alert' && this.frameIndex >= length) return this.onAlertDone();
+    if (this.state === 'attack' && this.frameIndex >= length) return this.onAttackDone();
+    if (this.state === 'walk' && this.frameIndex >= length) return this.loopFrame(length);
+    if (this.frameIndex >= length) this.loopFrame(length);
+  }
+
+  clampOnDead(length) {
+    this.frameIndex = Math.min(this.frameIndex, length - 1);
+  }
+
+  onAlertDone() {
+    this.alertPlayed = true;
+    this.state = 'walk';
+    this.frameIndex = 0;
+  }
+
+  onAttackDone() {
+    this.state = 'walk';
+    this.frameIndex = 0;
+  }
+
+  loopFrame(length) {
+    this.frameIndex = 0;
+  }
+
+  setCurrentImage(images) {
+    const idx = Math.min(this.frameIndex, images.length - 1);
+    const path = images[idx];
+    this.img = this.imageCache[path];
   }
 
   startWalkLoop() {
     setInterval(() => {
       if (this.dead) {
-        // fall down when dead
         this.speedY = Math.min(this.speedY + 1, 30);
         this.y += this.speedY * 0.5;
         return;

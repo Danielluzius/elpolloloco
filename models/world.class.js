@@ -128,7 +128,7 @@ class World {
   }
 
   handleThrowInput(now) {
-    const canThrow = this.keyboard.D && this.bottlesCollected > 0 && now - this.lastThrowAt >= this.throwCooldownMs;
+    const canThrow = this.character.shouldThrow(now, this.throwCooldownMs, this.lastThrowAt, this.bottlesCollected);
     if (!canThrow) return;
     const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
     this.throwableObjects.push(bottle);
@@ -347,46 +347,13 @@ class World {
   checkEndbossWake() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
-    const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
-    if (dx < 500) {
-      boss.awake = true;
-      if (!boss.alertPlayed && boss.state === 'idle') {
-        boss.state = 'alert';
-        boss.frameIndex = 0;
-        boss.lastFrameTime = Date.now();
-      }
-    }
+    boss.wakeIfNear(this.character);
   }
 
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (!boss || !boss.awake || this.character.isDead()) return;
-    const now = Date.now();
-    const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
-    this.tryStartBossAttack(boss, now, dx);
-  }
-
-  tryStartBossAttack(boss, now, dx) {
-    const inRange = dx < 140;
-    const cooled = now - (boss.lastAttackAt || 0) >= boss.attackCooldown;
-    if (!(inRange && cooled) || boss.state === 'attack') return;
-    boss.state = 'attack';
-    boss.frameIndex = 0;
-    boss.lastFrameTime = now;
-    boss.lastAttackAt = now;
-    this.scheduleBossAttackHitCheck(boss);
-  }
-
-  scheduleBossAttackHitCheck(boss) {
-    const hitWindowStart = 3;
-    setTimeout(() => {
-      if (boss.state !== 'attack') return;
-      const closeNow = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2)) < 150;
-      if (closeNow && !this.character.isHurt()) {
-        this.character.hit();
-        this.statusBar.setPercentage(this.character.energy);
-      }
-    }, hitWindowStart * boss.ATTACK_DELAY);
+    if (!boss) return;
+    boss.checkAndStartAttack(this);
   }
 
   flipImage(mo) {

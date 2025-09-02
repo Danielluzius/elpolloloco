@@ -135,6 +135,12 @@ class Character extends MoveableObject {
     if (this.world.keyboard.D) this.lastActivityAt = Date.now();
   }
 
+  shouldThrow(now, cooldownMs, lastThrowAt, bottlesAvailable) {
+    const pressed = !!this.world?.keyboard?.D;
+    const cooled = now - (lastThrowAt || 0) >= cooldownMs;
+    return pressed && cooled && bottlesAvailable > 0;
+  }
+
   handleJumpKey() {
     if (this.world.keyboard.SPACE && !this.isJumping && !this.isAboveGround()) {
       this.jump();

@@ -27,17 +27,23 @@ class MoveableObject extends DrawableObject {
   }
 
   isColliding(mo) {
-    const aLeft = this.x + (this.offset?.left || 0);
-    const aRight = this.x + this.width - (this.offset?.right || 0);
-    const aTop = this.y + (this.offset?.top || 0);
-    const aBottom = this.y + this.height - (this.offset?.bottom || 0);
+    const a = this.getBoundsWithOffset(this);
+    const b = this.getBoundsWithOffset(mo);
+    return this.aabbIntersect(a, b);
+  }
 
-    const bLeft = mo.x + (mo.offset?.left || 0);
-    const bRight = mo.x + mo.width - (mo.offset?.right || 0);
-    const bTop = mo.y + (mo.offset?.top || 0);
-    const bBottom = mo.y + mo.height - (mo.offset?.bottom || 0);
+  getBoundsWithOffset(obj) {
+    const o = obj.offset || { top: 0, right: 0, bottom: 0, left: 0 };
+    return {
+      left: obj.x + o.left,
+      right: obj.x + obj.width - o.right,
+      top: obj.y + o.top,
+      bottom: obj.y + obj.height - o.bottom,
+    };
+  }
 
-    return aRight > bLeft && aBottom > bTop && aLeft < bRight && aTop < bBottom;
+  aabbIntersect(a, b) {
+    return a.right > b.left && a.bottom > b.top && a.left < b.right && a.top < b.bottom;
   }
 
   hit() {
