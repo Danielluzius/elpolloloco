@@ -40,7 +40,7 @@ class World {
 
   startGameLoop() {
     setInterval(() => {
-  if (this.character.isDead()) return; // pause gameplay when player is dead
+      if (this.character.isDead()) return;
       this.checkCollisions();
       this.checkThrowableObjects();
       this.checkCoinCollection();
@@ -56,13 +56,9 @@ class World {
       this.coinStatusBar.setPercentage(p);
       const bp = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
       this.bottleStatusBar.setPercentage(bp);
-      // Player health bar already uses percentage of energy; keep as-is.
       this.statusBar.setPercentage(this.character.energy);
-      // Update boss bar position and step from boss state if awake
       const boss = this.level.enemies.find((e) => e instanceof Endboss);
       if (boss) {
-        // Position above boss, but HUD layer is camera-fixed; so we draw boss bar in entity layer aligned to camera.
-        // Here we only update step.
         if (typeof boss.healthSteps === 'number') {
           this.bossStatusBar.setByStep(boss.healthSteps);
         }
@@ -122,16 +118,14 @@ class World {
       this.bottlesCollected = Math.max(0, this.bottlesCollected - 1);
       this.lastThrowAt = now;
     }
-    // Bottle vs Endboss collisions
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (boss && this.throwableObjects.length) {
       this.throwableObjects = this.throwableObjects.filter((b) => {
         if (this.isCollidingBottleWithBoss(b, boss)) {
           if (typeof b.splashAndRemove === 'function') b.splashAndRemove(this);
           this.damageBossIfNeeded(boss);
-          return false; // remove bottle after hit
+          return false;
         }
-        // remove bottles that leave world bounds to avoid leaks
         return b.x < this.level.level_end_x + 500 && b.y < 1000 && b.y > -500;
       });
     }
@@ -235,37 +229,31 @@ class World {
     this.addToMap(this.statusBar);
     this.addToMap(this.coinStatusBar);
     this.addToMap(this.bottleStatusBar);
-    // Boss bar is drawn with entities to position above boss
     this.drawHudCounts();
   }
 
   drawHudCounts() {
-  // coin and bottle counts with icons, positioned to the right and vertically centered
     this.ctx.save();
     this.ctx.fillStyle = '#fff';
     this.ctx.font = '20px Arial';
-  const coinText = `${this.coinsCollected}/${this.coinsTotal}`;
-  const bottleText = `${this.bottlesCollected}`;
-  // Base positions
-  const csb = this.coinStatusBar;
-  const bsb = this.bottleStatusBar;
-  const coinBaseX = (csb.x || 40) + (csb.width || 200) + 24;
-  const coinCenterY = (csb.y || 45) + (csb.height || 60) / 2;
-  const bottleBaseX = (bsb.x || 40) + (bsb.width || 200) + 24;
-  const bottleCenterY = (bsb.y || 85) + (bsb.height || 60) / 2;
-  // Icons (a bit further right)
-  const coinIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_coin.png');
-  const bottleIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_salsa_bottle.png');
-  if (coinIcon?.complete) this.ctx.drawImage(coinIcon, coinBaseX, coinCenterY - 11, 22, 22);
-  if (bottleIcon?.complete) this.ctx.drawImage(bottleIcon, bottleBaseX, bottleCenterY - 11, 22, 22);
-  // Text slightly to the right of the icons; baseline aligned near middle
-  this.ctx.fillText(coinText, coinBaseX + 28, coinCenterY + 7);
-  this.ctx.fillText(bottleText, bottleBaseX + 28, bottleCenterY + 7);
+    const coinText = `${this.coinsCollected}/${this.coinsTotal}`;
+    const bottleText = `${this.bottlesCollected}`;
+    const csb = this.coinStatusBar;
+    const bsb = this.bottleStatusBar;
+    const coinBaseX = (csb.x || 40) + (csb.width || 200) + 24;
+    const coinCenterY = (csb.y || 45) + (csb.height || 60) / 2;
+    const bottleBaseX = (bsb.x || 40) + (bsb.width || 200) + 24;
+    const bottleCenterY = (bsb.y || 85) + (bsb.height || 60) / 2;
+    const coinIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_coin.png');
+    const bottleIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_salsa_bottle.png');
+    if (coinIcon?.complete) this.ctx.drawImage(coinIcon, coinBaseX, coinCenterY - 11, 22, 22);
+    if (bottleIcon?.complete) this.ctx.drawImage(bottleIcon, bottleBaseX, bottleCenterY - 11, 22, 22);
+    this.ctx.fillText(coinText, coinBaseX + 28, coinCenterY + 7);
+    this.ctx.fillText(bottleText, bottleBaseX + 28, bottleCenterY + 7);
     this.ctx.restore();
   }
 
   getHudIcon(path) {
-    // cache icons in status bar imageCache via a tiny helper image map
     if (!this._hudIcons) this._hudIcons = {};
     if (!this._hudIcons[path]) {
       const img = new Image();
@@ -289,7 +277,6 @@ class World {
   drawBossBarIfAny() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss || boss.dead || !boss.awake) return;
-    // Position boss bar above boss in world space
     this.bossStatusBar.x = boss.x + boss.width / 2 - this.bossStatusBar.width / 2;
     this.bossStatusBar.y = boss.y - 30;
     this.addToMap(this.bossStatusBar);
@@ -330,7 +317,7 @@ class World {
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss || !boss.awake) return;
-  if (this.character.isDead()) return;
+    if (this.character.isDead()) return;
     const now = Date.now();
     const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
     const inRange = dx < 140;

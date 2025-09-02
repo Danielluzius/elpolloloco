@@ -80,13 +80,12 @@ class Character extends MoveableObject {
     this.offset = { top: 40, right: 35, bottom: 0, left: 35 };
     this.initImages();
     this.initLoops();
-  this.DEAD_FRAME_DELAY = 200; // slower death animation
-  this.deadStartedAt = 0;
-  // death arc config: short toss up, then fall out of screen
-  this.DEATH_INIT_VY = 24; // initial upward velocity for death toss
-  this.DEATH_ACCEL = 3; // deceleration per anim tick (matches gravity style)
-  this.deathArcInit = false;
-  this.deathLastFrameLocked = false;
+    this.DEAD_FRAME_DELAY = 200;
+    this.deadStartedAt = 0;
+    this.DEATH_INIT_VY = 24;
+    this.DEATH_ACCEL = 3;
+    this.deathArcInit = false;
+    this.deathLastFrameLocked = false;
   }
 
   initImages() {
@@ -107,7 +106,7 @@ class Character extends MoveableObject {
 
   startInputLoop() {
     setInterval(() => {
-  if (this.isDead()) return; // stop movement input after death
+      if (this.isDead()) return;
       if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
         this.moveRight();
         this.otherDirection = false;
@@ -138,7 +137,7 @@ class Character extends MoveableObject {
   startAnimLoop() {
     setInterval(() => {
       const now = Date.now();
-  if (this.isDead()) return this.setDeadFrame();
+      if (this.isDead()) return this.setDeadFrame();
       if (this.isHurt()) return this.setHurtFrame();
       if (this.isAboveGround()) return this.setJumpFrame(now);
       this.setGroundedFrame(now);
@@ -146,7 +145,6 @@ class Character extends MoveableObject {
   }
 
   setDeadFrame() {
-    // Play death sequence once, slower
     if (!this.deadStartedAt) this.deadStartedAt = Date.now();
     let idx = Math.floor((Date.now() - this.deadStartedAt) / this.DEAD_FRAME_DELAY);
     if (idx >= this.IMAGES_DEAD.length) {
@@ -156,18 +154,14 @@ class Character extends MoveableObject {
     const path = this.IMAGES_DEAD[idx];
     this.img = this.imageCache[path];
     this.animKey = 'dead';
-    // Death movement: short toss up then fall (gravity-like)
     if (!this.deathArcInit) {
       this.deathArcInit = true;
-      this.speedY = this.DEATH_INIT_VY; // go up first
+      this.speedY = this.DEATH_INIT_VY;
     }
-    // manual gravity step (applyGravity is disabled for dead)
     this.y -= this.speedY;
     this.speedY -= this.DEATH_ACCEL;
-    // If below screen, keep falling off with last frame already locked
     const canvasH = this.world?.canvas?.height ?? 480;
     if (this.y > canvasH + 120) {
-      // no-op, character is off-screen; world loop already halts gameplay
     }
   }
 

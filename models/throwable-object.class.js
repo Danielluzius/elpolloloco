@@ -20,8 +20,8 @@ class ThrowableObject extends MoveableObject {
     this.loadImages(this.IMAGES_SPLASH);
     this.x = x;
     this.y = y;
-  this.height = 70;
-  this.width = 60;
+    this.height = 70;
+    this.width = 60;
     this.throw();
   }
 
@@ -31,7 +31,6 @@ class ThrowableObject extends MoveableObject {
     this.rotateInterval = setInterval(() => {
       this.x += 10;
       this.playAnimation(this.IMAGES_ROTATE);
-      // remove when out of bounds vertically to avoid leaks
       if (this.y > 1000) {
         clearInterval(this.rotateInterval);
       }
@@ -47,7 +46,6 @@ class ThrowableObject extends MoveableObject {
       idx++;
       if (idx >= this.IMAGES_SPLASH.length) {
         clearInterval(splashTimer);
-        // world will filter it out next cycle by not keeping reference
       }
     }, 50);
   }

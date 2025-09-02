@@ -9,10 +9,9 @@ class MoveableObject extends DrawableObject {
 
   applyGravity() {
     setInterval(() => {
-  // Skip gravity when dead to avoid conflicting physics with custom death fall
-  if (typeof this.isDead === 'function' && this.isDead()) return;
-  if (this.disableGravity) return;
-  if (this.isAboveGround() || this.speedY > 0) {
+      if (typeof this.isDead === 'function' && this.isDead()) return;
+      if (this.disableGravity) return;
+      if (this.isAboveGround() || this.speedY > 0) {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
       }
@@ -42,7 +41,6 @@ class MoveableObject extends DrawableObject {
   }
 
   hit() {
-    // Reduce in 20% steps so total hits until death match status bar frames (100,80,60,40,20,0)
     this.energy -= 20;
     if (this.energy < 0) {
       this.energy = 0;
