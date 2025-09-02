@@ -36,6 +36,7 @@ class World {
   }
 
   run() {
+    // Fast loop for gameplay-critical checks to avoid tunneling and missed collisions
     setInterval(() => {
       this.checkCollisions();
       this.checkThrowableObjects();
@@ -43,6 +44,10 @@ class World {
       this.checkBottleCollection();
       this.checkEndbossWake();
       this.checkEndbossAlertAndAttack();
+    }, 1000 / 60);
+
+    // Slower loop for HUD updates
+    setInterval(() => {
       const percent = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
       this.coinStatusBar.setPercentage(percent);
       const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
@@ -106,12 +111,60 @@ class World {
   }
 
   checkCollisions() {
-    this.level.enemies.forEach((enemy) => {
-      if (this.character.isColliding(enemy)) {
+    this.level.enemies = this.level.enemies.filter((enemy) => {
+      if (enemy.dead) {
+        return true;
+      }
+      if (!this.character.isColliding(enemy)) {
+        return true;
+      }
+
+      const stomping = this.isStompingEnemy(enemy);
+      if (stomping && !(enemy instanceof Endboss)) {
+        this.killEnemyByStomp(enemy);
+        return true;
+      }
+      // Regular collision damage with brief invulnerability (no knockback)
+      if (!this.character.isHurt()) {
         this.character.hit();
         this.statusBar.setPercentage(this.character.energy);
       }
+      return true;
     });
+  }
+
+  isStompingEnemy(enemy) {
+    if (!(this.character.speedY < 0)) return false;
+    const aBottom = this.character.y + this.character.height - (this.character.offset?.bottom || 0);
+    const prevBottom = aBottom + this.character.speedY; // speedY is negative while falling
+    const bTop = enemy.y + (enemy.offset?.top || 0);
+    // Expand the effective stomp zone slightly upward to make stomps more forgiving
+    const bTopExpanded = Math.max(enemy.y, bTop - 8);
+    const tolerance = 24;
+    return prevBottom <= bTopExpanded + tolerance;
+  }
+
+  killEnemyByStomp(enemy) {
+    enemy.dead = true;
+    enemy.speed = 0;
+    if (enemy instanceof ChickenSmall) {
+      enemy.loadImage('assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png');
+    } else {
+      enemy.loadImage('assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png');
+    }
+    // Snap the character just above the enemy to avoid an immediate damage frame
+    const enemyTop = enemy.y + (enemy.offset?.top || 0);
+    const charBottomOffset = this.character.offset?.bottom || 0;
+    this.character.y = enemyTop - (this.character.height - charBottomOffset) - 2;
+    // Bounce upwards and trigger jump animation state
+    this.character.speedY = 18;
+    this.character.isJumping = true;
+    this.character.jumpFrameIndex = 0;
+    this.character.currentImage = 0;
+    this.character.lastJumpFrameTime = Date.now();
+    setTimeout(() => {
+      this.level.enemies = this.level.enemies.filter((e) => e !== enemy);
+    }, 800);
   }
 
   draw() {
