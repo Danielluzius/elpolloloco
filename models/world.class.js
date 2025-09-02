@@ -42,6 +42,7 @@ class World {
       this.checkCoinCollection();
       this.checkBottleCollection();
       this.checkEndbossWake();
+      this.checkEndbossAlertAndAttack();
       const percent = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
       this.coinStatusBar.setPercentage(percent);
       const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
@@ -161,6 +162,39 @@ class World {
     const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
     if (dx < 500) {
       boss.awake = true;
+      if (!boss.alertPlayed && boss.state === 'idle') {
+        boss.state = 'alert';
+        boss.frameIndex = 0;
+        boss.lastFrameTime = Date.now();
+      }
+    }
+  }
+
+  checkEndbossAlertAndAttack() {
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (!boss || !boss.awake) return;
+    const now = Date.now();
+    const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
+    const inRange = dx < 140;
+    const cooled = now - (boss.lastAttackAt || 0) >= boss.attackCooldown;
+    if (inRange && cooled && boss.state !== 'attack') {
+      boss.state = 'attack';
+      boss.frameIndex = 0;
+      boss.lastFrameTime = now;
+      boss.lastAttackAt = now;
+
+      const hitWindowStart = 3;
+      const hitWindowEnd = 6;
+
+      setTimeout(() => {
+        if (boss.state === 'attack') {
+          const closeNow = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2)) < 150;
+          if (closeNow && !this.character.isHurt()) {
+            this.character.hit();
+            this.statusBar.setPercentage(this.character.energy);
+          }
+        }
+      }, hitWindowStart * boss.ATTACK_DELAY);
     }
   }
 
