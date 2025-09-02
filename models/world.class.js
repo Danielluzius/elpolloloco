@@ -40,6 +40,7 @@ class World {
 
   startGameLoop() {
     setInterval(() => {
+  if (this.character.isDead()) return; // pause gameplay when player is dead
       this.checkCollisions();
       this.checkThrowableObjects();
       this.checkCoinCollection();
@@ -126,6 +127,7 @@ class World {
     if (boss && this.throwableObjects.length) {
       this.throwableObjects = this.throwableObjects.filter((b) => {
         if (this.isCollidingBottleWithBoss(b, boss)) {
+          if (typeof b.splashAndRemove === 'function') b.splashAndRemove(this);
           this.damageBossIfNeeded(boss);
           return false; // remove bottle after hit
         }
@@ -157,7 +159,8 @@ class World {
       if (boss.healthSteps === 0) {
         boss.dead = true;
         boss.speed = 0;
-        // Optional: trigger boss death state/animation here
+        boss.state = 'dead';
+        boss.frameIndex = 0;
       }
     }
   }
@@ -233,6 +236,43 @@ class World {
     this.addToMap(this.coinStatusBar);
     this.addToMap(this.bottleStatusBar);
     // Boss bar is drawn with entities to position above boss
+    this.drawHudCounts();
+  }
+
+  drawHudCounts() {
+  // coin and bottle counts with icons, positioned to the right and vertically centered
+    this.ctx.save();
+    this.ctx.fillStyle = '#fff';
+    this.ctx.font = '20px Arial';
+  const coinText = `${this.coinsCollected}/${this.coinsTotal}`;
+  const bottleText = `${this.bottlesCollected}`;
+  // Base positions
+  const csb = this.coinStatusBar;
+  const bsb = this.bottleStatusBar;
+  const coinBaseX = (csb.x || 40) + (csb.width || 200) + 24;
+  const coinCenterY = (csb.y || 45) + (csb.height || 60) / 2;
+  const bottleBaseX = (bsb.x || 40) + (bsb.width || 200) + 24;
+  const bottleCenterY = (bsb.y || 85) + (bsb.height || 60) / 2;
+  // Icons (a bit further right)
+  const coinIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_coin.png');
+  const bottleIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_salsa_bottle.png');
+  if (coinIcon?.complete) this.ctx.drawImage(coinIcon, coinBaseX, coinCenterY - 11, 22, 22);
+  if (bottleIcon?.complete) this.ctx.drawImage(bottleIcon, bottleBaseX, bottleCenterY - 11, 22, 22);
+  // Text slightly to the right of the icons; baseline aligned near middle
+  this.ctx.fillText(coinText, coinBaseX + 28, coinCenterY + 7);
+  this.ctx.fillText(bottleText, bottleBaseX + 28, bottleCenterY + 7);
+    this.ctx.restore();
+  }
+
+  getHudIcon(path) {
+    // cache icons in status bar imageCache via a tiny helper image map
+    if (!this._hudIcons) this._hudIcons = {};
+    if (!this._hudIcons[path]) {
+      const img = new Image();
+      img.src = path;
+      this._hudIcons[path] = img;
+    }
+    return this._hudIcons[path];
   }
 
   drawEntities() {
@@ -290,6 +330,7 @@ class World {
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss || !boss.awake) return;
+  if (this.character.isDead()) return;
     const now = Date.now();
     const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
     const inRange = dx < 140;

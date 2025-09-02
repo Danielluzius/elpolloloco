@@ -9,7 +9,10 @@ class MoveableObject extends DrawableObject {
 
   applyGravity() {
     setInterval(() => {
-      if (this.isAboveGround() || this.speedY > 0) {
+  // Skip gravity when dead to avoid conflicting physics with custom death fall
+  if (typeof this.isDead === 'function' && this.isDead()) return;
+  if (this.disableGravity) return;
+  if (this.isAboveGround() || this.speedY > 0) {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
       }

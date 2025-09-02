@@ -1,7 +1,7 @@
 const rng = new Randomizer();
 const enemyGen = new EnemyGenerator(rng, { amount: 18, startX: 700, endX: 4200, smallChance: 0.45 });
-const coinGen = new CoinGenerator(rng, { amount: 10, startX: 700, endX: 4200, tiersY: [160, 240, 320] });
-const bottleGen = new BottleGenerator(rng, { amount: 8, startX: 700, endX: 4200, fixedY: 360 });
+const coinGen = new CoinGenerator(rng, { amount: 20, startX: 700, endX: 4200, tiersY: [160, 240, 320] });
+const bottleGen = new BottleGenerator(rng, { amount: 10, startX: 700, endX: 4200, fixedY: 360 });
 
 const level1 = new Level(
   [...enemyGen.generate(), new Endboss()],
