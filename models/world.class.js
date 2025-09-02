@@ -52,42 +52,52 @@ class World {
 
   startHudLoop() {
     setInterval(() => {
-      const p = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
-      this.coinStatusBar.setPercentage(p);
-      const bp = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
-      this.bottleStatusBar.setPercentage(bp);
-      this.statusBar.setPercentage(this.character.energy);
-      const boss = this.level.enemies.find((e) => e instanceof Endboss);
-      if (boss) {
-        if (typeof boss.healthSteps === 'number') {
-          this.bossStatusBar.setByStep(boss.healthSteps);
-        }
-      }
+      this.updateHudBars();
+      this.updateBossHud();
     }, 200);
+  }
+
+  updateHudBars() {
+    const p = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
+    this.coinStatusBar.setPercentage(p);
+    const bp = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
+    this.bottleStatusBar.setPercentage(bp);
+    this.statusBar.setPercentage(this.character.energy);
+  }
+
+  updateBossHud() {
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (boss && typeof boss.healthSteps === 'number') {
+      this.bossStatusBar.setByStep(boss.healthSteps);
+    }
   }
 
   startBarrierLoop() {
     setInterval(() => {
       const boss = this.level.enemies.find((e) => e instanceof Endboss);
-      if (!boss || !boss.awake) {
-        this.bossBarrier = null;
-        return;
-      }
-      const barrierX = boss.x + boss.width - this.bossBarrierMargin;
-      this.bossBarrier = {
-        x: barrierX,
-        y: -1000,
-        width: this.bossBarrierWidth,
-        height: 3000,
-        offset: { top: 0, right: 0, bottom: 0, left: 0 },
-      };
-      if (this.character.isColliding(this.bossBarrier)) {
-        const targetX = this.bossBarrier.x - this.character.width - this.bossBarrierMargin;
-        if (this.character.x > targetX) {
-          this.character.x = targetX;
-        }
-      }
+      if (!boss || !boss.awake) return (this.bossBarrier = null);
+      this.updateBossBarrier(boss);
+      this.enforceBossBarrier();
     }, 1000 / 60);
+  }
+
+  updateBossBarrier(boss) {
+    const barrierX = boss.x + boss.width - this.bossBarrierMargin;
+    this.bossBarrier = {
+      x: barrierX,
+      y: -1000,
+      width: this.bossBarrierWidth,
+      height: 3000,
+      offset: { top: 0, right: 0, bottom: 0, left: 0 },
+    };
+  }
+
+  enforceBossBarrier() {
+    if (!this.bossBarrier) return;
+    if (this.character.isColliding(this.bossBarrier)) {
+      const targetX = this.bossBarrier.x - this.character.width - this.bossBarrierMargin;
+      if (this.character.x > targetX) this.character.x = targetX;
+    }
   }
 
   checkCoinCollection() {
@@ -112,23 +122,31 @@ class World {
 
   checkThrowableObjects() {
     const now = Date.now();
-    if (this.keyboard.D && this.bottlesCollected > 0 && now - this.lastThrowAt >= this.throwCooldownMs) {
-      const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
-      this.throwableObjects.push(bottle);
-      this.bottlesCollected = Math.max(0, this.bottlesCollected - 1);
-      this.lastThrowAt = now;
-    }
+    this.handleThrowInput(now);
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (boss && this.throwableObjects.length) {
-      this.throwableObjects = this.throwableObjects.filter((b) => {
-        if (this.isCollidingBottleWithBoss(b, boss)) {
-          if (typeof b.splashAndRemove === 'function') b.splashAndRemove(this);
-          this.damageBossIfNeeded(boss);
-          return false;
-        }
-        return b.x < this.level.level_end_x + 500 && b.y < 1000 && b.y > -500;
-      });
-    }
+    if (boss && this.throwableObjects.length) this.updateProjectiles(boss);
+  }
+
+  handleThrowInput(now) {
+    const canThrow = this.keyboard.D && this.bottlesCollected > 0 && now - this.lastThrowAt >= this.throwCooldownMs;
+    if (!canThrow) return;
+    const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
+    this.throwableObjects.push(bottle);
+    this.bottlesCollected = Math.max(0, this.bottlesCollected - 1);
+    this.lastThrowAt = now;
+  }
+
+  updateProjectiles(boss) {
+    this.throwableObjects = this.throwableObjects.filter((b) => {
+      if (this.isCollidingBottleWithBoss(b, boss)) return this.handleBottleHitBoss(b, boss);
+      return b.x < this.level.level_end_x + 500 && b.y < 1000 && b.y > -500;
+    });
+  }
+
+  handleBottleHitBoss(bottle, boss) {
+    if (typeof bottle.splashAndRemove === 'function') bottle.splashAndRemove(this);
+    this.damageBossIfNeeded(boss);
+    return false;
   }
 
   isCollidingBottleWithBoss(bottle, boss) {
@@ -183,6 +201,13 @@ class World {
   }
 
   stomp(enemy) {
+    this.markEnemyDead(enemy);
+    this.placeCharacterAfterStomp(enemy);
+    this.boostCharacterBounce();
+    this.scheduleEnemyRemoval(enemy);
+  }
+
+  markEnemyDead(enemy) {
     enemy.dead = true;
     enemy.speed = 0;
     const path =
@@ -190,14 +215,23 @@ class World {
         ? 'assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png'
         : 'assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png';
     enemy.loadImage(path);
+  }
+
+  placeCharacterAfterStomp(enemy) {
     const enemyTop = enemy.y + (enemy.offset?.top || 0);
     const charBottomOffset = this.character.offset?.bottom || 0;
     this.character.y = enemyTop - (this.character.height - charBottomOffset) - 2;
+  }
+
+  boostCharacterBounce() {
     this.character.speedY = 18;
     this.character.isJumping = true;
     this.character.jumpFrameIndex = 0;
     this.character.currentImage = 0;
     this.character.lastJumpFrameTime = Date.now();
+  }
+
+  scheduleEnemyRemoval(enemy) {
     setTimeout(() => {
       this.level.enemies = this.level.enemies.filter((e) => e !== enemy);
     }, 800);
@@ -233,23 +267,33 @@ class World {
   }
 
   drawHudCounts() {
+    const layout = this.computeHudLayout();
+    this.drawHudIconsAndText(layout);
+  }
+
+  computeHudLayout() {
+    const csb = this.coinStatusBar;
+    const bsb = this.bottleStatusBar;
+    return {
+      coinText: `${this.coinsCollected}/${this.coinsTotal}`,
+      bottleText: `${this.bottlesCollected}`,
+      coinBaseX: (csb.x || 40) + (csb.width || 200) + 24,
+      coinCenterY: (csb.y || 45) + (csb.height || 60) / 2,
+      bottleBaseX: (bsb.x || 40) + (bsb.width || 200) + 24,
+      bottleCenterY: (bsb.y || 85) + (bsb.height || 60) / 2,
+    };
+  }
+
+  drawHudIconsAndText(l) {
     this.ctx.save();
     this.ctx.fillStyle = '#fff';
     this.ctx.font = '20px Arial';
-    const coinText = `${this.coinsCollected}/${this.coinsTotal}`;
-    const bottleText = `${this.bottlesCollected}`;
-    const csb = this.coinStatusBar;
-    const bsb = this.bottleStatusBar;
-    const coinBaseX = (csb.x || 40) + (csb.width || 200) + 24;
-    const coinCenterY = (csb.y || 45) + (csb.height || 60) / 2;
-    const bottleBaseX = (bsb.x || 40) + (bsb.width || 200) + 24;
-    const bottleCenterY = (bsb.y || 85) + (bsb.height || 60) / 2;
     const coinIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_coin.png');
     const bottleIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_salsa_bottle.png');
-    if (coinIcon?.complete) this.ctx.drawImage(coinIcon, coinBaseX, coinCenterY - 11, 22, 22);
-    if (bottleIcon?.complete) this.ctx.drawImage(bottleIcon, bottleBaseX, bottleCenterY - 11, 22, 22);
-    this.ctx.fillText(coinText, coinBaseX + 28, coinCenterY + 7);
-    this.ctx.fillText(bottleText, bottleBaseX + 28, bottleCenterY + 7);
+    if (coinIcon?.complete) this.ctx.drawImage(coinIcon, l.coinBaseX, l.coinCenterY - 11, 22, 22);
+    if (bottleIcon?.complete) this.ctx.drawImage(bottleIcon, l.bottleBaseX, l.bottleCenterY - 11, 22, 22);
+    this.ctx.fillText(l.coinText, l.coinBaseX + 28, l.coinCenterY + 7);
+    this.ctx.fillText(l.bottleText, l.bottleBaseX + 28, l.bottleCenterY + 7);
     this.ctx.restore();
   }
 
@@ -316,28 +360,33 @@ class World {
 
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (!boss || !boss.awake) return;
-    if (this.character.isDead()) return;
+    if (!boss || !boss.awake || this.character.isDead()) return;
     const now = Date.now();
     const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
+    this.tryStartBossAttack(boss, now, dx);
+  }
+
+  tryStartBossAttack(boss, now, dx) {
     const inRange = dx < 140;
     const cooled = now - (boss.lastAttackAt || 0) >= boss.attackCooldown;
-    if (inRange && cooled && boss.state !== 'attack') {
-      boss.state = 'attack';
-      boss.frameIndex = 0;
-      boss.lastFrameTime = now;
-      boss.lastAttackAt = now;
-      const hitWindowStart = 3;
-      setTimeout(() => {
-        if (boss.state === 'attack') {
-          const closeNow = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2)) < 150;
-          if (closeNow && !this.character.isHurt()) {
-            this.character.hit();
-            this.statusBar.setPercentage(this.character.energy);
-          }
-        }
-      }, hitWindowStart * boss.ATTACK_DELAY);
-    }
+    if (!(inRange && cooled) || boss.state === 'attack') return;
+    boss.state = 'attack';
+    boss.frameIndex = 0;
+    boss.lastFrameTime = now;
+    boss.lastAttackAt = now;
+    this.scheduleBossAttackHitCheck(boss);
+  }
+
+  scheduleBossAttackHitCheck(boss) {
+    const hitWindowStart = 3;
+    setTimeout(() => {
+      if (boss.state !== 'attack') return;
+      const closeNow = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2)) < 150;
+      if (closeNow && !this.character.isHurt()) {
+        this.character.hit();
+        this.statusBar.setPercentage(this.character.energy);
+      }
+    }, hitWindowStart * boss.ATTACK_DELAY);
   }
 
   flipImage(mo) {

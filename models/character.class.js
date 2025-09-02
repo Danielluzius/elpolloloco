@@ -107,20 +107,32 @@ class Character extends MoveableObject {
   startInputLoop() {
     setInterval(() => {
       if (this.isDead()) return;
-      if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
-        this.moveRight();
-        this.otherDirection = false;
-        this.lastActivityAt = Date.now();
-      }
-      if (this.world.keyboard.LEFT && this.x > 0) {
-        this.moveLeft();
-        this.otherDirection = true;
-        this.lastActivityAt = Date.now();
-      }
-      this.world.camera_x = -this.x + 100;
+      this.handleHorizontalMove();
+      this.updateCamera();
       this.handleJumpKey();
-      if (this.world.keyboard.D) this.lastActivityAt = Date.now();
+      this.markActivityOnAction();
     }, 1000 / 60);
+  }
+
+  handleHorizontalMove() {
+    if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
+      this.moveRight();
+      this.otherDirection = false;
+      this.lastActivityAt = Date.now();
+    }
+    if (this.world.keyboard.LEFT && this.x > 0) {
+      this.moveLeft();
+      this.otherDirection = true;
+      this.lastActivityAt = Date.now();
+    }
+  }
+
+  updateCamera() {
+    this.world.camera_x = -this.x + 100;
+  }
+
+  markActivityOnAction() {
+    if (this.world.keyboard.D) this.lastActivityAt = Date.now();
   }
 
   handleJumpKey() {
@@ -145,24 +157,37 @@ class Character extends MoveableObject {
   }
 
   setDeadFrame() {
+    this.updateDeadFrameIndex();
+    this.applyDeathSprite();
+    this.ensureDeathArcInit();
+    this.applyDeathPhysics();
+  }
+
+  updateDeadFrameIndex() {
     if (!this.deadStartedAt) this.deadStartedAt = Date.now();
     let idx = Math.floor((Date.now() - this.deadStartedAt) / this.DEAD_FRAME_DELAY);
     if (idx >= this.IMAGES_DEAD.length) {
       idx = this.IMAGES_DEAD.length - 1;
       this.deathLastFrameLocked = true;
     }
-    const path = this.IMAGES_DEAD[idx];
+    this._deadFrameIdx = idx;
+  }
+
+  applyDeathSprite() {
+    const path = this.IMAGES_DEAD[this._deadFrameIdx];
     this.img = this.imageCache[path];
     this.animKey = 'dead';
-    if (!this.deathArcInit) {
-      this.deathArcInit = true;
-      this.speedY = this.DEATH_INIT_VY;
-    }
+  }
+
+  ensureDeathArcInit() {
+    if (this.deathArcInit) return;
+    this.deathArcInit = true;
+    this.speedY = this.DEATH_INIT_VY;
+  }
+
+  applyDeathPhysics() {
     this.y -= this.speedY;
     this.speedY -= this.DEATH_ACCEL;
-    const canvasH = this.world?.canvas?.height ?? 480;
-    if (this.y > canvasH + 120) {
-    }
   }
 
   setHurtFrame() {
@@ -183,14 +208,23 @@ class Character extends MoveableObject {
   }
 
   setGroundedFrame(now) {
-    if (this.isJumping) this.currentImage = 0;
-    this.jumpFrameIndex = 0;
-    this.isJumping = false;
+    this.resetJumpStateIfNeeded();
     const moving = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
     const inactiveMs = now - this.lastActivityAt;
     if (moving) return this.setWalkFrame();
     if (inactiveMs >= this.LONG_IDLE_AFTER_MS) return this.setLongIdleFrame(now);
     if (inactiveMs >= this.IDLE_AFTER_MS) return this.setIdleFrame(now);
+    this.setDefaultStandFrame();
+  }
+
+  resetJumpStateIfNeeded() {
+    if (!this.isJumping) return;
+    this.currentImage = 0;
+    this.jumpFrameIndex = 0;
+    this.isJumping = false;
+  }
+
+  setDefaultStandFrame() {
     const path = this.IMAGES_IDLE[0] || this.IMAGES_WALKING[0];
     this.img = this.imageCache[path];
     this.animKey = 'stand';
@@ -207,34 +241,46 @@ class Character extends MoveableObject {
   }
 
   setLongIdleFrame(now) {
-    if (this.animKey !== 'long_idle') {
-      this.currentImage = 0;
-      this.longIdleFrameIndex = 0;
-      this.lastLongIdleFrameTime = now;
-    }
-    if (now - this.lastLongIdleFrameTime >= this.LONG_IDLE_FRAME_DELAY) {
-      this.longIdleFrameIndex = (this.longIdleFrameIndex + 1) % this.IMAGES_LONG_IDLE.length;
-      this.lastLongIdleFrameTime = now;
-    }
+    this.ensureLongIdleState(now);
+    this.advanceLongIdleFrame(now);
     const path = this.IMAGES_LONG_IDLE[this.longIdleFrameIndex];
     this.img = this.imageCache[path];
     this.animKey = 'long_idle';
     this.idleFrameIndex = 0;
   }
 
+  ensureLongIdleState(now) {
+    if (this.animKey === 'long_idle') return;
+    this.currentImage = 0;
+    this.longIdleFrameIndex = 0;
+    this.lastLongIdleFrameTime = now;
+  }
+
+  advanceLongIdleFrame(now) {
+    if (now - this.lastLongIdleFrameTime < this.LONG_IDLE_FRAME_DELAY) return;
+    this.longIdleFrameIndex = (this.longIdleFrameIndex + 1) % this.IMAGES_LONG_IDLE.length;
+    this.lastLongIdleFrameTime = now;
+  }
+
   setIdleFrame(now) {
-    if (this.animKey !== 'idle') {
-      this.currentImage = 0;
-      this.idleFrameIndex = 0;
-      this.lastIdleFrameTime = now;
-    }
-    if (now - this.lastIdleFrameTime >= this.IDLE_FRAME_DELAY) {
-      this.idleFrameIndex = (this.idleFrameIndex + 1) % this.IMAGES_IDLE.length;
-      this.lastIdleFrameTime = now;
-    }
+    this.ensureIdleState(now);
+    this.advanceIdleFrame(now);
     const path = this.IMAGES_IDLE[this.idleFrameIndex];
     this.img = this.imageCache[path];
     this.animKey = 'idle';
     this.longIdleFrameIndex = 0;
+  }
+
+  ensureIdleState(now) {
+    if (this.animKey === 'idle') return;
+    this.currentImage = 0;
+    this.idleFrameIndex = 0;
+    this.lastIdleFrameTime = now;
+  }
+
+  advanceIdleFrame(now) {
+    if (now - this.lastIdleFrameTime < this.IDLE_FRAME_DELAY) return;
+    this.idleFrameIndex = (this.idleFrameIndex + 1) % this.IMAGES_IDLE.length;
+    this.lastIdleFrameTime = now;
   }
 }
