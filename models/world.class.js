@@ -27,16 +27,16 @@ class World {
     this.setWorld();
     this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
     this.bottlesTotal = this.level.bottles && this.level.bottles.length ? this.level.bottles.length : 0;
-    this.run();
-    this.runBarrierEnforcement();
+    this.startGameLoop();
+    this.startHudLoop();
+    this.startBarrierLoop();
   }
 
   setWorld() {
     this.character.world = this;
   }
 
-  run() {
-    // Fast loop for gameplay-critical checks to avoid tunneling and missed collisions
+  startGameLoop() {
     setInterval(() => {
       this.checkCollisions();
       this.checkThrowableObjects();
@@ -45,17 +45,18 @@ class World {
       this.checkEndbossWake();
       this.checkEndbossAlertAndAttack();
     }, 1000 / 60);
+  }
 
-    // Slower loop for HUD updates
+  startHudLoop() {
     setInterval(() => {
-      const percent = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
-      this.coinStatusBar.setPercentage(percent);
-      const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
-      this.bottleStatusBar.setPercentage(bPercent);
+      const p = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
+      this.coinStatusBar.setPercentage(p);
+      const bp = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
+      this.bottleStatusBar.setPercentage(bp);
     }, 200);
   }
 
-  runBarrierEnforcement() {
+  startBarrierLoop() {
     setInterval(() => {
       const boss = this.level.enemies.find((e) => e instanceof Endboss);
       if (!boss || !boss.awake) {
@@ -70,7 +71,6 @@ class World {
         height: 3000,
         offset: { top: 0, right: 0, bottom: 0, left: 0 },
       };
-
       if (this.character.isColliding(this.bossBarrier)) {
         const targetX = this.bossBarrier.x - this.character.width - this.bossBarrierMargin;
         if (this.character.x > targetX) {
@@ -112,51 +112,38 @@ class World {
 
   checkCollisions() {
     this.level.enemies = this.level.enemies.filter((enemy) => {
-      if (enemy.dead) {
+      if (enemy.dead) return true;
+      if (!this.character.isColliding(enemy)) return true;
+      if (this.canStomp(enemy)) {
+        this.stomp(enemy);
         return true;
       }
-      if (!this.character.isColliding(enemy)) {
-        return true;
-      }
-
-      const stomping = this.isStompingEnemy(enemy);
-      if (stomping && !(enemy instanceof Endboss)) {
-        this.killEnemyByStomp(enemy);
-        return true;
-      }
-      // Regular collision damage with brief invulnerability (no knockback)
-      if (!this.character.isHurt()) {
-        this.character.hit();
-        this.statusBar.setPercentage(this.character.energy);
-      }
+      this.damageCharacterIfNeeded();
       return true;
     });
   }
 
-  isStompingEnemy(enemy) {
+  canStomp(enemy) {
     if (!(this.character.speedY < 0)) return false;
     const aBottom = this.character.y + this.character.height - (this.character.offset?.bottom || 0);
-    const prevBottom = aBottom + this.character.speedY; // speedY is negative while falling
+    const prevBottom = aBottom + this.character.speedY;
     const bTop = enemy.y + (enemy.offset?.top || 0);
-    // Expand the effective stomp zone slightly upward to make stomps more forgiving
     const bTopExpanded = Math.max(enemy.y, bTop - 8);
     const tolerance = 24;
-    return prevBottom <= bTopExpanded + tolerance;
+    return prevBottom <= bTopExpanded + tolerance && !(enemy instanceof Endboss);
   }
 
-  killEnemyByStomp(enemy) {
+  stomp(enemy) {
     enemy.dead = true;
     enemy.speed = 0;
-    if (enemy instanceof ChickenSmall) {
-      enemy.loadImage('assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png');
-    } else {
-      enemy.loadImage('assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png');
-    }
-    // Snap the character just above the enemy to avoid an immediate damage frame
+    const path =
+      enemy instanceof ChickenSmall
+        ? 'assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png'
+        : 'assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png';
+    enemy.loadImage(path);
     const enemyTop = enemy.y + (enemy.offset?.top || 0);
     const charBottomOffset = this.character.offset?.bottom || 0;
     this.character.y = enemyTop - (this.character.height - charBottomOffset) - 2;
-    // Bounce upwards and trigger jump animation state
     this.character.speedY = 18;
     this.character.isJumping = true;
     this.character.jumpFrameIndex = 0;
@@ -167,28 +154,42 @@ class World {
     }, 800);
   }
 
+  damageCharacterIfNeeded() {
+    if (!this.character.isHurt()) {
+      this.character.hit();
+      this.statusBar.setPercentage(this.character.energy);
+    }
+  }
+
   draw() {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.drawBackground();
+    this.drawHud();
+    this.drawEntities();
+    this.ctx.translate(-this.camera_x, 0);
+    requestAnimationFrame(() => this.draw());
+  }
 
+  drawBackground() {
     this.ctx.translate(this.camera_x, 0);
     this.addObjectsToMap(this.level.backgroundObjects);
-
     this.ctx.translate(-this.camera_x, 0);
+  }
+
+  drawHud() {
     this.addToMap(this.statusBar);
     this.addToMap(this.coinStatusBar);
     this.addToMap(this.bottleStatusBar);
-    this.ctx.translate(this.camera_x, 0);
+  }
 
+  drawEntities() {
+    this.ctx.translate(this.camera_x, 0);
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.clouds);
     this.addObjectsToMap(this.level.coins);
     this.addObjectsToMap(this.level.bottles);
     this.addObjectsToMap(this.throwableObjects);
-
-    this.ctx.translate(-this.camera_x, 0);
-
-    requestAnimationFrame(() => this.draw());
   }
 
   addObjectsToMap(objects) {
@@ -235,10 +236,7 @@ class World {
       boss.frameIndex = 0;
       boss.lastFrameTime = now;
       boss.lastAttackAt = now;
-
       const hitWindowStart = 3;
-      const hitWindowEnd = 6;
-
       setTimeout(() => {
         if (boss.state === 'attack') {
           const closeNow = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2)) < 150;

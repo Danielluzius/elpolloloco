@@ -47,56 +47,60 @@ class Endboss extends MoveableObject {
 
   constructor() {
     super();
+    this.initImages();
+    this.x = 4550;
+    this.initLoops();
+  }
+
+  initImages() {
     this.loadImage(this.IMAGES_ALERT[0]);
     this.loadImages(this.IMAGES_WALKING);
     this.loadImages(this.IMAGES_ALERT);
     this.loadImages(this.IMAGES_ATTACK);
-    this.x = 4550;
-    this.animate();
   }
 
-  animate() {
+  initLoops() {
+    this.startStateAnimLoop();
+    this.startWalkLoop();
+  }
+
+  startStateAnimLoop() {
     setInterval(() => {
       const now = Date.now();
-      let images = this.IMAGES_ALERT;
-      let delay = this.ALERT_DELAY;
-
-      if (this.state === 'attack') {
-        images = this.IMAGES_ATTACK;
-        delay = this.ATTACK_DELAY;
-      } else if (this.state === 'walk') {
-        images = this.IMAGES_WALKING;
-        delay = this.WALK_DELAY;
-      } else {
-        images = this.IMAGES_ALERT;
-        delay = this.ALERT_DELAY;
-      }
-
+      const { images, delay } = this.pickAnim();
       if (now - this.lastFrameTime >= delay) {
         this.frameIndex++;
         this.lastFrameTime = now;
       }
-
-      if (this.state === 'alert' && this.frameIndex >= images.length) {
-        this.alertPlayed = true;
-        this.state = 'walk';
-        this.frameIndex = 0;
-      } else if (this.state === 'attack' && this.frameIndex >= images.length) {
-        this.state = 'walk';
-        this.frameIndex = 0;
-      } else if (this.state === 'walk' && this.frameIndex >= images.length) {
-        this.frameIndex = 0;
-      }
-
+      this.applyTransitions(images.length);
       const idx = Math.min(this.frameIndex, images.length - 1);
       const path = images[idx];
       this.img = this.imageCache[path];
     }, 50);
+  }
 
+  pickAnim() {
+    if (this.state === 'attack') return { images: this.IMAGES_ATTACK, delay: this.ATTACK_DELAY };
+    if (this.state === 'walk') return { images: this.IMAGES_WALKING, delay: this.WALK_DELAY };
+    return { images: this.IMAGES_ALERT, delay: this.ALERT_DELAY };
+  }
+
+  applyTransitions(length) {
+    if (this.state === 'alert' && this.frameIndex >= length) {
+      this.alertPlayed = true;
+      this.state = 'walk';
+      this.frameIndex = 0;
+    } else if (this.state === 'attack' && this.frameIndex >= length) {
+      this.state = 'walk';
+      this.frameIndex = 0;
+    } else if (this.state === 'walk' && this.frameIndex >= length) {
+      this.frameIndex = 0;
+    }
+  }
+
+  startWalkLoop() {
     setInterval(() => {
-      if (this.awake && this.state === 'walk') {
-        this.moveLeft();
-      }
+      if (this.awake && this.state === 'walk') this.moveLeft();
     }, 1000 / 60);
   }
 }
