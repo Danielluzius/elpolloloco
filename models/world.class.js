@@ -15,6 +15,9 @@ class World {
   bottlesTotal = 0;
   lastThrowAt = 0;
   throwCooldownMs = 300;
+  bossBarrier = null;
+  bossBarrierWidth = 4;
+  bossBarrierMargin = 1;
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
@@ -25,6 +28,7 @@ class World {
     this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
     this.bottlesTotal = this.level.bottles && this.level.bottles.length ? this.level.bottles.length : 0;
     this.run();
+    this.runBarrierEnforcement();
   }
 
   setWorld() {
@@ -43,6 +47,31 @@ class World {
       const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
       this.bottleStatusBar.setPercentage(bPercent);
     }, 200);
+  }
+
+  runBarrierEnforcement() {
+    setInterval(() => {
+      const boss = this.level.enemies.find((e) => e instanceof Endboss);
+      if (!boss || !boss.awake) {
+        this.bossBarrier = null;
+        return;
+      }
+      const barrierX = boss.x + boss.width - this.bossBarrierMargin;
+      this.bossBarrier = {
+        x: barrierX,
+        y: -1000,
+        width: this.bossBarrierWidth,
+        height: 3000,
+        offset: { top: 0, right: 0, bottom: 0, left: 0 },
+      };
+
+      if (this.character.isColliding(this.bossBarrier)) {
+        const targetX = this.bossBarrier.x - this.character.width - this.bossBarrierMargin;
+        if (this.character.x > targetX) {
+          this.character.x = targetX;
+        }
+      }
+    }, 1000 / 60);
   }
 
   checkCoinCollection() {
