@@ -37,6 +37,7 @@ class World {
       this.checkThrowableObjects();
       this.checkCoinCollection();
       this.checkBottleCollection();
+      this.checkEndbossWake();
       const percent = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
       this.coinStatusBar.setPercentage(percent);
       const bPercent = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
@@ -122,6 +123,15 @@ class World {
 
     if (mo.otherDirection) {
       this.flipImageBack(mo);
+    }
+  }
+
+  checkEndbossWake() {
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (!boss) return;
+    const dx = Math.abs(this.character.x + this.character.width / 2 - (boss.x + boss.width / 2));
+    if (dx < 500) {
+      boss.awake = true;
     }
   }
 
