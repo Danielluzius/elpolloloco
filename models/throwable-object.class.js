@@ -49,4 +49,18 @@ class ThrowableObject extends MoveableObject {
       }
     }, 50);
   }
+
+  intersects(obj) {
+    return this.isColliding(obj);
+  }
+
+  shouldDespawn(level) {
+    return !(this.x < level.level_end_x + 500 && this.y < 1000 && this.y > -500);
+  }
+
+  onHitBoss(world, boss) {
+    if (typeof this.splashAndRemove === 'function') this.splashAndRemove(world);
+    world.damageBossIfNeeded(boss);
+    this.hitted = true;
+  }
 }

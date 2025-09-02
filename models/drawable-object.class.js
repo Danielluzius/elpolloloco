@@ -25,4 +25,20 @@ class DrawableObject {
       this.imageCache[path] = img;
     });
   }
+
+  drawWithDirection(ctx) {
+    if (!this.otherDirection) {
+      this.draw(ctx);
+      this.drawFrame(ctx);
+      return;
+    }
+    ctx.save();
+    ctx.translate(this.width, 0);
+    ctx.scale(-1, 1);
+    this.x = this.x * -1;
+    this.draw(ctx);
+    this.drawFrame(ctx);
+    this.x = this.x * -1;
+    ctx.restore();
+  }
 }

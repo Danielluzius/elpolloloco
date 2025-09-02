@@ -15,4 +15,12 @@ class BossStatusBar extends StatusBar {
     this.height = 60;
     this.setByStep(this.getMaxSteps());
   }
+
+  updateFromBoss(boss) {
+    if (!boss || boss.dead || !boss.awake) return false;
+    this.x = boss.x + boss.width / 2 - this.width / 2;
+    this.y = boss.y - 30;
+    if (typeof boss.healthSteps === 'number') this.setByStep(boss.healthSteps);
+    return true;
+  }
 }

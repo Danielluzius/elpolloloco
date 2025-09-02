@@ -82,14 +82,7 @@ class World {
   }
 
   updateBossBarrier(boss) {
-    const barrierX = boss.x + boss.width - this.bossBarrierMargin;
-    this.bossBarrier = {
-      x: barrierX,
-      y: -1000,
-      width: this.bossBarrierWidth,
-      height: 3000,
-      offset: { top: 0, right: 0, bottom: 0, left: 0 },
-    };
+    this.bossBarrier = boss.getBarrierRect(this.bossBarrierMargin, this.bossBarrierWidth);
   }
 
   enforceBossBarrier() {
@@ -138,50 +131,30 @@ class World {
 
   updateProjectiles(boss) {
     this.throwableObjects = this.throwableObjects.filter((b) => {
-      if (this.isCollidingBottleWithBoss(b, boss)) return this.handleBottleHitBoss(b, boss);
-      return b.x < this.level.level_end_x + 500 && b.y < 1000 && b.y > -500;
+      if (b.intersects(boss) && !b.hitted) {
+        b.onHitBoss(this, boss);
+        return false;
+      }
+      return !b.shouldDespawn(this.level);
     });
-  }
-
-  handleBottleHitBoss(bottle, boss) {
-    if (typeof bottle.splashAndRemove === 'function') bottle.splashAndRemove(this);
-    this.damageBossIfNeeded(boss);
-    return false;
-  }
-
-  isCollidingBottleWithBoss(bottle, boss) {
-    return bottle.isColliding(boss);
   }
 
   initBossHealth() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (boss) {
-      boss.healthSteps = this.bossStatusBar.getMaxSteps(); // start full
-      boss.maxHealthSteps = boss.healthSteps;
-      boss.lastHitAt = 0;
-      boss.hitCooldownMs = 250; // prevent multi-hit per frame
-    }
+    if (boss) boss.initHealth(this.bossStatusBar.getMaxSteps());
   }
 
   damageBossIfNeeded(boss) {
     const now = Date.now();
-    if (!boss.lastHitAt || now - boss.lastHitAt >= boss.hitCooldownMs) {
-      boss.healthSteps = Math.max(0, (boss.healthSteps ?? this.bossStatusBar.getMaxSteps()) - 1);
-      boss.lastHitAt = now;
-      if (boss.healthSteps === 0) {
-        boss.dead = true;
-        boss.speed = 0;
-        boss.state = 'dead';
-        boss.frameIndex = 0;
-      }
-    }
+    const applied = boss.applyHit(1, now, this.bossStatusBar.getMaxSteps());
+    if (applied) this.bossStatusBar.setByStep(boss.healthSteps);
   }
 
   checkCollisions() {
     this.level.enemies = this.level.enemies.filter((enemy) => {
       if (enemy.dead) return true;
       if (!this.character.isColliding(enemy)) return true;
-      if (this.canStomp(enemy)) {
+      if (this.character.isStomping(enemy)) {
         this.stomp(enemy);
         return true;
       }
@@ -190,45 +163,11 @@ class World {
     });
   }
 
-  canStomp(enemy) {
-    if (!(this.character.speedY < 0)) return false;
-    const aBottom = this.character.y + this.character.height - (this.character.offset?.bottom || 0);
-    const prevBottom = aBottom + this.character.speedY;
-    const bTop = enemy.y + (enemy.offset?.top || 0);
-    const bTopExpanded = Math.max(enemy.y, bTop - 8);
-    const tolerance = 24;
-    return prevBottom <= bTopExpanded + tolerance && !(enemy instanceof Endboss);
-  }
-
   stomp(enemy) {
-    this.markEnemyDead(enemy);
-    this.placeCharacterAfterStomp(enemy);
-    this.boostCharacterBounce();
+    if (typeof enemy.killByStomp === 'function') enemy.killByStomp();
+    this.character.placeOnTopOf(enemy);
+    this.character.bounceAfterStomp();
     this.scheduleEnemyRemoval(enemy);
-  }
-
-  markEnemyDead(enemy) {
-    enemy.dead = true;
-    enemy.speed = 0;
-    const path =
-      enemy instanceof ChickenSmall
-        ? 'assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png'
-        : 'assets/img/3_enemies_chicken/chicken_normal/2_dead/dead.png';
-    enemy.loadImage(path);
-  }
-
-  placeCharacterAfterStomp(enemy) {
-    const enemyTop = enemy.y + (enemy.offset?.top || 0);
-    const charBottomOffset = this.character.offset?.bottom || 0;
-    this.character.y = enemyTop - (this.character.height - charBottomOffset) - 2;
-  }
-
-  boostCharacterBounce() {
-    this.character.speedY = 18;
-    this.character.isJumping = true;
-    this.character.jumpFrameIndex = 0;
-    this.character.currentImage = 0;
-    this.character.lastJumpFrameTime = Date.now();
   }
 
   scheduleEnemyRemoval(enemy) {
@@ -320,10 +259,7 @@ class World {
 
   drawBossBarIfAny() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (!boss || boss.dead || !boss.awake) return;
-    this.bossStatusBar.x = boss.x + boss.width / 2 - this.bossStatusBar.width / 2;
-    this.bossStatusBar.y = boss.y - 30;
-    this.addToMap(this.bossStatusBar);
+    if (this.bossStatusBar.updateFromBoss(boss)) this.addToMap(this.bossStatusBar);
   }
 
   addObjectsToMap(objects) {
@@ -333,15 +269,7 @@ class World {
   }
 
   addToMap(mo) {
-    if (mo.otherDirection) {
-      this.flipImage(mo);
-    }
-    mo.draw(this.ctx);
-    mo.drawFrame(this.ctx);
-
-    if (mo.otherDirection) {
-      this.flipImageBack(mo);
-    }
+    mo.drawWithDirection(this.ctx);
   }
 
   checkEndbossWake() {
@@ -354,17 +282,5 @@ class World {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
     boss.checkAndStartAttack(this);
-  }
-
-  flipImage(mo) {
-    this.ctx.save();
-    this.ctx.translate(mo.width, 0);
-    this.ctx.scale(-1, 1);
-    mo.x = mo.x * -1;
-  }
-
-  flipImageBack(mo) {
-    mo.x = mo.x * -1;
-    this.ctx.restore();
   }
 }

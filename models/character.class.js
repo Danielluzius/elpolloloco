@@ -289,4 +289,29 @@ class Character extends MoveableObject {
     this.idleFrameIndex = (this.idleFrameIndex + 1) % this.IMAGES_IDLE.length;
     this.lastIdleFrameTime = now;
   }
+
+  // Stomp helpers moved from World
+  isStomping(enemy) {
+    if (!(this.speedY < 0)) return false;
+    const aBottom = this.y + this.height - (this.offset?.bottom || 0);
+    const prevBottom = aBottom + this.speedY;
+    const bTop = enemy.y + (enemy.offset?.top || 0);
+    const bTopExpanded = Math.max(enemy.y, bTop - 8);
+    const tolerance = 24;
+    return prevBottom <= bTopExpanded + tolerance && !(enemy instanceof Endboss);
+  }
+
+  placeOnTopOf(enemy) {
+    const enemyTop = enemy.y + (enemy.offset?.top || 0);
+    const charBottomOffset = this.offset?.bottom || 0;
+    this.y = enemyTop - (this.height - charBottomOffset) - 2;
+  }
+
+  bounceAfterStomp() {
+    this.speedY = 18;
+    this.isJumping = true;
+    this.jumpFrameIndex = 0;
+    this.currentImage = 0;
+    this.lastJumpFrameTime = Date.now();
+  }
 }

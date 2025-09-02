@@ -31,4 +31,10 @@ class ChickenSmall extends MoveableObject {
       }
     }, 200);
   }
+
+  killByStomp() {
+    this.dead = true;
+    this.speed = 0;
+    this.loadImage('assets/img/3_enemies_chicken/chicken_small/2_dead/dead.png');
+  }
 }

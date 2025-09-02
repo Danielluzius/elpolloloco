@@ -191,4 +191,45 @@ class Endboss extends MoveableObject {
       if (this.awake && this.state === 'walk') this.moveLeft();
     }, 1000 / 60);
   }
+
+  isAlive() {
+    return !this.dead;
+  }
+  isAwake() {
+    return !!this.awake;
+  }
+  getHealthStep() {
+    return this.healthSteps;
+  }
+
+  applyHit(amount = 1, now = Date.now(), defaultMaxSteps = null) {
+    const cooldown = this.hitCooldownMs ?? 250;
+    if (!this.lastHitAt || now - this.lastHitAt >= cooldown) {
+      if (this.maxHealthSteps == null && defaultMaxSteps != null) this.maxHealthSteps = defaultMaxSteps;
+      const max = this.maxHealthSteps ?? defaultMaxSteps ?? 0;
+      const current = this.healthSteps ?? max;
+      this.healthSteps = Math.max(0, current - amount);
+      this.lastHitAt = now;
+      if (this.healthSteps === 0) {
+        this.dead = true;
+        this.speed = 0;
+        this.state = 'dead';
+        this.frameIndex = 0;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  initHealth(maxSteps) {
+    this.healthSteps = maxSteps;
+    this.maxHealthSteps = maxSteps;
+    this.lastHitAt = 0;
+    this.hitCooldownMs = this.hitCooldownMs ?? 250;
+  }
+
+  getBarrierRect(margin, width) {
+    const x = this.x + this.width - margin;
+    return { x, y: -1000, width, height: 3000, offset: { top: 0, right: 0, bottom: 0, left: 0 } };
+  }
 }
