@@ -39,7 +39,8 @@ class MoveableObject extends DrawableObject {
   }
 
   hit() {
-    this.energy -= 5;
+    // Reduce in 20% steps so total hits until death match status bar frames (100,80,60,40,20,0)
+    this.energy -= 20;
     if (this.energy < 0) {
       this.energy = 0;
     } else {

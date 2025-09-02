@@ -8,6 +8,7 @@ class World {
   statusBar = new StatusBar();
   coinStatusBar = new CoinStatusBar();
   bottleStatusBar = new BottleStatusBar();
+  bossStatusBar = new BossStatusBar();
   throwableObjects = [];
   coinsCollected = 0;
   coinsTotal = 0;
@@ -30,6 +31,7 @@ class World {
     this.startGameLoop();
     this.startHudLoop();
     this.startBarrierLoop();
+    this.initBossHealth();
   }
 
   setWorld() {
@@ -53,6 +55,17 @@ class World {
       this.coinStatusBar.setPercentage(p);
       const bp = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
       this.bottleStatusBar.setPercentage(bp);
+      // Player health bar already uses percentage of energy; keep as-is.
+      this.statusBar.setPercentage(this.character.energy);
+      // Update boss bar position and step from boss state if awake
+      const boss = this.level.enemies.find((e) => e instanceof Endboss);
+      if (boss) {
+        // Position above boss, but HUD layer is camera-fixed; so we draw boss bar in entity layer aligned to camera.
+        // Here we only update step.
+        if (typeof boss.healthSteps === 'number') {
+          this.bossStatusBar.setByStep(boss.healthSteps);
+        }
+      }
     }, 200);
   }
 
@@ -107,6 +120,45 @@ class World {
       this.throwableObjects.push(bottle);
       this.bottlesCollected = Math.max(0, this.bottlesCollected - 1);
       this.lastThrowAt = now;
+    }
+    // Bottle vs Endboss collisions
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (boss && this.throwableObjects.length) {
+      this.throwableObjects = this.throwableObjects.filter((b) => {
+        if (this.isCollidingBottleWithBoss(b, boss)) {
+          this.damageBossIfNeeded(boss);
+          return false; // remove bottle after hit
+        }
+        // remove bottles that leave world bounds to avoid leaks
+        return b.x < this.level.level_end_x + 500 && b.y < 1000 && b.y > -500;
+      });
+    }
+  }
+
+  isCollidingBottleWithBoss(bottle, boss) {
+    return bottle.isColliding(boss);
+  }
+
+  initBossHealth() {
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (boss) {
+      boss.healthSteps = this.bossStatusBar.getMaxSteps(); // start full
+      boss.maxHealthSteps = boss.healthSteps;
+      boss.lastHitAt = 0;
+      boss.hitCooldownMs = 250; // prevent multi-hit per frame
+    }
+  }
+
+  damageBossIfNeeded(boss) {
+    const now = Date.now();
+    if (!boss.lastHitAt || now - boss.lastHitAt >= boss.hitCooldownMs) {
+      boss.healthSteps = Math.max(0, (boss.healthSteps ?? this.bossStatusBar.getMaxSteps()) - 1);
+      boss.lastHitAt = now;
+      if (boss.healthSteps === 0) {
+        boss.dead = true;
+        boss.speed = 0;
+        // Optional: trigger boss death state/animation here
+      }
     }
   }
 
@@ -180,6 +232,7 @@ class World {
     this.addToMap(this.statusBar);
     this.addToMap(this.coinStatusBar);
     this.addToMap(this.bottleStatusBar);
+    // Boss bar is drawn with entities to position above boss
   }
 
   drawEntities() {
@@ -190,6 +243,16 @@ class World {
     this.addObjectsToMap(this.level.coins);
     this.addObjectsToMap(this.level.bottles);
     this.addObjectsToMap(this.throwableObjects);
+    this.drawBossBarIfAny();
+  }
+
+  drawBossBarIfAny() {
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (!boss || boss.dead || !boss.awake) return;
+    // Position boss bar above boss in world space
+    this.bossStatusBar.x = boss.x + boss.width / 2 - this.bossStatusBar.width / 2;
+    this.bossStatusBar.y = boss.y - 30;
+    this.addToMap(this.bossStatusBar);
   }
 
   addObjectsToMap(objects) {

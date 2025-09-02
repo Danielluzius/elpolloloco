@@ -9,6 +9,7 @@ class StatusBar extends DrawableObject {
   ];
 
   percentage = 100;
+  stepIndex = null; // optional: when controlling by steps
 
   constructor() {
     super();
@@ -41,5 +42,19 @@ class StatusBar extends DrawableObject {
     } else {
       return 0;
     }
+  }
+
+  // New: control status bar by discrete step index instead of percentage
+  // stepIndex: 0 .. maxSteps (where maxSteps = IMAGES.length - 1)
+  setByStep(stepIndex) {
+    const maxIdx = this.IMAGES.length - 1;
+    const idx = Math.max(0, Math.min(maxIdx, stepIndex));
+    this.stepIndex = idx;
+    const path = this.IMAGES[idx];
+    this.img = this.imageCache[path];
+  }
+
+  getMaxSteps() {
+    return Math.max(0, this.IMAGES.length - 1);
   }
 }
