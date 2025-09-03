@@ -10,6 +10,7 @@ class Bottle extends MoveableObject {
     super();
     this.loadImage(this.IMAGES[0]);
     this.loadImages(this.IMAGES);
+    this.offset = { top: 18, right: 18, bottom: 18, left: 18 };
     this.x = typeof x === 'number' ? x : 200 + Math.random() * 2000;
     this.y = typeof y === 'number' ? y : 360;
     this.animate();

@@ -158,7 +158,7 @@ class World {
         this.stomp(enemy);
         return true;
       }
-      this.damageCharacterIfNeeded();
+      if (!(enemy instanceof Endboss)) this.damageCharacterIfNeeded();
       return true;
     });
   }

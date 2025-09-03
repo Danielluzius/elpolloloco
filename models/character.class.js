@@ -1,7 +1,8 @@
 class Character extends MoveableObject {
-  height = 320;
-  width = 180;
-  y = 120;
+  height = 240;
+  width = 135;
+  y = 200;
+  groundY = 200;
   speed = 10;
   IMAGES_IDLE = [
     'assets/img/2_character_pepe/1_idle/idle/I-1.png',
@@ -77,7 +78,7 @@ class Character extends MoveableObject {
 
   constructor() {
     super();
-    this.offset = { top: 40, right: 35, bottom: 0, left: 35 };
+    this.offset = { top: 30, right: 26, bottom: 0, left: 26 };
     this.initImages();
     this.initLoops();
     this.DEAD_FRAME_DELAY = 200;

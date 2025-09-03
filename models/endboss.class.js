@@ -1,8 +1,8 @@
 class Endboss extends MoveableObject {
-  height = 400;
-  width = 250;
-  y = 60;
-  speed = 1.0;
+  height = 320;
+  width = 200;
+  y = 140;
+  speed = 2.5;
   awake = false;
   state = 'idle';
   frameIndex = 0;
@@ -10,6 +10,7 @@ class Endboss extends MoveableObject {
   ALERT_DELAY = 130;
   ATTACK_DELAY = 110;
   WALK_DELAY = 200;
+  HURT_DELAY = 120;
   alertPlayed = false;
   lastAttackAt = 0;
   attackCooldown = 1200;
@@ -89,7 +90,7 @@ class Endboss extends MoveableObject {
     if (!this.awake || world.character.isDead()) return;
     const now = Date.now();
     const dx = Math.abs(world.character.x + world.character.width / 2 - (this.x + this.width / 2));
-    const inRange = dx < 140;
+    const inRange = dx < 200;
     const cooled = now - (this.lastAttackAt || 0) >= this.attackCooldown;
     if (!(inRange && cooled) || this.state === 'attack') return;
     this.state = 'attack';
@@ -106,9 +107,10 @@ class Endboss extends MoveableObject {
       const cx = world.character.x + world.character.width / 2;
       const bx = this.x + this.width / 2;
       const closeNow = Math.abs(cx - bx) < 150;
-      if (closeNow && !world.character.isHurt()) {
-        world.character.hit();
-        world.statusBar.setPercentage(world.character.energy);
+      if (closeNow && !world.character.isDead()) {
+        world.character.energy = 0;
+        world.character.lastHit = Date.now();
+        world.statusBar.setPercentage(0);
       }
     }, hitWindowStart * this.ATTACK_DELAY);
   }
@@ -133,7 +135,7 @@ class Endboss extends MoveableObject {
   pickAnim() {
     if (this.state === 'dead' || this.dead) return { images: this.IMAGES_DEAD, delay: this.DEAD_DELAY };
     if (this.state === 'attack') return { images: this.IMAGES_ATTACK, delay: this.ATTACK_DELAY };
-    if (this.isUnderHalfHealth()) return { images: this.IMAGES_HURT, delay: this.WALK_DELAY };
+    if (this.state === 'hurt') return { images: this.IMAGES_HURT, delay: this.HURT_DELAY };
     if (this.state === 'walk') return { images: this.IMAGES_WALKING, delay: this.WALK_DELAY };
     return { images: this.IMAGES_ALERT, delay: this.ALERT_DELAY };
   }
@@ -148,6 +150,7 @@ class Endboss extends MoveableObject {
     if (this.state === 'dead') return this.clampOnDead(length);
     if (this.state === 'alert' && this.frameIndex >= length) return this.onAlertDone();
     if (this.state === 'attack' && this.frameIndex >= length) return this.onAttackDone();
+    if (this.state === 'hurt' && this.frameIndex >= length) return this.onHurtDone();
     if (this.state === 'walk' && this.frameIndex >= length) return this.loopFrame(length);
     if (this.frameIndex >= length) this.loopFrame(length);
   }
@@ -163,6 +166,11 @@ class Endboss extends MoveableObject {
   }
 
   onAttackDone() {
+    this.state = 'walk';
+    this.frameIndex = 0;
+  }
+
+  onHurtDone() {
     this.state = 'walk';
     this.frameIndex = 0;
   }
@@ -184,7 +192,7 @@ class Endboss extends MoveableObject {
         this.y += this.speedY * 0.5;
         return;
       }
-      if (this.awake && this.state === 'walk') this.moveLeft();
+      if (this.awake && (this.state === 'walk' || this.state === 'attack')) this.moveLeft();
     }, 1000 / 60);
   }
 
@@ -211,6 +219,10 @@ class Endboss extends MoveableObject {
         this.speed = 0;
         this.state = 'dead';
         this.frameIndex = 0;
+      } else {
+        this.state = 'hurt';
+        this.frameIndex = 0;
+        this.lastFrameTime = now;
       }
       return true;
     }

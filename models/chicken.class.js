@@ -1,7 +1,7 @@
 class Chicken extends MoveableObject {
-  height = 100;
-  width = 120;
-  y = 335;
+  height = 80;
+  width = 96;
+  y = 355;
   IMAGES_WALKING = [
     'assets/img/3_enemies_chicken/chicken_normal/1_walk/1_w.png',
     'assets/img/3_enemies_chicken/chicken_normal/1_walk/2_w.png',
@@ -12,7 +12,7 @@ class Chicken extends MoveableObject {
     super();
     this.loadImage('assets/img/3_enemies_chicken/chicken_normal/1_walk/1_w.png');
     this.loadImages(this.IMAGES_WALKING);
-    this.offset = { top: 10, right: 15, bottom: 10, left: 15 };
+    this.offset = { top: 8, right: 12, bottom: 8, left: 12 };
 
     this.x = typeof x === 'number' ? x : 200 + Math.random() * 500;
     this.speed = typeof speed === 'number' ? speed : 0.15 + Math.random() * 0.5;
