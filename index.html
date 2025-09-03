@@ -34,13 +34,60 @@
     <script src="./levels/level1.js" defer></script>
     <script src="./scripts/game.js" defer></script>
 
+
 </head>
 
-<body onload="init()">
+<body>
+    <!-- Top Bar Controls -->
+    <div class="topbar">
+        <button id="fullscreenBtn" class="secondary-btn">Fullscreen</button>
+        <button id="muteBtn" class="secondary-btn">Mute</button>
+    </div>
 
-    <h1>El Pollo Loco</h1>
+    <div id="stage" class="stage">
+        <canvas id="canvas" width="720" height="480"></canvas>
 
-    <canvas id="canvas" width="720" height="480"></canvas>
+        <!-- Start Screen Overlay -->
+        <div id="startOverlay" class="overlay">
+            <img src="assets/img/9_intro_outro_screens/start/startscreen_1.png" alt="Startscreen" />
+            <div class="overlay-actions">
+                <button id="startBtn" class="primary-btn">START</button>
+                <button id="howToBtn" class="secondary-btn">HOW TO PLAY</button>
+            </div>
+        </div>
+
+        <!-- Game Over Overlay -->
+        <div id="gameOverOverlay" class="overlay hidden">
+            <img src="assets/img/9_intro_outro_screens/game_over/game over.png" alt="Game Over" />
+            <div class="overlay-actions">
+                <button class="retryBtn primary-btn">Retry</button>
+                <button class="backToStartBtn secondary-btn">Back to Start</button>
+            </div>
+        </div>
+
+        <!-- Win Overlay -->
+        <div id="winOverlay" class="overlay hidden">
+            <img src="assets/img/You won, you lost/You won A.png" alt="Gewonnen" />
+            <div class="overlay-actions">
+                <button class="retryBtn primary-btn">Retry</button>
+                <button class="backToStartBtn secondary-btn">Back to Start</button>
+            </div>
+        </div>
+
+        <!-- How To Play Modal -->
+        <div id="howToModal" class="modal hidden" role="dialog" aria-labelledby="howToTitle" aria-modal="true">
+            <h3 id="howToTitle">How to Play</h3>
+            <ul>
+                <li>Move: Arrow Left / Right</li>
+                <li>Jump: Space</li>
+                <li>Throw Bottle: D</li>
+                <li>Goal: Collect coins and defeat the Boss Chicken.</li>
+            </ul>
+            <div class="modal-actions">
+                <button id="howToCloseBtn" class="secondary-btn">Close</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 

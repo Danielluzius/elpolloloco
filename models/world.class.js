@@ -1,6 +1,6 @@
 class World {
   character = new Character();
-  level = level1;
+  level = typeof createLevel1 === 'function' ? createLevel1() : level1;
   canvas;
   ctx;
   keyboard;
@@ -19,11 +19,17 @@ class World {
   bossBarrier = null;
   bossBarrierWidth = 4;
   bossBarrierMargin = 1;
+  _gameLoop = null;
+  _hudLoop = null;
+  _barrierLoop = null;
+  _drawReqId = null;
+  _stopped = false;
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.keyboard = keyboard;
+    this._stopped = false;
     this.draw();
     this.setWorld();
     this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
@@ -39,7 +45,7 @@ class World {
   }
 
   startGameLoop() {
-    setInterval(() => {
+    this._gameLoop = setInterval(() => {
       if (this.character.isDead()) return;
       this.checkCollisions();
       this.checkThrowableObjects();
@@ -51,7 +57,7 @@ class World {
   }
 
   startHudLoop() {
-    setInterval(() => {
+    this._hudLoop = setInterval(() => {
       this.updateHudBars();
       this.updateBossHud();
     }, 200);
@@ -73,7 +79,7 @@ class World {
   }
 
   startBarrierLoop() {
-    setInterval(() => {
+    this._barrierLoop = setInterval(() => {
       const boss = this.level.enemies.find((e) => e instanceof Endboss);
       if (!boss || !boss.awake) return (this.bossBarrier = null);
       this.updateBossBarrier(boss);
@@ -184,12 +190,13 @@ class World {
   }
 
   draw() {
+    if (this._stopped) return;
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawBackground();
     this.drawHud();
     this.drawEntities();
     this.ctx.translate(-this.camera_x, 0);
-    requestAnimationFrame(() => this.draw());
+    this._drawReqId = requestAnimationFrame(() => this.draw());
   }
 
   drawBackground() {
@@ -282,5 +289,15 @@ class World {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
     boss.checkAndStartAttack(this);
+  }
+
+  stop() {
+    this._stopped = true;
+    try {
+      if (this._gameLoop) clearInterval(this._gameLoop);
+      if (this._hudLoop) clearInterval(this._hudLoop);
+      if (this._barrierLoop) clearInterval(this._barrierLoop);
+      if (this._drawReqId) cancelAnimationFrame(this._drawReqId);
+    } catch (e) {}
   }
 }
