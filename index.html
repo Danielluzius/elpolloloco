@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./style/standart.css" />
 
+    <!-- Game classes (safe to load; game won't start until we inject the UI) -->
     <script src="./models/drawable-object.class.js" defer></script>
     <script src="./models/movable-object.class.js" defer></script>
     <script src="./models/character.class.js" defer></script>
@@ -33,59 +34,30 @@
     <script src="./models/generators/bottle-generator.class.js" defer></script>
     <script src="./levels/level1.js" defer></script>
     <script src="./scripts/game.js" defer></script>
+    <script src="./scripts/landing.js" defer></script>
 
 
 </head>
 
 <body>
-    <!-- Top Bar Controls -->
-    <div class="topbar">
-        <button id="fullscreenBtn" class="secondary-btn">Fullscreen</button>
-        <button id="muteBtn" class="secondary-btn">Mute</button>
-    </div>
-
-    <div id="stage" class="stage">
-        <canvas id="canvas" width="720" height="480"></canvas>
-
-        <!-- Start Screen Overlay -->
-        <div id="startOverlay" class="overlay">
-            <img src="assets/img/9_intro_outro_screens/start/startscreen_1.png" alt="Startscreen" />
-            <div class="overlay-actions">
-                <button id="startBtn" class="primary-btn">START</button>
-                <button id="howToBtn" class="secondary-btn">HOW TO PLAY</button>
-            </div>
+    <!-- Landing Page with animated nature layers -->
+    <div id="landing" class="landing">
+        <div class="bg-layers">
+            <!-- Base background: 3_layer -->
+            <div class="layer layer-3"></div>
+            <!-- Birds between 3_layer and cloud_layer -->
+            <div class="layer layer-bird"></div>
+            <!-- Clouds: move right -> left in loop -->
+            <div class="layer layer-clouds"></div>
+            <!-- Foreground layers revealed sequentially -->
+            <div class="layer layer-2"></div>
+            <div class="layer layer-1"></div>
         </div>
 
-        <!-- Game Over Overlay -->
-        <div id="gameOverOverlay" class="overlay hidden">
-            <img src="assets/img/9_intro_outro_screens/game_over/game over.png" alt="Game Over" />
-            <div class="overlay-actions">
-                <button class="retryBtn primary-btn">Retry</button>
-                <button class="backToStartBtn secondary-btn">Back to Start</button>
-            </div>
-        </div>
-
-        <!-- Win Overlay -->
-        <div id="winOverlay" class="overlay hidden">
-            <img src="assets/img/You won, you lost/You won A.png" alt="Gewonnen" />
-            <div class="overlay-actions">
-                <button class="retryBtn primary-btn">Retry</button>
-                <button class="backToStartBtn secondary-btn">Back to Start</button>
-            </div>
-        </div>
-
-        <!-- How To Play Modal -->
-        <div id="howToModal" class="modal hidden" role="dialog" aria-labelledby="howToTitle" aria-modal="true">
-            <h3 id="howToTitle">How to Play</h3>
-            <ul>
-                <li>Move: Arrow Left / Right</li>
-                <li>Jump: Space</li>
-                <li>Throw Bottle: D</li>
-                <li>Goal: Collect coins and defeat the Boss Chicken.</li>
-            </ul>
-            <div class="modal-actions">
-                <button id="howToCloseBtn" class="secondary-btn">Close</button>
-            </div>
+        <div class="hero" aria-live="polite">
+            <p class="subtitle">WELCOME TO THE</p>
+            <h1 class="title">GOBLIN SLAYER</h1>
+            <button id="enterBtn" class="primary-btn">ENTER</button>
         </div>
     </div>
 

@@ -1,8 +1,8 @@
-/* Page background */
+/* Base page */
 body {
   min-height: 100vh;
   margin: 0;
-  background: #000 url('assets/img/5_background/first_half_background.png') center/cover fixed no-repeat;
+  background: #000; /* landing provides its own layers */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -178,4 +178,98 @@ h1 {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+/* Landing page */
+.landing {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: #000;
+}
+
+.bg-layers {
+  position: absolute;
+  inset: 0;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  background-repeat: repeat-x;
+  background-position: center bottom;
+  background-size: cover;
+  opacity: 0; /* start hidden, fade in by JS */
+  transition: opacity 0.8s ease;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Image bindings */
+.layer-3 {
+  /* static base */
+  background-image: url('assets/img/5_background/nature/3_layer.png');
+  opacity: 1; /* visible immediately */
+}
+.layer-clouds {
+  background-image: url('assets/img/5_background/nature/cloud_layer.png');
+  animation: cloudsMove 180s linear infinite; /* slower */
+}
+.layer-2 {
+  background-image: url('assets/img/5_background/nature/2_layer.png');
+}
+.layer-1 {
+  background-image: url('assets/img/5_background/nature/1_layer.png');
+}
+.layer-bird {
+  background-image: url('assets/img/5_background/nature/bird_layer.png');
+  background-repeat: repeat-x;
+  animation: birdsMove 80s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes cloudsMove {
+  from {
+    background-position-x: 0;
+  }
+  to {
+    background-position-x: -2000px;
+  }
+}
+
+@keyframes birdsMove {
+  from {
+    background-position-x: -2000px;
+  }
+  to {
+    background-position-x: 0;
+  }
+}
+
+.hero {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  color: #fff;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.7);
+  opacity: 0; /* fade in later */
+  transition: opacity 0.6s ease;
+  transform: translateY(-5vh); /* a bit higher on the screen */
+}
+.hero .subtitle {
+  margin: 0 0 8px;
+  font-size: clamp(14px, 2.2vw, 22px);
+  letter-spacing: 2px;
+  opacity: 0.9;
+}
+.hero .title {
+  margin: 0 0 20px;
+  font-size: clamp(28px, 7vw, 56px);
+  line-height: 1.05;
+  letter-spacing: 3px;
 }
