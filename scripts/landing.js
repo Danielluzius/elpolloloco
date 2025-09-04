@@ -73,12 +73,12 @@
     `
     );
 
-  // Place stage within landing so nothing shifts the page
+    // Place stage within landing so nothing shifts the page
     const container = parent || document.body;
     container.appendChild(stage);
 
-  // Ensure game UI is initialized immediately so Start is clickable right away
-  ensureInit();
+    // Ensure game UI is initialized immediately so Start is clickable right away
+    ensureInit();
 
     // Bind immediate title fade on Start click; game.js will also have its own start handler
     const btn = stage.querySelector('#startBtn');
@@ -149,7 +149,7 @@
         });
       }
 
-  // Init already called via ensureInit(); keep timing comment for reference
+      // Init already called via ensureInit(); keep timing comment for reference
     });
   }
 
