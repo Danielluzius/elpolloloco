@@ -37,10 +37,24 @@ function bindUi() {
 }
 
 function startGame() {
-  hideAllOverlays();
-  gameState = 'running';
-  world = new World(canvas, keyboard);
-  hookWinLose(world);
+  // Fade out landing hero first, then start the game
+  const hero = document.querySelector('#landing .hero');
+  if (hero) {
+    // Trigger CSS-based fade even if hero currently has inline opacity from reveal
+    hero.classList.add('hero--off');
+    try {
+      hero.style.opacity = '0';
+      hero.style.pointerEvents = 'none';
+    } catch (_) {}
+  }
+
+  const FADE_OUT_MS = 350; // keep in sync with CSS
+  setTimeout(() => {
+    hideAllOverlays();
+    gameState = 'running';
+    world = new World(canvas, keyboard);
+    hookWinLose(world);
+  }, FADE_OUT_MS);
 }
 
 function restartGame() {
