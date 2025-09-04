@@ -1,5 +1,13 @@
 // Landing page orchestration: reveal layers in order and mount the game UI only after Enter.
 (function () {
+  let gameInitialized = false;
+  function ensureInit() {
+    if (gameInitialized) return;
+    if (typeof init === 'function') {
+      init();
+      gameInitialized = true;
+    }
+  }
   const L = {
     landing: null,
     hero: null,
@@ -34,7 +42,7 @@
       `
       <div id="startOverlay" class="overlay hidden">
         <img src="assets/img/5_background/nature/3_layer.png" alt="Startscreen" />
-  <button id="startBtn" class="primary-btn">START</button>
+        <button id="startBtn" class="secondary-btn">START</button>
       </div>
       <div id="gameOverOverlay" class="overlay hidden">
         <img src="assets/img/9_intro_outro_screens/game_over/game over.png" alt="Game Over" />
@@ -65,9 +73,12 @@
     `
     );
 
-    // Place stage within landing so nothing shifts the page
+  // Place stage within landing so nothing shifts the page
     const container = parent || document.body;
     container.appendChild(stage);
+
+  // Ensure game UI is initialized immediately so Start is clickable right away
+  ensureInit();
 
     // Bind immediate title fade on Start click; game.js will also have its own start handler
     const btn = stage.querySelector('#startBtn');
@@ -138,11 +149,7 @@
         });
       }
 
-      // Call init after fade starts (and largely finishes) to avoid instant toggle
-      const FADE_MS = 2000; // keep in sync with CSS
-      setTimeout(() => {
-        if (typeof init === 'function') init();
-      }, FADE_MS + 50);
+  // Init already called via ensureInit(); keep timing comment for reference
     });
   }
 

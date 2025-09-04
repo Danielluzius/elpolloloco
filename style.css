@@ -91,7 +91,8 @@ h1 {
 }
 
 /* Center START button inside start overlay */
-#startOverlay .primary-btn {
+#startOverlay .primary-btn,
+#startOverlay .secondary-btn {
   position: relative;
   top: 0;
   left: 0;
@@ -102,9 +103,15 @@ h1 {
   transition: opacity 2.4s ease, transform 2.4s ease;
   transition-delay: 0.6s; /* start slightly after overlay begins */
   pointer-events: none; /* prevent clicks before visible */
+  /* Larger Start button */
+  padding: 14px 22px;
+  font-size: 18px;
+  border-width: 2px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
 }
 
-#startOverlay:not(.hidden) .primary-btn {
+#startOverlay:not(.hidden) .primary-btn,
+#startOverlay:not(.hidden) .secondary-btn {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
@@ -161,7 +168,8 @@ h1 {
 }
 
 /* Button unter dem Canvas platzieren, wenn Overlay sichtbar ist */
-.overlay .primary-btn {
+.overlay .primary-btn,
+.overlay .secondary-btn {
   position: absolute;
   top: calc(100% + 12px);
   left: 50%;

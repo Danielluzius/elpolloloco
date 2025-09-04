@@ -200,9 +200,40 @@ class World {
   }
 
   drawBackground() {
-    this.ctx.translate(this.camera_x, 0);
-    this.addObjectsToMap(this.level.backgroundObjects);
-    this.ctx.translate(-this.camera_x, 0);
+    // Draw each background object with its own parallax factor and optional drift.
+    // Also ensure tiling so no images are clipped when moving left of start.
+    const objs = this.level.backgroundObjects || [];
+    const now = (performance && performance.now ? performance.now() : Date.now()) / 1000; // seconds
+    const viewW = this.canvas.width;
+    for (const obj of objs) {
+      const factor = typeof obj.getParallaxFactor === 'function' ? obj.getParallaxFactor() : 1.0;
+      const drift = typeof obj.getDriftSpeed === 'function' ? obj.getDriftSpeed() : 0; // px/s
+      const tileW = typeof obj.getTileStep === 'function' ? obj.getTileStep() : 720; // per-layer step
+      // world-space x with camera parallax
+      const camOffset = this.camera_x * factor;
+      // drift accumulates over time in screen space (independent movement)
+      const driftOffset = drift * now;
+
+      // Base draw position
+      const baseX = obj.x + camOffset + driftOffset;
+
+      // Compute how many tiles we need to cover viewport
+      // Draw at baseX plus neighbors to left and right to prevent gaps
+      const firstTileOffset = Math.floor(-baseX / tileW) - 1; // start one tile before
+      const tilesNeeded = Math.ceil(viewW / tileW) + 3; // extra margins left/right
+
+      for (let i = 0; i < tilesNeeded; i++) {
+        const dx = (firstTileOffset + i) * tileW;
+        this.ctx.save();
+        this.ctx.translate(dx, 0);
+        // Temporarily shift obj.x to baseX for draw, without mutating permanently
+        const prevX = obj.x;
+        obj.x = baseX;
+        this.addToMap(obj);
+        obj.x = prevX;
+        this.ctx.restore();
+      }
+    }
   }
 
   drawHud() {
