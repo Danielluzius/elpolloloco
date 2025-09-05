@@ -63,8 +63,9 @@
         <ul>
           <li>Move: Arrow Left / Right</li>
           <li>Jump: Space</li>
-          <li>Throw Bottle: D</li>
-          <li>Goal: Collect coins and defeat the Boss Chicken.</li>
+          <li>Dodge: D or Space (grounded)</li>
+          <li>Attack: A</li>
+          <li>Goal: Defeat the Boss Chicken.</li>
         </ul>
         <div class="modal-actions">
           <button id="howToCloseBtn" class="secondary-btn">Close</button>

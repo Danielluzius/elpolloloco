@@ -6,16 +6,7 @@ class World {
   keyboard;
   camera_x = 0;
   statusBar = new StatusBar();
-  coinStatusBar = new CoinStatusBar();
-  bottleStatusBar = new BottleStatusBar();
   bossStatusBar = new BossStatusBar();
-  throwableObjects = [];
-  coinsCollected = 0;
-  coinsTotal = 0;
-  bottlesCollected = 0;
-  bottlesTotal = 0;
-  lastThrowAt = 0;
-  throwCooldownMs = 300;
   bossBarrier = null;
   bossBarrierWidth = 4;
   bossBarrierMargin = 1;
@@ -33,8 +24,6 @@ class World {
     this._stopped = false;
     this.draw();
     this.setWorld();
-    this.coinsTotal = this.level.coins && this.level.coins.length ? this.level.coins.length : 0;
-    this.bottlesTotal = this.level.bottles && this.level.bottles.length ? this.level.bottles.length : 0;
     this.startGameLoop();
     this.startHudLoop();
     this.startBarrierLoop();
@@ -49,9 +38,6 @@ class World {
     this._gameLoop = setInterval(() => {
       if (this.character.isDead()) return;
       this.checkCollisions();
-      this.checkThrowableObjects();
-      this.checkCoinCollection();
-      this.checkBottleCollection();
       this.checkEndbossWake();
       this.checkEndbossAlertAndAttack();
     }, 1000 / 60);
@@ -65,10 +51,6 @@ class World {
   }
 
   updateHudBars() {
-    const p = this.coinsTotal > 0 ? (this.coinsCollected / this.coinsTotal) * 100 : 0;
-    this.coinStatusBar.setPercentage(p);
-    const bp = this.bottlesTotal > 0 ? (this.bottlesCollected / this.bottlesTotal) * 100 : 0;
-    this.bottleStatusBar.setPercentage(bp);
     this.statusBar.setPercentage(this.character.energy);
   }
 
@@ -100,51 +82,7 @@ class World {
     }
   }
 
-  checkCoinCollection() {
-    this.level.coins = this.level.coins.filter((coin) => {
-      if (this.character.isColliding(coin)) {
-        this.coinsCollected++;
-        return false;
-      }
-      return true;
-    });
-  }
-
-  checkBottleCollection() {
-    this.level.bottles = this.level.bottles.filter((bottle) => {
-      if (this.character.isColliding(bottle)) {
-        this.bottlesCollected++;
-        return false;
-      }
-      return true;
-    });
-  }
-
-  checkThrowableObjects() {
-    const now = Date.now();
-    this.handleThrowInput(now);
-    const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (boss && this.throwableObjects.length) this.updateProjectiles(boss);
-  }
-
-  handleThrowInput(now) {
-    const canThrow = this.character.shouldThrow(now, this.throwCooldownMs, this.lastThrowAt, this.bottlesCollected);
-    if (!canThrow) return;
-    const bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
-    this.throwableObjects.push(bottle);
-    this.bottlesCollected = Math.max(0, this.bottlesCollected - 1);
-    this.lastThrowAt = now;
-  }
-
-  updateProjectiles(boss) {
-    this.throwableObjects = this.throwableObjects.filter((b) => {
-      if (b.intersects(boss) && !b.hitted) {
-        b.onHitBoss(this, boss);
-        return false;
-      }
-      return !b.shouldDespawn(this.level);
-    });
-  }
+  // Coins, bottles, and projectiles removed
 
   initBossHealth() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
@@ -241,60 +179,14 @@ class World {
 
   drawHud() {
     this.addToMap(this.statusBar);
-    this.addToMap(this.coinStatusBar);
-    this.addToMap(this.bottleStatusBar);
-    this.drawHudCounts();
   }
-
-  drawHudCounts() {
-    const layout = this.computeHudLayout();
-    this.drawHudIconsAndText(layout);
-  }
-
-  computeHudLayout() {
-    const csb = this.coinStatusBar;
-    const bsb = this.bottleStatusBar;
-    return {
-      coinText: `${this.coinsCollected}/${this.coinsTotal}`,
-      bottleText: `${this.bottlesCollected}`,
-      coinBaseX: (csb.x || 40) + (csb.width || 200) + 24,
-      coinCenterY: (csb.y || 45) + (csb.height || 60) / 2,
-      bottleBaseX: (bsb.x || 40) + (bsb.width || 200) + 24,
-      bottleCenterY: (bsb.y || 85) + (bsb.height || 60) / 2,
-    };
-  }
-
-  drawHudIconsAndText(l) {
-    this.ctx.save();
-    this.ctx.fillStyle = '#fff';
-    this.ctx.font = '20px Arial';
-    const coinIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_coin.png');
-    const bottleIcon = this.getHudIcon('assets/img/7_statusbars/3_icons/icon_salsa_bottle.png');
-    if (coinIcon?.complete) this.ctx.drawImage(coinIcon, l.coinBaseX, l.coinCenterY - 11, 22, 22);
-    if (bottleIcon?.complete) this.ctx.drawImage(bottleIcon, l.bottleBaseX, l.bottleCenterY - 11, 22, 22);
-    this.ctx.fillText(l.coinText, l.coinBaseX + 28, l.coinCenterY + 7);
-    this.ctx.fillText(l.bottleText, l.bottleBaseX + 28, l.bottleCenterY + 7);
-    this.ctx.restore();
-  }
-
-  getHudIcon(path) {
-    if (!this._hudIcons) this._hudIcons = {};
-    if (!this._hudIcons[path]) {
-      const img = new Image();
-      img.src = path;
-      this._hudIcons[path] = img;
-    }
-    return this._hudIcons[path];
-  }
+  // Removed coin/bottle HUD and icon helpers
 
   drawEntities() {
     this.ctx.translate(this.camera_x, 0);
     this.addToMap(this.character);
     this.addObjectsToMap(this.level.enemies);
     this.addObjectsToMap(this.level.clouds);
-    this.addObjectsToMap(this.level.coins);
-    this.addObjectsToMap(this.level.bottles);
-    this.addObjectsToMap(this.throwableObjects);
     this.drawBossBarIfAny();
   }
 

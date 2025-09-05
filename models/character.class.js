@@ -12,7 +12,9 @@ class Character extends MoveableObject {
   isDodging = false;
   dodgeFrameIndex = 0;
   lastDodgeFrameTime = 0;
-  DODGE_FRAME_DELAY = 40; // 10 frames * 40ms = 400ms total
+  DODGE_FRAME_DELAY = 40; // legacy default; not used when per-frame delays below are set
+  DODGE_FAST_FRAME_DELAY = 25; // frames 0..7
+  DODGE_SLOW_FRAME_DELAY = 120; // frames 8..9
   DODGE_FRAME_COUNT = 10; // use all frames of the sprite sheet
   DODGE_SPEED = 30; // shorter reach
   DODGE_DURATION = 800; // default; actual duration is tied to frames*delay
@@ -179,22 +181,14 @@ class Character extends MoveableObject {
     if (this.world.keyboard.D || this.world.keyboard.A) this.lastActivityAt = Date.now();
   }
 
-  shouldThrow(now, cooldownMs, lastThrowAt, bottlesAvailable) {
-    if (this.knockbackActive) return false;
-    const pressed = !!this.world?.keyboard?.D;
-    const cooled = now - (lastThrowAt || 0) >= cooldownMs;
-    return pressed && cooled && bottlesAvailable > 0;
-  }
+  // Throwing removed; D is used for dodge now
 
   handleJumpKey() {
-    // SPACE triggers a directional dodge instead of a vertical jump
-    if (
-      this.world.keyboard.SPACE &&
-      !this.isDodging &&
-      !this.isAttacking &&
-      !this.knockbackActive &&
-      !this.isAboveGround()
-    ) {
+    // SPACE or D trigger a directional dodge while grounded
+    const canDodgeGrounded = !this.isDodging && !this.isAttacking && !this.knockbackActive && !this.isAboveGround();
+    const wantsSpaceDodge = !!this.world.keyboard.SPACE;
+    const wantsDDodge = !!this.world.keyboard.D;
+    if ((wantsSpaceDodge || wantsDDodge) && canDodgeGrounded) {
       this.startDodge();
     }
     // 'A' triggers a standing attack on ground
@@ -214,10 +208,12 @@ class Character extends MoveableObject {
     const dir = this.otherDirection ? -1 : 1; // left if facing left
     this.isDodging = true;
     this.dodgeVX = dir * this.DODGE_SPEED;
-    // Duration aligned exactly to animation frames
+    // Duration aligned exactly to animation frames with variable timing
     const frames = Math.min(this.DODGE_FRAME_COUNT || 10, this.JUMP_SHEET?.count || 10);
-    const frameDelay = this.DODGE_FRAME_DELAY || this.JUMP_FRAME_DELAY || 80;
-    this.dodgeEndAt = now + frames * frameDelay;
+    const total = Array.from({ length: frames }, (_, i) =>
+      i <= 7 ? this.DODGE_FAST_FRAME_DELAY : this.DODGE_SLOW_FRAME_DELAY
+    ).reduce((a, b) => a + b, 0);
+    this.dodgeEndAt = now + total;
     // init animation counters
     this.dodgeFrameIndex = 0;
     this.lastDodgeFrameTime = now;
@@ -360,7 +356,8 @@ class Character extends MoveableObject {
     const cntReal = this.getSheetCount(this.JUMP_SHEET, sheetImg) || 1;
     const cnt = Math.min(cntReal, this.DODGE_FRAME_COUNT || cntReal);
     if (this.dodgeFrameIndex < cnt - 1) {
-      if (now - this.lastDodgeFrameTime >= this.DODGE_FRAME_DELAY) {
+      const delay = this.dodgeFrameIndex <= 6 ? this.DODGE_FAST_FRAME_DELAY : this.DODGE_SLOW_FRAME_DELAY;
+      if (now - this.lastDodgeFrameTime >= delay) {
         this.dodgeFrameIndex++;
         this.lastDodgeFrameTime = now;
       }

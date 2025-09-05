@@ -15,7 +15,7 @@ class MoveableObject extends DrawableObject {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
         const gy = typeof this.groundY === 'number' ? this.groundY : 120;
-        if (!(this instanceof ThrowableObject) && this.y > gy) {
+        if (this.y > gy) {
           this.y = gy;
           this.speedY = 0;
         }
@@ -24,12 +24,8 @@ class MoveableObject extends DrawableObject {
   }
 
   isAboveGround() {
-    if (this instanceof ThrowableObject) {
-      return true;
-    } else {
-      const gy = typeof this.groundY === 'number' ? this.groundY : 120;
-      return this.y < gy;
-    }
+    const gy = typeof this.groundY === 'number' ? this.groundY : 120;
+    return this.y < gy;
   }
 
   isColliding(mo) {

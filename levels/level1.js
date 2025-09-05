@@ -1,8 +1,7 @@
 function createLevel1() {
   const rng = new Randomizer();
   const enemyGen = new EnemyGenerator(rng, { amount: 18, startX: 700, endX: 4200 });
-  const coinGen = new CoinGenerator(rng, { amount: 20, startX: 700, endX: 4200, tiersY: [160, 240, 320] });
-  const bottleGen = new BottleGenerator(rng, { amount: 10, startX: 700, endX: 4200, fixedY: 360 });
+  // Coins and bottles removed
 
   // Tile nature layers across the level in the order: 3_layer, cloud_layer, 2_layer, 1_layer, bird_layer
   const segW = 719; // BackgroundObject draws at width 720; we start with -719 like before for seamless wrap
@@ -21,13 +20,7 @@ function createLevel1() {
     bg.push(new BackgroundObject(LBird, x, 0));
   });
 
-  return new Level(
-    [...enemyGen.generate(), new Endboss()],
-    [], // clouds handled by cloud_layer background
-    bg,
-    coinGen.generate(),
-    bottleGen.generate()
-  );
+  return new Level([...enemyGen.generate(), new Endboss()], [], bg);
 }
 
 // Optional: initial instance for backward compatibility
