@@ -14,7 +14,9 @@ class Character extends MoveableObject {
   animKey = 'stand';
   idleFrameIndex = 0;
   lastIdleFrameTime = 0;
-  IDLE_FRAME_DELAY = 150;
+  IDLE_FRAME_DELAY = 220; // slowed idle
+  // For idle, skip the last frame (glitch). We'll use an order array excluding the final index.
+  IDLE_FRAME_ORDER = null;
   // Hurt animation timing (slower, non-loop)
   hurtFrameIndex = 0;
   lastHurtFrameTime = 0;
@@ -41,13 +43,12 @@ class Character extends MoveableObject {
     frameW: 128,
     frameH: 128,
   };
+  // Use RUN sheet instead of WALK for movement animation
   WALK_SHEET = {
-    path: 'assets/img/2_character_man/9_walk.png',
+    path: 'assets/img/2_character_man/7_run.png',
     frameW: 128,
     frameH: 128,
-    cols: 9,
-    rows: 1,
-    count: 9,
+    // cols/rows/count will be inferred from image dimensions
   };
   JUMP_SHEET = {
     path: 'assets/img/2_character_man/6_jump.png',
@@ -79,7 +80,7 @@ class Character extends MoveableObject {
 
   constructor() {
     super();
-    this.offset = { top: 30, right: 26, bottom: 0, left: 26 };
+    this.offset = { top: 120, right: 80, bottom: 0, left: 80 };
     this.initImages();
     this.initLoops();
     this.DEAD_FRAME_DELAY = 200;
@@ -103,6 +104,12 @@ class Character extends MoveableObject {
     if (idleImg) {
       this.img = idleImg;
       this.setSheetFrame(this.IDLE_SHEET, 0);
+      // Build idle frame order and skip the last sprite (glitch)
+      const cnt = this.getSheetCount(this.IDLE_SHEET, idleImg) || this.IDLE_SHEET.count || 1;
+      let order = Array.from({ length: cnt }, (_, i) => i);
+      if (order.length > 1) order = order.slice(0, order.length - 1); // drop last
+      if (!order.length) order = [0];
+      this.IDLE_FRAME_ORDER = order;
     }
   }
 
@@ -347,7 +354,9 @@ class Character extends MoveableObject {
     this.advanceIdleFrame(now);
     const sheetImg = this.imageCache[this.IDLE_SHEET.path];
     this.img = sheetImg;
-    this.setSheetFrame(this.IDLE_SHEET, this.idleFrameIndex % (this.IDLE_SHEET.count || 1));
+    const order = this.IDLE_FRAME_ORDER && this.IDLE_FRAME_ORDER.length ? this.IDLE_FRAME_ORDER : [0];
+    const frame = order[this.idleFrameIndex % order.length];
+    this.setSheetFrame(this.IDLE_SHEET, frame);
     this.animKey = 'idle';
     this.longIdleFrameIndex = 0;
   }
@@ -361,9 +370,8 @@ class Character extends MoveableObject {
 
   advanceIdleFrame(now) {
     if (now - this.lastIdleFrameTime < this.IDLE_FRAME_DELAY) return;
-    const sheetImg = this.imageCache?.[this.IDLE_SHEET.path];
-    const cnt = this.getSheetCount(this.IDLE_SHEET, sheetImg) || this.IDLE_SHEET.count || 1;
-    this.idleFrameIndex = (this.idleFrameIndex + 1) % cnt;
+    const order = this.IDLE_FRAME_ORDER && this.IDLE_FRAME_ORDER.length ? this.IDLE_FRAME_ORDER : [0];
+    this.idleFrameIndex = (this.idleFrameIndex + 1) % order.length;
     this.lastIdleFrameTime = now;
   }
 
