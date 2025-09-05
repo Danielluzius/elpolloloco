@@ -38,6 +38,7 @@ class World {
     this._gameLoop = setInterval(() => {
       if (this.character.isDead()) return;
       this.checkCollisions();
+      this.checkAttackHits();
       this.checkEndbossWake();
       this.checkEndbossAlertAndAttack();
     }, 1000 / 60);
@@ -108,6 +109,27 @@ class World {
       }
       return true;
     });
+  }
+
+  // Character melee attack vs goblins
+  checkAttackHits() {
+    if (!this.character.isAttackActiveWindow?.()) return;
+    const hitbox = this.character.getAttackHitboxRect?.();
+    if (!hitbox) return;
+    for (const enemy of this.level.enemies) {
+      if (!(enemy instanceof Goblin)) continue;
+      // simple AABB vs rectangle
+      const eb = enemy.getBoundsWithOffset?.(enemy) || {
+        left: enemy.x,
+        right: enemy.x + enemy.width,
+        top: enemy.y,
+        bottom: enemy.y + enemy.height,
+      };
+      const overlap =
+        eb.right > hitbox.left && eb.left < hitbox.right && eb.bottom > hitbox.top && eb.top < hitbox.bottom;
+      if (!overlap) continue;
+      enemy.onHitByAttack?.(this.character);
+    }
   }
 
   stomp(enemy) {

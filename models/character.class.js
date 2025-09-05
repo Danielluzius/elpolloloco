@@ -86,6 +86,9 @@ class Character extends MoveableObject {
     rows: 1,
     count: 3,
   };
+  // Attack hitbox config
+  ATTACK_RANGE_X = 80; // reach in front of character
+  ATTACK_ACTIVE_START_FRAME = 1; // only frames >= this can hit
   DEAD_SHEET = {
     path: 'assets/img/2_character_man/5_dead.png',
     frameW: 128,
@@ -407,6 +410,23 @@ class Character extends MoveableObject {
     this.img = sheetImg;
     this.setSheetFrame(this.ATTACK_SHEET, Math.min(this.attackFrameIndex, cnt - 1));
     this.animKey = 'attack';
+  }
+
+  // Attack helpers for world collision
+  isAttackActiveWindow() {
+    return this.isAttacking && this.attackFrameIndex >= this.ATTACK_ACTIVE_START_FRAME;
+  }
+
+  getAttackHitboxRect() {
+    // Build a slim rectangle in front of character at body height
+    const b = this.getBoundsWithOffset(this);
+    const range = this.ATTACK_RANGE_X;
+    if (!this.otherDirection) {
+      // facing right
+      return { left: b.right, right: b.right + range, top: b.top, bottom: b.bottom };
+    }
+    // facing left
+    return { left: b.left - range, right: b.left, top: b.top, bottom: b.bottom };
   }
 
   setGroundedFrame(now) {
