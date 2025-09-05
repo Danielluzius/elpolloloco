@@ -1,7 +1,7 @@
 class Character extends MoveableObject {
   height = 260; // was 240
-  width = 185; // wider again
-  y = 180; // stand a bit higher on the screen
+  width = 210; // wider again
+  y = 180; // start directly on ground to avoid initial fall
   groundY = 180;
   speed = 10;
   jumpFrameIndex = 0;
@@ -53,17 +53,17 @@ class Character extends MoveableObject {
     path: 'assets/img/2_character_man/6_jump.png',
     frameW: 128,
     frameH: 128,
-    cols: 6,
+    cols: 10,
     rows: 1,
-    count: 6,
+    count: 10,
   };
   HURT_SHEET = {
     path: 'assets/img/2_character_man/4_hurt.png',
     frameW: 128,
     frameH: 128,
-    cols: 4,
+    cols: 3,
     rows: 1,
-    count: 4,
+    count: 3,
   };
   DEAD_SHEET = {
     path: 'assets/img/2_character_man/5_dead.png',
@@ -369,13 +369,39 @@ class Character extends MoveableObject {
 
   // Sprite-sheet helpers for idle
   setSheetFrame(sheet, index) {
-    const col = index % sheet.cols;
-    const row = Math.floor(index / sheet.cols);
+    // Ensure we have safe cols/rows to avoid NaN rendering when metadata is missing
+    const img = this.imageCache?.[sheet.path] || this.img;
+    const frameW = sheet.frameW || 128;
+    const frameH = sheet.frameH || 128;
+    let cols = sheet.cols;
+    let rows = sheet.rows;
+
+    if (!cols || !rows) {
+      const naturalW = img?.naturalWidth || 0;
+      const naturalH = img?.naturalHeight || 0;
+      if (naturalW > 0 && frameW > 0) {
+        cols = Math.max(1, Math.floor(naturalW / frameW));
+      }
+      if (naturalH > 0 && frameH > 0) {
+        rows = Math.max(1, Math.floor(naturalH / frameH));
+      }
+      // Final safety fallback
+      cols = cols || sheet.count || 1;
+      rows = rows || 1;
+      // Persist for next calls when we have something meaningful
+      sheet.cols = sheet.cols || cols;
+      sheet.rows = sheet.rows || rows;
+      if (!sheet.count && cols && rows) sheet.count = cols * rows;
+    }
+
+    const safeCols = Math.max(1, cols || 1);
+    const col = index % safeCols;
+    const row = Math.floor(index / safeCols);
     this.currentFrameRect = {
-      sx: col * sheet.frameW,
-      sy: row * sheet.frameH,
-      sw: sheet.frameW,
-      sh: sheet.frameH,
+      sx: col * frameW,
+      sy: row * frameH,
+      sw: frameW,
+      sh: frameH,
     };
   }
 
@@ -390,11 +416,15 @@ class Character extends MoveableObject {
     const rows = sheet.rows || 1;
     // Only persist when we successfully inferred using actual image width or explicit provided values exist
     if ((sheet.cols && sheet.rows) || canInfer) {
-      sheet.cols = cols;
-      sheet.rows = rows;
+      sheet.cols = sheet.cols || cols;
+      sheet.rows = sheet.rows || rows;
       sheet.count = sheet.count || cols * rows;
     }
-    return sheet.count || cols * rows;
+    // Always return at least 1 and make sure cols/rows aren’t undefined in later calls
+    sheet.cols = sheet.cols || 1;
+    sheet.rows = sheet.rows || 1;
+    sheet.count = sheet.count || sheet.cols * sheet.rows;
+    return sheet.count;
   }
 
   // Stomp helpers moved from World
