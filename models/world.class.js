@@ -24,6 +24,7 @@ class World {
   _barrierLoop = null;
   _drawReqId = null;
   _stopped = false;
+  bgSpeedScale = 0.6; // slow down background movement globally (0..1)
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
@@ -160,11 +161,13 @@ class World {
     this.level.enemies = this.level.enemies.filter((enemy) => {
       if (enemy.dead) return true;
       if (!this.character.isColliding(enemy)) return true;
-      if (this.character.isStomping(enemy)) {
-        this.stomp(enemy);
-        return true;
+      // No stomping kill anymore; apply damage + knockback
+      if (!(enemy instanceof Endboss)) {
+        this.damageCharacterIfNeeded();
+        if (typeof this.character.applyKnockbackFrom === 'function') {
+          this.character.applyKnockbackFrom(enemy);
+        }
       }
-      if (!(enemy instanceof Endboss)) this.damageCharacterIfNeeded();
       return true;
     });
   }
@@ -206,7 +209,7 @@ class World {
     const now = (performance && performance.now ? performance.now() : Date.now()) / 1000; // seconds
     const viewW = this.canvas.width;
     for (const obj of objs) {
-      const factor = typeof obj.getParallaxFactor === 'function' ? obj.getParallaxFactor() : 1.0;
+      const factor = (typeof obj.getParallaxFactor === 'function' ? obj.getParallaxFactor() : 1.0) * this.bgSpeedScale;
       const drift = typeof obj.getDriftSpeed === 'function' ? obj.getDriftSpeed() : 0; // px/s
       const tileW = typeof obj.getTileStep === 'function' ? obj.getTileStep() : 720; // per-layer step
       // world-space x with camera parallax

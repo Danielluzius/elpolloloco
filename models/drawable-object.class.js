@@ -6,14 +6,23 @@ class DrawableObject {
   img;
   imageCache = {};
   currentImage = 0;
+  currentFrameRect = null; // optional source rect for sprite sheets { sx, sy, sw, sh }
 
   loadImage(path) {
     this.img = new Image();
     this.img.src = path;
+    // Also cache single images by path for later lookup
+    this.imageCache[path] = this.img;
   }
 
   draw(ctx) {
-    ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    if (!this.img) return;
+    const r = this.currentFrameRect;
+    if (r && typeof r.sx === 'number') {
+      ctx.drawImage(this.img, r.sx, r.sy, r.sw, r.sh, this.x, this.y, this.width, this.height);
+    } else {
+      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    }
   }
 
   drawFrame(ctx) {}

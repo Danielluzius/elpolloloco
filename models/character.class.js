@@ -1,66 +1,9 @@
 class Character extends MoveableObject {
-  height = 240;
-  width = 135;
-  y = 200;
-  groundY = 200;
+  height = 260; // was 240
+  width = 185; // wider again
+  y = 180; // stand a bit higher on the screen
+  groundY = 180;
   speed = 10;
-  IMAGES_IDLE = [
-    'assets/img/2_character_pepe/1_idle/idle/I-1.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-2.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-3.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-4.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-5.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-6.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-7.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-8.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-9.png',
-    'assets/img/2_character_pepe/1_idle/idle/I-10.png',
-  ];
-  IMAGES_LONG_IDLE = [
-    'assets/img/2_character_pepe/1_idle/long_idle/I-11.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-12.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-13.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-14.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-15.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-16.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-17.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-18.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-19.png',
-    'assets/img/2_character_pepe/1_idle/long_idle/I-20.png',
-  ];
-  IMAGES_WALKING = [
-    'assets/img/2_character_pepe/2_walk/W-21.png',
-    'assets/img/2_character_pepe/2_walk/W-22.png',
-    'assets/img/2_character_pepe/2_walk/W-23.png',
-    'assets/img/2_character_pepe/2_walk/W-24.png',
-    'assets/img/2_character_pepe/2_walk/W-25.png',
-    'assets/img/2_character_pepe/2_walk/W-26.png',
-  ];
-  IMAGES_JUMPING = [
-    'assets/img/2_character_pepe/3_jump/J-31.png',
-    'assets/img/2_character_pepe/3_jump/J-32.png',
-    'assets/img/2_character_pepe/3_jump/J-33.png',
-    'assets/img/2_character_pepe/3_jump/J-34.png',
-    'assets/img/2_character_pepe/3_jump/J-35.png',
-    'assets/img/2_character_pepe/3_jump/J-36.png',
-    'assets/img/2_character_pepe/3_jump/J-37.png',
-    'assets/img/2_character_pepe/3_jump/J-38.png',
-    'assets/img/2_character_pepe/3_jump/J-39.png',
-  ];
-  IMAGES_HURT = [
-    'assets/img/2_character_pepe/4_hurt/H-41.png',
-    'assets/img/2_character_pepe/4_hurt/H-42.png',
-    'assets/img/2_character_pepe/4_hurt/H-43.png',
-  ];
-  IMAGES_DEAD = [
-    'assets/img/2_character_pepe/5_dead/D-51.png',
-    'assets/img/2_character_pepe/5_dead/D-52.png',
-    'assets/img/2_character_pepe/5_dead/D-53.png',
-    'assets/img/2_character_pepe/5_dead/D-54.png',
-    'assets/img/2_character_pepe/5_dead/D-55.png',
-    'assets/img/2_character_pepe/5_dead/D-56.png',
-    'assets/img/2_character_pepe/5_dead/D-57.png',
-  ];
   jumpFrameIndex = 0;
   lastJumpFrameTime = 0;
   JUMP_FRAME_DELAY = 80;
@@ -72,6 +15,64 @@ class Character extends MoveableObject {
   idleFrameIndex = 0;
   lastIdleFrameTime = 0;
   IDLE_FRAME_DELAY = 150;
+  // Hurt animation timing (slower, non-loop)
+  hurtFrameIndex = 0;
+  lastHurtFrameTime = 0;
+  HURT_FRAME_DELAY = 110; // a bit faster
+  // Knockback state
+  knockbackActive = false;
+  knockbackEndAt = 0;
+  knockbackVX = 0;
+  KNOCKBACK_SPEED_X = 10;
+  KNOCKBACK_SPEED_Y = 14;
+  KNOCKBACK_DURATION = 350; // ms
+  // Sprite-sheet config for new idle
+  IDLE_SHEET = {
+    path: 'assets/img/2_character_man/1_idle.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 6,
+    rows: 1,
+    count: 6,
+  };
+  // Additional sheets
+  LONG_IDLE_SHEET = {
+    path: 'assets/img/2_character_man/2_idle_long.png',
+    frameW: 128,
+    frameH: 128,
+  };
+  WALK_SHEET = {
+    path: 'assets/img/2_character_man/9_walk.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 9,
+    rows: 1,
+    count: 9,
+  };
+  JUMP_SHEET = {
+    path: 'assets/img/2_character_man/6_jump.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 6,
+    rows: 1,
+    count: 6,
+  };
+  HURT_SHEET = {
+    path: 'assets/img/2_character_man/4_hurt.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 4,
+    rows: 1,
+    count: 4,
+  };
+  DEAD_SHEET = {
+    path: 'assets/img/2_character_man/5_dead.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 5,
+    rows: 1,
+    count: 5,
+  };
   longIdleFrameIndex = 0;
   lastLongIdleFrameTime = 0;
   LONG_IDLE_FRAME_DELAY = 200;
@@ -90,13 +91,19 @@ class Character extends MoveableObject {
   }
 
   initImages() {
-    this.loadImage('assets/img/2_character_pepe/1_idle/idle/I-1.png');
-    this.loadImages(this.IMAGES_IDLE);
-    this.loadImages(this.IMAGES_LONG_IDLE);
-    this.loadImages(this.IMAGES_WALKING);
-    this.loadImages(this.IMAGES_JUMPING);
-    this.loadImages(this.IMAGES_HURT);
-    this.loadImages(this.IMAGES_DEAD);
+    // Preload all sheets for the new character
+    this.loadImage(this.IDLE_SHEET.path);
+    this.loadImage(this.LONG_IDLE_SHEET.path);
+    this.loadImage(this.WALK_SHEET.path);
+    this.loadImage(this.JUMP_SHEET.path);
+    this.loadImage(this.HURT_SHEET.path);
+    this.loadImage(this.DEAD_SHEET.path);
+    // Set initial sprite to first idle frame so something is visible immediately
+    const idleImg = this.imageCache[this.IDLE_SHEET.path];
+    if (idleImg) {
+      this.img = idleImg;
+      this.setSheetFrame(this.IDLE_SHEET, 0);
+    }
   }
 
   initLoops() {
@@ -108,9 +115,11 @@ class Character extends MoveableObject {
   startInputLoop() {
     setInterval(() => {
       if (this.isDead()) return;
-      this.handleHorizontalMove();
+      // During knockback, ignore player input
+      if (!this.knockbackActive) this.handleHorizontalMove();
+      this.updateKnockback();
       this.updateCamera();
-      this.handleJumpKey();
+      if (!this.knockbackActive) this.handleJumpKey();
       this.markActivityOnAction();
     }, 1000 / 60);
   }
@@ -137,6 +146,7 @@ class Character extends MoveableObject {
   }
 
   shouldThrow(now, cooldownMs, lastThrowAt, bottlesAvailable) {
+    if (this.knockbackActive) return false;
     const pressed = !!this.world?.keyboard?.D;
     const cooled = now - (lastThrowAt || 0) >= cooldownMs;
     return pressed && cooled && bottlesAvailable > 0;
@@ -166,24 +176,32 @@ class Character extends MoveableObject {
   setDeadFrame() {
     this.updateDeadFrameIndex();
     this.applyDeathSprite();
-    this.ensureDeathArcInit();
-    this.applyDeathPhysics();
+    // No death physics: character stays on ground; animation handles the fall visually
+    this.speedY = 0;
+    this.y = this.groundY;
   }
 
   updateDeadFrameIndex() {
     if (!this.deadStartedAt) this.deadStartedAt = Date.now();
     let idx = Math.floor((Date.now() - this.deadStartedAt) / this.DEAD_FRAME_DELAY);
-    if (idx >= this.IMAGES_DEAD.length) {
-      idx = this.IMAGES_DEAD.length - 1;
+    const sheetImg = this.imageCache[this.DEAD_SHEET.path];
+    const cnt = this.getSheetCount(this.DEAD_SHEET, sheetImg) || this.DEAD_SHEET.count || 1;
+    if (idx >= cnt) {
+      idx = cnt - 1;
       this.deathLastFrameLocked = true;
     }
     this._deadFrameIdx = idx;
   }
 
   applyDeathSprite() {
-    const path = this.IMAGES_DEAD[this._deadFrameIdx];
-    this.img = this.imageCache[path];
-    this.animKey = 'dead';
+    const sheetImg = this.imageCache[this.DEAD_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      const cnt = this.getSheetCount(this.DEAD_SHEET, sheetImg) || 1;
+      const idx = Math.min(this._deadFrameIdx, cnt - 1);
+      this.setSheetFrame(this.DEAD_SHEET, idx);
+      this.animKey = 'dead';
+    }
   }
 
   ensureDeathArcInit() {
@@ -198,19 +216,59 @@ class Character extends MoveableObject {
   }
 
   setHurtFrame() {
-    this.playAnimation(this.IMAGES_HURT);
+    const now = Date.now();
+    // initialize hurt state once
+    if (this.animKey !== 'hurt') {
+      this.hurtFrameIndex = 0;
+      this.lastHurtFrameTime = now;
+    }
+    const sheetImg = this.imageCache[this.HURT_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      const cnt = this.getSheetCount(this.HURT_SHEET, sheetImg) || 1;
+      // advance only until last frame, no loop
+      if (this.hurtFrameIndex < cnt - 1 && now - this.lastHurtFrameTime >= this.HURT_FRAME_DELAY) {
+        this.hurtFrameIndex++;
+        this.lastHurtFrameTime = now;
+      }
+      this.setSheetFrame(this.HURT_SHEET, this.hurtFrameIndex);
+    }
     this.animKey = 'hurt';
   }
 
+  // Knockback helpers
+  applyKnockbackFrom(enemy) {
+    const now = Date.now();
+    const dir = enemy?.x > this.x ? -1 : 1; // push away from enemy
+    this.knockbackActive = true;
+    this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
+    this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
+    this.speedY = this.KNOCKBACK_SPEED_Y; // small hop
+  }
+
+  updateKnockback() {
+    if (!this.knockbackActive) return;
+    const now = Date.now();
+    // horizontal push with slight damping
+    this.x += this.knockbackVX;
+    this.knockbackVX *= 0.9;
+    if (now >= this.knockbackEndAt) {
+      this.knockbackActive = false;
+      this.knockbackVX = 0;
+    }
+  }
+
   setJumpFrame(now) {
-    if (this.jumpFrameIndex < this.IMAGES_JUMPING.length - 1) {
+    const sheetImg = this.imageCache[this.JUMP_SHEET.path];
+    const cnt = this.getSheetCount(this.JUMP_SHEET, sheetImg) || 1;
+    if (this.jumpFrameIndex < cnt - 1) {
       if (now - this.lastJumpFrameTime >= this.JUMP_FRAME_DELAY) {
         this.jumpFrameIndex++;
         this.lastJumpFrameTime = now;
       }
     }
-    const path = this.IMAGES_JUMPING[this.jumpFrameIndex];
-    this.img = this.imageCache[path];
+    this.img = sheetImg;
+    this.setSheetFrame(this.JUMP_SHEET, Math.min(this.jumpFrameIndex, cnt - 1));
     this.animKey = 'jump';
   }
 
@@ -232,16 +290,25 @@ class Character extends MoveableObject {
   }
 
   setDefaultStandFrame() {
-    const path = this.IMAGES_IDLE[0] || this.IMAGES_WALKING[0];
-    this.img = this.imageCache[path];
-    this.animKey = 'stand';
+    // Use first frame from idle sheet
+    const sheetImg = this.imageCache[this.IDLE_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.IDLE_SHEET, 0);
+      this.animKey = 'stand';
+    }
     this.idleFrameIndex = 0;
     this.longIdleFrameIndex = 0;
   }
 
   setWalkFrame() {
     if (this.animKey !== 'walk') this.currentImage = 0;
-    this.playAnimation(this.IMAGES_WALKING);
+    const sheetImg = this.imageCache[this.WALK_SHEET.path];
+    this.img = sheetImg;
+    const cnt = this.getSheetCount(this.WALK_SHEET, sheetImg) || 1;
+    const idx = this.currentImage % cnt;
+    this.setSheetFrame(this.WALK_SHEET, idx);
+    this.currentImage++;
     this.animKey = 'walk';
     this.idleFrameIndex = 0;
     this.longIdleFrameIndex = 0;
@@ -250,8 +317,11 @@ class Character extends MoveableObject {
   setLongIdleFrame(now) {
     this.ensureLongIdleState(now);
     this.advanceLongIdleFrame(now);
-    const path = this.IMAGES_LONG_IDLE[this.longIdleFrameIndex];
-    this.img = this.imageCache[path];
+    const sheetImg = this.imageCache[this.LONG_IDLE_SHEET.path];
+    this.img = sheetImg;
+    const cnt = this.getSheetCount(this.LONG_IDLE_SHEET, sheetImg) || 1;
+    const idx = Math.min(this.longIdleFrameIndex, cnt - 1); // do not loop
+    this.setSheetFrame(this.LONG_IDLE_SHEET, idx);
     this.animKey = 'long_idle';
     this.idleFrameIndex = 0;
   }
@@ -265,15 +335,19 @@ class Character extends MoveableObject {
 
   advanceLongIdleFrame(now) {
     if (now - this.lastLongIdleFrameTime < this.LONG_IDLE_FRAME_DELAY) return;
-    this.longIdleFrameIndex = (this.longIdleFrameIndex + 1) % this.IMAGES_LONG_IDLE.length;
+    // advance but clamp at last frame (no loop)
+    const sheetImg = this.imageCache?.[this.LONG_IDLE_SHEET.path];
+    const cnt = this.getSheetCount(this.LONG_IDLE_SHEET, sheetImg) || 1;
+    this.longIdleFrameIndex = Math.min(cnt - 1, this.longIdleFrameIndex + 1);
     this.lastLongIdleFrameTime = now;
   }
 
   setIdleFrame(now) {
     this.ensureIdleState(now);
     this.advanceIdleFrame(now);
-    const path = this.IMAGES_IDLE[this.idleFrameIndex];
-    this.img = this.imageCache[path];
+    const sheetImg = this.imageCache[this.IDLE_SHEET.path];
+    this.img = sheetImg;
+    this.setSheetFrame(this.IDLE_SHEET, this.idleFrameIndex % (this.IDLE_SHEET.count || 1));
     this.animKey = 'idle';
     this.longIdleFrameIndex = 0;
   }
@@ -287,8 +361,40 @@ class Character extends MoveableObject {
 
   advanceIdleFrame(now) {
     if (now - this.lastIdleFrameTime < this.IDLE_FRAME_DELAY) return;
-    this.idleFrameIndex = (this.idleFrameIndex + 1) % this.IMAGES_IDLE.length;
+    const sheetImg = this.imageCache?.[this.IDLE_SHEET.path];
+    const cnt = this.getSheetCount(this.IDLE_SHEET, sheetImg) || this.IDLE_SHEET.count || 1;
+    this.idleFrameIndex = (this.idleFrameIndex + 1) % cnt;
     this.lastIdleFrameTime = now;
+  }
+
+  // Sprite-sheet helpers for idle
+  setSheetFrame(sheet, index) {
+    const col = index % sheet.cols;
+    const row = Math.floor(index / sheet.cols);
+    this.currentFrameRect = {
+      sx: col * sheet.frameW,
+      sy: row * sheet.frameH,
+      sw: sheet.frameW,
+      sh: sheet.frameH,
+    };
+  }
+
+  getSheetCount(sheet, img) {
+    // Prefer explicit metadata; otherwise infer only when image dimensions are known.
+    if (sheet.count && sheet.cols && sheet.rows) return sheet.count;
+    const frameW = sheet.frameW || img?.naturalHeight || 128;
+    const naturalW = img?.naturalWidth || 0;
+    const canInfer = naturalW > 0 && frameW > 0;
+    const inferredCols = canInfer ? Math.max(1, Math.floor(naturalW / frameW)) : 1;
+    const cols = sheet.cols || inferredCols;
+    const rows = sheet.rows || 1;
+    // Only persist when we successfully inferred using actual image width or explicit provided values exist
+    if ((sheet.cols && sheet.rows) || canInfer) {
+      sheet.cols = cols;
+      sheet.rows = rows;
+      sheet.count = sheet.count || cols * rows;
+    }
+    return sheet.count || cols * rows;
   }
 
   // Stomp helpers moved from World
