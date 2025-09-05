@@ -8,6 +8,16 @@ class Character extends MoveableObject {
   lastJumpFrameTime = 0;
   JUMP_FRAME_DELAY = 80;
   isJumping = false;
+  // Dodge state (replaces jump)
+  isDodging = false;
+  dodgeFrameIndex = 0;
+  lastDodgeFrameTime = 0;
+  DODGE_FRAME_DELAY = 40; // 10 frames * 40ms = 400ms total
+  DODGE_FRAME_COUNT = 10; // use all frames of the sprite sheet
+  DODGE_SPEED = 30; // shorter reach
+  DODGE_DURATION = 800; // default; actual duration is tied to frames*delay
+  dodgeVX = 0;
+  dodgeEndAt = 0;
   lastActivityAt = Date.now();
   IDLE_AFTER_MS = 1500;
   LONG_IDLE_AFTER_MS = 6000;
@@ -123,8 +133,9 @@ class Character extends MoveableObject {
     setInterval(() => {
       if (this.isDead()) return;
       // During knockback, ignore player input
-      if (!this.knockbackActive) this.handleHorizontalMove();
+      if (!this.knockbackActive && !this.isDodging) this.handleHorizontalMove();
       this.updateKnockback();
+      this.updateDodge();
       this.updateCamera();
       if (!this.knockbackActive) this.handleJumpKey();
       this.markActivityOnAction();
@@ -160,13 +171,51 @@ class Character extends MoveableObject {
   }
 
   handleJumpKey() {
-    if (this.world.keyboard.SPACE && !this.isJumping && !this.isAboveGround()) {
-      this.jump();
-      this.isJumping = true;
-      this.jumpFrameIndex = 0;
-      this.currentImage = 0;
-      this.lastJumpFrameTime = Date.now();
-      this.lastActivityAt = this.lastJumpFrameTime;
+    // SPACE triggers a directional dodge instead of a vertical jump
+    if (this.world.keyboard.SPACE && !this.isDodging && !this.knockbackActive && !this.isAboveGround()) {
+      this.startDodge();
+    }
+  }
+
+  startDodge() {
+    const now = Date.now();
+    const dir = this.otherDirection ? -1 : 1; // left if facing left
+    this.isDodging = true;
+    this.dodgeVX = dir * this.DODGE_SPEED;
+    // Duration aligned exactly to animation frames
+    const frames = Math.min(this.DODGE_FRAME_COUNT || 10, this.JUMP_SHEET?.count || 10);
+    const frameDelay = this.DODGE_FRAME_DELAY || this.JUMP_FRAME_DELAY || 80;
+    this.dodgeEndAt = now + frames * frameDelay;
+    // init animation counters
+    this.dodgeFrameIndex = 0;
+    this.lastDodgeFrameTime = now;
+    this.animKey = 'dodge';
+    // ensure we don't have any residual vertical motion
+    this.speedY = 0;
+    // show first frame immediately to avoid visible delay
+    const sheetImg = this.imageCache[this.JUMP_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.JUMP_SHEET, 0);
+    }
+    this.lastActivityAt = now;
+  }
+
+  updateDodge() {
+    if (!this.isDodging) return;
+    const now = Date.now();
+    // Horizontal burst with moderate damping (ends quicker)
+    this.x += this.dodgeVX;
+    this.dodgeVX *= 0.9;
+    // Clamp within level bounds if world exists
+    if (this.world?.level) {
+      if (this.x < 0) this.x = 0;
+      if (this.x > this.world.level.level_end_x) this.x = this.world.level.level_end_x;
+    }
+    // End dodge when animation time is up or speed decays sufficiently
+    if (now >= this.dodgeEndAt || Math.abs(this.dodgeVX) < 1.5) {
+      this.isDodging = false;
+      this.dodgeVX = 0;
     }
   }
 
@@ -174,6 +223,8 @@ class Character extends MoveableObject {
     setInterval(() => {
       const now = Date.now();
       if (this.isDead()) return this.setDeadFrame();
+      // Dodge animation has priority over hurt and ground/air states
+      if (this.isDodging) return this.setDodgeFrame(now);
       if (this.isHurt()) return this.setHurtFrame();
       if (this.isAboveGround()) return this.setJumpFrame(now);
       this.setGroundedFrame(now);
@@ -244,14 +295,6 @@ class Character extends MoveableObject {
   }
 
   // Knockback helpers
-  applyKnockbackFrom(enemy) {
-    const now = Date.now();
-    const dir = enemy?.x > this.x ? -1 : 1; // push away from enemy
-    this.knockbackActive = true;
-    this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
-    this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
-    this.speedY = this.KNOCKBACK_SPEED_Y; // small hop
-  }
 
   updateKnockback() {
     if (!this.knockbackActive) return;
@@ -279,6 +322,21 @@ class Character extends MoveableObject {
     this.animKey = 'jump';
   }
 
+  setDodgeFrame(now) {
+    const sheetImg = this.imageCache[this.JUMP_SHEET.path];
+    const cntReal = this.getSheetCount(this.JUMP_SHEET, sheetImg) || 1;
+    const cnt = Math.min(cntReal, this.DODGE_FRAME_COUNT || cntReal);
+    if (this.dodgeFrameIndex < cnt - 1) {
+      if (now - this.lastDodgeFrameTime >= this.DODGE_FRAME_DELAY) {
+        this.dodgeFrameIndex++;
+        this.lastDodgeFrameTime = now;
+      }
+    }
+    this.img = sheetImg;
+    this.setSheetFrame(this.JUMP_SHEET, Math.min(this.dodgeFrameIndex, cnt - 1));
+    this.animKey = 'dodge';
+  }
+
   setGroundedFrame(now) {
     this.resetJumpStateIfNeeded();
     const moving = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
@@ -294,6 +352,23 @@ class Character extends MoveableObject {
     this.currentImage = 0;
     this.jumpFrameIndex = 0;
     this.isJumping = false;
+  }
+
+  // Ignore knockback while dodging
+  applyKnockbackFrom(enemy) {
+    if (this.isDodging) return; // invulnerable to knockback during dodge
+    const now = Date.now();
+    const dir = enemy?.x > this.x ? -1 : 1; // push away from enemy
+    this.knockbackActive = true;
+    this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
+    this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
+    this.speedY = this.KNOCKBACK_SPEED_Y; // small hop
+  }
+
+  // While dodging, ignore damage
+  hit() {
+    if (this.isDodging) return;
+    super.hit();
   }
 
   setDefaultStandFrame() {
