@@ -76,6 +76,14 @@ class Character extends MoveableObject {
     rows: 1,
     count: 3,
   };
+  ATTACK_SHEET = {
+    path: 'assets/img/2_character_man/3_attack_stand2.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 3,
+    rows: 1,
+    count: 3,
+  };
   DEAD_SHEET = {
     path: 'assets/img/2_character_man/5_dead.png',
     frameW: 128,
@@ -84,6 +92,12 @@ class Character extends MoveableObject {
     rows: 1,
     count: 5,
   };
+  // Attack state
+  isAttacking = false;
+  attackFrameIndex = 0;
+  lastAttackFrameTime = 0;
+  ATTACK_FRAME_DELAY = 90;
+  attackEndAt = 0;
   longIdleFrameIndex = 0;
   lastLongIdleFrameTime = 0;
   LONG_IDLE_FRAME_DELAY = 200;
@@ -108,6 +122,7 @@ class Character extends MoveableObject {
     this.loadImage(this.WALK_SHEET.path);
     this.loadImage(this.JUMP_SHEET.path);
     this.loadImage(this.HURT_SHEET.path);
+    this.loadImage(this.ATTACK_SHEET.path);
     this.loadImage(this.DEAD_SHEET.path);
     // Set initial sprite to first idle frame so something is visible immediately
     const idleImg = this.imageCache[this.IDLE_SHEET.path];
@@ -133,9 +148,10 @@ class Character extends MoveableObject {
     setInterval(() => {
       if (this.isDead()) return;
       // During knockback, ignore player input
-      if (!this.knockbackActive && !this.isDodging) this.handleHorizontalMove();
+      if (!this.knockbackActive && !this.isDodging && !this.isAttacking) this.handleHorizontalMove();
       this.updateKnockback();
       this.updateDodge();
+      this.updateAttack();
       this.updateCamera();
       if (!this.knockbackActive) this.handleJumpKey();
       this.markActivityOnAction();
@@ -160,7 +176,7 @@ class Character extends MoveableObject {
   }
 
   markActivityOnAction() {
-    if (this.world.keyboard.D) this.lastActivityAt = Date.now();
+    if (this.world.keyboard.D || this.world.keyboard.A) this.lastActivityAt = Date.now();
   }
 
   shouldThrow(now, cooldownMs, lastThrowAt, bottlesAvailable) {
@@ -172,8 +188,24 @@ class Character extends MoveableObject {
 
   handleJumpKey() {
     // SPACE triggers a directional dodge instead of a vertical jump
-    if (this.world.keyboard.SPACE && !this.isDodging && !this.knockbackActive && !this.isAboveGround()) {
+    if (
+      this.world.keyboard.SPACE &&
+      !this.isDodging &&
+      !this.isAttacking &&
+      !this.knockbackActive &&
+      !this.isAboveGround()
+    ) {
       this.startDodge();
+    }
+    // 'A' triggers a standing attack on ground
+    if (
+      this.world.keyboard.A &&
+      !this.isDodging &&
+      !this.isAttacking &&
+      !this.knockbackActive &&
+      !this.isAboveGround()
+    ) {
+      this.startAttack();
     }
   }
 
@@ -226,6 +258,7 @@ class Character extends MoveableObject {
       // Dodge animation has priority over hurt and ground/air states
       if (this.isDodging) return this.setDodgeFrame(now);
       if (this.isHurt()) return this.setHurtFrame();
+      if (this.isAttacking) return this.setAttackFrame(now);
       if (this.isAboveGround()) return this.setJumpFrame(now);
       this.setGroundedFrame(now);
     }, 50);
@@ -335,6 +368,48 @@ class Character extends MoveableObject {
     this.img = sheetImg;
     this.setSheetFrame(this.JUMP_SHEET, Math.min(this.dodgeFrameIndex, cnt - 1));
     this.animKey = 'dodge';
+  }
+
+  // Attack logic
+  startAttack() {
+    const now = Date.now();
+    this.isAttacking = true;
+    this.attackFrameIndex = 0;
+    this.lastAttackFrameTime = now;
+    const frames = this.getSheetCount(this.ATTACK_SHEET, this.imageCache[this.ATTACK_SHEET.path]) || 3;
+    const delay = this.ATTACK_FRAME_DELAY;
+    this.attackEndAt = now + frames * delay;
+    // show first frame immediately
+    const sheetImg = this.imageCache[this.ATTACK_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.ATTACK_SHEET, 0);
+    }
+    this.animKey = 'attack';
+    this.lastActivityAt = now;
+  }
+
+  updateAttack() {
+    if (!this.isAttacking) return;
+    const now = Date.now();
+    if (now >= this.attackEndAt) {
+      this.isAttacking = false;
+      this.attackFrameIndex = 0;
+    }
+  }
+
+  setAttackFrame(now) {
+    const sheetImg = this.imageCache[this.ATTACK_SHEET.path];
+    const cnt = this.getSheetCount(this.ATTACK_SHEET, sheetImg) || 3;
+    if (this.attackFrameIndex < cnt - 1) {
+      if (now - this.lastAttackFrameTime >= this.ATTACK_FRAME_DELAY) {
+        this.attackFrameIndex++;
+        this.lastAttackFrameTime = now;
+      }
+    }
+    this.img = sheetImg;
+    this.setSheetFrame(this.ATTACK_SHEET, Math.min(this.attackFrameIndex, cnt - 1));
+    this.animKey = 'attack';
   }
 
   setGroundedFrame(now) {
