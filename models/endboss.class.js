@@ -133,15 +133,40 @@ class Endboss extends MoveableObject {
     const b = ch.getBoundsWithOffset?.(ch) || { top: ch.y, bottom: ch.y + ch.height };
     const vOverlap = a.bottom > b.top && a.top < b.bottom;
     if (!vOverlap) return;
-    // Block check similar to goblin, but do not knock back boss
+    // Block check similar to goblin
     if (ch.isBlocking) {
       const bossOnRight = this.x > ch.x;
       const facingRight = !ch.otherDirection;
       const blockCovers = (bossOnRight && facingRight) || (!bossOnRight && ch.otherDirection);
       if (blockCovers) {
         ch.triggerBlock?.();
-        // small penalty to avoid immediate re-hit
+        // Apply a short horizontal knockback to the boss away from the character (grounded; no hurt anim)
         const now = Date.now();
+        const dir = bossOnRight ? 1 : -1; // push boss further away from the character
+        // Use MoveableObject mechanics for horizontal motion
+        this.speedY = 0; // keep grounded; no vertical impulse
+        // Implement a tiny manual knockback over a brief window using a transient vx on the boss
+        const kbDuration = 220;
+        const kbSpeed = 8;
+        this._blockKnockbackEndAt = now + kbDuration;
+        this._blockKnockbackVX = dir * kbSpeed;
+        // Start/refresh a mini loop to process knockback without interfering with main movement
+        if (!this._blockKbLoop) {
+          this._blockKbLoop = setInterval(() => {
+            const t = Date.now();
+            if (t >= (this._blockKnockbackEndAt || 0)) {
+              this._blockKnockbackVX = 0;
+              clearInterval(this._blockKbLoop);
+              this._blockKbLoop = null;
+              return;
+            }
+            if (this._blockKnockbackVX) {
+              this.x += this._blockKnockbackVX;
+              this._blockKnockbackVX *= 0.9; // damping
+            }
+          }, 1000 / 60);
+        }
+        // small penalty to avoid immediate re-hit
         this.lastAttackAt = now; // reset cooldown baseline
         return;
       }

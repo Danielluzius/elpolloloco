@@ -7,12 +7,8 @@ class World {
   camera_x = 0;
   statusBar = new StatusBar();
   bossStatusBar = new BossStatusBar();
-  bossBarrier = null;
-  bossBarrierWidth = 4;
-  bossBarrierMargin = 1;
   _gameLoop = null;
   _hudLoop = null;
-  _barrierLoop = null;
   _drawReqId = null;
   _stopped = false;
   bgSpeedScale = 0.6; // slow down background movement globally (0..1)
@@ -26,7 +22,6 @@ class World {
     this.setWorld();
     this.startGameLoop();
     this.startHudLoop();
-    this.startBarrierLoop();
     this.initBossHealth();
   }
 
@@ -64,26 +59,7 @@ class World {
     }
   }
 
-  startBarrierLoop() {
-    this._barrierLoop = setInterval(() => {
-      const boss = this.level.enemies.find((e) => e instanceof Endboss);
-      if (!boss || !boss.awake) return (this.bossBarrier = null);
-      this.updateBossBarrier(boss);
-      this.enforceBossBarrier();
-    }, 1000 / 60);
-  }
-
-  updateBossBarrier(boss) {
-    this.bossBarrier = boss.getBarrierRect(this.bossBarrierMargin, this.bossBarrierWidth);
-  }
-
-  enforceBossBarrier() {
-    if (!this.bossBarrier) return;
-    if (this.character.isColliding(this.bossBarrier)) {
-      const targetX = this.bossBarrier.x - this.character.width - this.bossBarrierMargin;
-      if (this.character.x > targetX) this.character.x = targetX;
-    }
-  }
+  // Boss barrier removed; rely on level_end_x boundary in Character movement
 
   // Coins, bottles, and projectiles removed
 
@@ -243,7 +219,6 @@ class World {
     try {
       if (this._gameLoop) clearInterval(this._gameLoop);
       if (this._hudLoop) clearInterval(this._hudLoop);
-      if (this._barrierLoop) clearInterval(this._barrierLoop);
       if (this._drawReqId) cancelAnimationFrame(this._drawReqId);
     } catch (e) {}
   }
