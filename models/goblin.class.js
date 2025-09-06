@@ -19,6 +19,18 @@ class Goblin extends MoveableObject {
   hurtEndAt = 0;
   MIN_HURT_TIME = 500; // ensure visible even if image loads late
   _hurtReady = false;
+  // death anim (5 frames per assets)
+  deathSheet = null; // { path, cols:5, rows:1, count:5 }
+  deathFrameIdx = 0;
+  deathLastAt = 0;
+  DEATH_DELAY = 140;
+  DEAD_LINGER_MS = 800;
+  dying = false;
+  dead = false; // used by world collision logic to ignore
+  _deathReady = false;
+  _despawnAt = 0;
+  // gameplay
+  hitCount = 0;
   // knockback
   knockbackVX = 0;
   knockbackEndAt = 0;
@@ -42,6 +54,9 @@ class Goblin extends MoveableObject {
     // Hurt sheet (always 3 sprites)
     const hurtPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/4_hurt/1_hurt_3_sprites.png`;
     this.hurtSheet = { path: hurtPath, cols: 3, rows: 1, count: 3 };
+    // Death sheet (always 5 sprites)
+    const deadPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/5_dead/1_dead_5_sprites.png`;
+    this.deathSheet = { path: deadPath, cols: 5, rows: 1, count: 5 };
 
     // preload
     this.loadImage(idlePath);
@@ -52,6 +67,15 @@ class Goblin extends MoveableObject {
       this._hurtReady = !!hImg.complete;
       try {
         hImg.addEventListener && hImg.addEventListener('load', () => (this._hurtReady = true), { once: true });
+      } catch (_) {}
+    }
+    // preload death sheet and track readiness
+    this.loadImage(deadPath);
+    const dImg = this.imageCache[deadPath];
+    if (dImg) {
+      this._deathReady = !!dImg.complete;
+      try {
+        dImg.addEventListener && dImg.addEventListener('load', () => (this._deathReady = true), { once: true });
       } catch (_) {}
     }
     // ensure initial image
@@ -76,6 +100,26 @@ class Goblin extends MoveableObject {
       const now = Date.now();
       // update knockback motion
       this.updateKnockback(now);
+
+      // death animation has highest priority
+      if (this.dying) {
+        const sheet = this.deathSheet;
+        if (now - this.deathLastAt >= this.DEATH_DELAY) {
+          const maxIdx = (sheet.count || 5) - 1;
+          if (this.deathFrameIdx < maxIdx) this.deathFrameIdx++;
+          this.deathLastAt = now;
+        }
+        const dImg2 = this.imageCache[sheet.path];
+        if (this._deathReady && dImg2) {
+          this.img = dImg2;
+          this.setSheetFrameAuto(sheet, this.deathFrameIdx);
+        }
+        // once time passed, allow despawn
+        if (this._despawnAt && now >= this._despawnAt) {
+          // nothing else, world will remove via shouldDespawn()
+        }
+        return;
+      }
 
       if (this.hurtActive) {
         // advance hurt frames without looping
@@ -123,6 +167,12 @@ class Goblin extends MoveableObject {
     // debounce frequent hits
     if (now - (this.recentlyHitAt || 0) < 200) return;
     this.recentlyHitAt = now;
+    // increase hit count and check for death
+    this.hitCount = (this.hitCount || 0) + 1;
+    if (this.hitCount >= 3 && !this.dying) {
+      this.startDeath(now);
+      return;
+    }
     // set hurt state
     this.hurtActive = true;
     this.hurtFrameIdx = 0;
@@ -133,5 +183,24 @@ class Goblin extends MoveableObject {
     this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
     this.speedY = this.KNOCKBACK_SPEED_Y; // small pop upwards with gravity loop
     this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
+  }
+
+  startDeath(now = Date.now()) {
+    this.dying = true;
+    this.dead = true; // so world ignores collisions/damage
+    this.hurtActive = false;
+    // freeze motion on death
+    this.knockbackVX = 0;
+    this.speedY = 0;
+    // reset animation counters
+    this.deathFrameIdx = 0;
+    this.deathLastAt = now;
+    // compute despawn moment after full animation + linger
+    const frames = this.deathSheet.count || 5;
+    this._despawnAt = now + frames * this.DEATH_DELAY + this.DEAD_LINGER_MS;
+  }
+
+  shouldDespawn() {
+    return !!(this._despawnAt && Date.now() >= this._despawnAt);
   }
 }

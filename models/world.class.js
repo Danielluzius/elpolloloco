@@ -98,6 +98,7 @@ class World {
 
   checkCollisions() {
     this.level.enemies = this.level.enemies.filter((enemy) => {
+      if (enemy.shouldDespawn?.()) return false;
       if (enemy.dead) return true;
       if (!this.character.isColliding(enemy)) return true;
       // No stomping kill anymore; apply damage + knockback
