@@ -16,11 +16,12 @@ class BackgroundObject extends MoveableObject {
 
   static computeParallaxFactor(path) {
     const p = String(path || '');
-    if (p.includes('1_layer')) return 1.0; // foreground stays at camera speed
-    if (p.includes('bird_layer')) return 0.6; // birds a bit slower than foreground
-    if (p.includes('2_layer')) return 0.7;
-    if (p.includes('cloud_layer')) return 0.35; // clouds slower than 2_layer
-    if (p.includes('3_layer')) return 0.25; // farthest, slowest
+    // Exact factors per design
+    if (p.includes('1_layer')) return 1.0; // main_world
+    if (p.includes('2_layer')) return 0.4; // bg_mid
+    if (p.includes('cloud_layer')) return 0.4; // treat clouds as mid
+    if (p.includes('3_layer')) return 0.1; // bg_far
+    if (p.includes('bird_layer')) return 0.6; // optional: birds in between
     return 1.0;
   }
 

@@ -103,9 +103,6 @@ class Character extends MoveableObject {
     path: 'assets/img/2_character_man/10_block.png',
     frameW: 128,
     frameH: 128,
-    cols: 1,
-    rows: 1,
-    count: 1,
   };
   // Attack hitbox config
   ATTACK_RANGE_X = 80; // reach in front of character
@@ -717,8 +714,8 @@ class Character extends MoveableObject {
     // if we have a multi-frame sheet, animate slowly; otherwise hold first frame
     const sheetImg = this.imageCache[this.BLOCK_SHEET.path];
     const cnt = this.getSheetCount(this.BLOCK_SHEET, sheetImg) || 1;
-    // Target frame to hold while blocking: third frame (index 2), but never exceed available frames
-    const holdIdx = Math.min(2, Math.max(0, cnt - 1));
+    // Target frame to hold while blocking: last frame of the sheet
+    const holdIdx = Math.max(0, cnt - 1);
     if (cnt > 1) {
       if (now - this.lastBlockFrameTime >= this.BLOCK_FRAME_DELAY && this.blockFrameIndex < holdIdx) {
         this.blockFrameIndex = Math.min(this.blockFrameIndex + 1, holdIdx);
@@ -743,30 +740,18 @@ class Character extends MoveableObject {
   }
 
   prepareBlockSheet() {
-    // Try a few candidate paths to be resilient to asset layout
-    const candidates = [
-      { path: 'assets/img/2_character_man/10_block.png', count: 4 },
-      { path: 'assets/img/2_character_man/10_block/1_block_6_sprites.png', count: 6 },
-      { path: 'assets/img/2_character_man/10_block/1_block_5_sprites.png', count: 5 },
-      { path: 'assets/img/2_character_man/10_block/1_block_4_sprites.png', count: 4 },
-      { path: 'assets/img/2_character_man/10_block/1_block_3_sprites.png', count: 3 },
-    ];
-    for (const c of candidates) {
-      try {
-        const img = new Image();
-        img.onload = () => {
-          if (!this._blockReady) {
-            this._blockReady = true;
-            this.BLOCK_SHEET.path = c.path;
-            this.BLOCK_SHEET.cols = c.count;
-            this.BLOCK_SHEET.rows = 1;
-            this.BLOCK_SHEET.count = c.count;
-            this.imageCache[c.path] = img;
-          }
-        };
-        img.src = c.path;
-      } catch (_) {}
-    }
+    // Load only the known existing single-frame asset to avoid 404s
+    const path = 'assets/img/2_character_man/10_block.png';
+    try {
+      const img = new Image();
+      img.onload = () => {
+        this._blockReady = true;
+        this.BLOCK_SHEET.path = path;
+        // Do not force cols/rows here; allow inference from image width using frameW/frameH
+        this.imageCache[path] = img;
+      };
+      img.src = path;
+    } catch (_) {}
   }
 
   // Prefer exact hurt timing synced to knockback

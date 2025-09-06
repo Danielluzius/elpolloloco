@@ -126,20 +126,17 @@ class Goblin extends MoveableObject {
     const walkPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/1_walk/1_walk_${wCount}_sprites.png`;
     this.walkSheet = { path: walkPath, cols: wCount, rows: 1, count: wCount };
     this.loadImage(walkPath);
-    // Run sheet: try common counts, pick the first that loads
-    const runCandidates = [10, 9, 8, 7, 6, 5];
-    for (const rc of runCandidates) {
-      const rp = `assets/img/3_enemies_goblins/goblin_${clampedType}/6_run/1_run_${rc}_sprites.png`;
-      const img = new Image();
-      img.onload = () => {
-        if (!this._runReady) {
-          this._runReady = true;
-          this.runSheet = { path: rp, cols: rc, rows: 1, count: rc };
-          this.imageCache[rp] = img;
-        }
-      };
+    // Run sheet: load the exact available sprite count per type to avoid 404s
+    const runCountByType = { 1: 8, 2: 8, 3: 7 };
+    const rCount = runCountByType[clampedType] || 8;
+    const runPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/6_run/1_run_${rCount}_sprites.png`;
+    this.runSheet = { path: runPath, cols: rCount, rows: 1, count: rCount };
+    this.loadImage(runPath);
+    const rImg = this.imageCache[runPath];
+    if (rImg) {
+      this._runReady = !!rImg.complete;
       try {
-        img.src = rp;
+        rImg.addEventListener && rImg.addEventListener('load', () => (this._runReady = true), { once: true });
       } catch (_) {}
     }
     // Attack sheet (g1,g2: 5; g3: 6)

@@ -11,7 +11,7 @@ class World {
   _hudLoop = null;
   _drawReqId = null;
   _stopped = false;
-  bgSpeedScale = 0.6; // slow down background movement globally (0..1)
+  bgSpeedScale = 1.0; // exact parallax factors without global scaling
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
@@ -133,13 +133,11 @@ class World {
     this.drawBackground();
     this.drawHud();
     this.drawEntities();
-    this.ctx.translate(-this.camera_x, 0);
     this._drawReqId = requestAnimationFrame(() => this.draw());
   }
 
   drawBackground() {
-    // Draw each background object with its own parallax factor and optional drift.
-    // Also ensure tiling so no images are clipped when moving left of start.
+    // Draw background in screen space with parallax factors, no world mutation
     const objs = this.level.backgroundObjects || [];
     const now = (performance && performance.now ? performance.now() : Date.now()) / 1000; // seconds
     const viewW = this.canvas.width;
@@ -147,59 +145,69 @@ class World {
       const factor = (typeof obj.getParallaxFactor === 'function' ? obj.getParallaxFactor() : 1.0) * this.bgSpeedScale;
       const drift = typeof obj.getDriftSpeed === 'function' ? obj.getDriftSpeed() : 0; // px/s
       const tileW = typeof obj.getTileStep === 'function' ? obj.getTileStep() : 720; // per-layer step
-      // world-space x with camera parallax
-      const camOffset = this.camera_x * factor;
-      // drift accumulates over time in screen space (independent movement)
-      const driftOffset = drift * now;
-
-      // Base draw position
-      const baseX = obj.x + camOffset + driftOffset;
-
-      // Compute how many tiles we need to cover viewport
-      // Draw at baseX plus neighbors to left and right to prevent gaps
-      const firstTileOffset = Math.floor(-baseX / tileW) - 1; // start one tile before
-      const tilesNeeded = Math.ceil(viewW / tileW) + 3; // extra margins left/right
-
+      const baseX = Math.round(obj.x + this.camera_x * factor + drift * now);
+      const y = Math.round(obj.y + this.camera_x * 0 * factor); // fixed Y in this game
+      const firstTileOffset = Math.floor(-baseX / tileW) - 1;
+      const tilesNeeded = Math.ceil(viewW / tileW) + 3;
       for (let i = 0; i < tilesNeeded; i++) {
-        const dx = (firstTileOffset + i) * tileW;
-        this.ctx.save();
-        this.ctx.translate(dx, 0);
-        // Temporarily shift obj.x to baseX for draw, without mutating permanently
-        const prevX = obj.x;
-        obj.x = baseX;
-        this.addToMap(obj);
-        obj.x = prevX;
-        this.ctx.restore();
+        const dx = baseX + (firstTileOffset + i) * tileW;
+        this.drawObjectAt(obj, dx, y);
       }
     }
   }
 
   drawHud() {
-    this.addToMap(this.statusBar);
+    // HUD/UI stays absolute: factor 0
+    this.drawObjectAt(this.statusBar, Math.round(this.statusBar.x), Math.round(this.statusBar.y));
   }
   // Removed coin/bottle HUD and icon helpers
 
   drawEntities() {
-    this.ctx.translate(this.camera_x, 0);
-    this.addToMap(this.character);
-    this.addObjectsToMap(this.level.enemies);
-    this.addObjectsToMap(this.level.clouds);
+    // main world (1.0)
+    const f = 1.0;
+    this.drawObjectAt(this.character, Math.round(this.character.x + this.camera_x * f), Math.round(this.character.y));
+    // Barriers before enemies if any
+    for (const b of this.level.barriers || []) {
+      this.drawObjectAt(b, Math.round(b.x + this.camera_x * f), Math.round(b.y));
+    }
+    // Enemies
+    for (const e of this.level.enemies || []) {
+      this.drawObjectAt(e, Math.round(e.x + this.camera_x * f), Math.round(e.y));
+    }
+    // Clouds as mid layer (0.4)
+    const fMid = 0.4;
+    for (const c of this.level.clouds || []) {
+      this.drawObjectAt(c, Math.round(c.x + this.camera_x * fMid), Math.round(c.y));
+    }
     this.drawBossBarIfAny();
   }
 
   drawBossBarIfAny() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (this.bossStatusBar.updateFromBoss(boss)) this.addToMap(this.bossStatusBar);
+    if (this.bossStatusBar.updateFromBoss(boss)) {
+      // Draw boss bar in world space near boss but as overlay: treat as main_world factor for now
+      const sx = Math.round(this.bossStatusBar.x + this.camera_x * 1.0);
+      const sy = Math.round(this.bossStatusBar.y);
+      this.drawObjectAt(this.bossStatusBar, sx, sy);
+    }
   }
 
-  addObjectsToMap(objects) {
-    objects.forEach((obj) => {
-      this.addToMap(obj);
-    });
-  }
-
-  addToMap(mo) {
-    mo.drawWithDirection(this.ctx);
+  // Helper: draw object with optional mirroring at a specific screen position
+  drawObjectAt(obj, sx, sy) {
+    if (!obj) return;
+    if (!obj.otherDirection) {
+      obj.drawAt(this.ctx, sx, sy);
+      obj.drawFrame?.(this.ctx);
+      obj.drawDebugHitboxes?.(this.ctx, sx, sy);
+      return;
+    }
+    this.ctx.save();
+    this.ctx.translate(sx + obj.width, 0);
+    this.ctx.scale(-1, 1);
+    obj.drawAt(this.ctx, 0, sy);
+    obj.drawFrame?.(this.ctx);
+    obj.drawDebugHitboxes?.(this.ctx, 0, sy);
+    this.ctx.restore();
   }
 
   checkEndbossWake() {
