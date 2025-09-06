@@ -26,6 +26,12 @@ class Goblin extends MoveableObject {
   appliedAttackDamage = false;
   isAttacking = false;
   _attackReady = false;
+  // run anim (for chase)
+  runSheet = null; // { path, cols, rows, count }
+  runFrameIdx = 0;
+  runLastAt = 0;
+  RUN_DELAY = 70;
+  _runReady = false;
   // hurt anim (3 frames per assets)
   hurtSheet = null; // { path, cols:3, rows:1, count:3 }
   hurtFrameIdx = 0;
@@ -120,6 +126,22 @@ class Goblin extends MoveableObject {
     const walkPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/1_walk/1_walk_${wCount}_sprites.png`;
     this.walkSheet = { path: walkPath, cols: wCount, rows: 1, count: wCount };
     this.loadImage(walkPath);
+    // Run sheet: try common counts, pick the first that loads
+    const runCandidates = [10, 9, 8, 7, 6, 5];
+    for (const rc of runCandidates) {
+      const rp = `assets/img/3_enemies_goblins/goblin_${clampedType}/6_run/1_run_${rc}_sprites.png`;
+      const img = new Image();
+      img.onload = () => {
+        if (!this._runReady) {
+          this._runReady = true;
+          this.runSheet = { path: rp, cols: rc, rows: 1, count: rc };
+          this.imageCache[rp] = img;
+        }
+      };
+      try {
+        img.src = rp;
+      } catch (_) {}
+    }
     // Attack sheet (g1,g2: 5; g3: 6)
     const attackCountByType = { 1: 5, 2: 5, 3: 6 };
     const aCount = attackCountByType[clampedType] || 5;
@@ -221,7 +243,18 @@ class Goblin extends MoveableObject {
       }
 
       // Choose animation based on movement
-      if (this._moving) {
+      if (this._moving && this.aware && this._runReady && this.runSheet) {
+        if (now - this.runLastAt >= this.RUN_DELAY) {
+          const cnt = this.runSheet?.count || 1;
+          this.runFrameIdx = (this.runFrameIdx + 1) % cnt;
+          this.runLastAt = now;
+        }
+        const rImg = this.imageCache[this.runSheet.path];
+        if (rImg) {
+          this.img = rImg;
+          this.setSheetFrameAuto(this.runSheet, this.runFrameIdx);
+        }
+      } else if (this._moving) {
         if (now - this.walkLastAt >= this.WALK_DELAY) {
           const cnt = this.walkSheet?.count || 1;
           this.walkFrameIdx = (this.walkFrameIdx + 1) % cnt;
