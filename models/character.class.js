@@ -33,6 +33,8 @@ class Character extends MoveableObject {
   hurtFrameIndex = 0;
   lastHurtFrameTime = 0;
   HURT_FRAME_DELAY = 90; // slightly faster per request
+  hurtEndAt = 0; // duration synced to knockback
+  _hurtAnimStartAt = 0;
   // Knockback state
   knockbackActive = false;
   knockbackEndAt = 0;
@@ -378,17 +380,20 @@ class Character extends MoveableObject {
     if (this.animKey !== 'hurt') {
       this.hurtFrameIndex = 0;
       this.lastHurtFrameTime = now;
+  this._hurtAnimStartAt = now;
     }
     const sheetImg = this.imageCache[this.HURT_SHEET.path];
     if (sheetImg) {
       this.img = sheetImg;
-      const cnt = this.getSheetCount(this.HURT_SHEET, sheetImg) || 1;
-      // advance only until last frame, no loop
-      if (this.hurtFrameIndex < cnt - 1 && now - this.lastHurtFrameTime >= this.HURT_FRAME_DELAY) {
-        this.hurtFrameIndex++;
-        this.lastHurtFrameTime = now;
-      }
-      this.setSheetFrame(this.HURT_SHEET, this.hurtFrameIndex);
+  const cnt = this.getSheetCount(this.HURT_SHEET, sheetImg) || 1;
+  // Drive frames so last frame aligns with the end of hurt (synced to knockback)
+  const start = this._hurtAnimStartAt || now;
+  const end = this.hurtEndAt || (start + this.HURT_FRAME_DELAY * cnt);
+  const total = Math.max(1, end - start);
+  const elapsed = Math.max(0, Math.min(total, now - start));
+  const targetIdx = Math.min(cnt - 1, Math.floor((elapsed / total) * cnt));
+  this.hurtFrameIndex = Math.max(this.hurtFrameIndex, targetIdx);
+  this.setSheetFrame(this.HURT_SHEET, this.hurtFrameIndex);
     }
     this.animKey = 'hurt';
   }
@@ -525,6 +530,8 @@ class Character extends MoveableObject {
     this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
     // Only horizontal push; no vertical hop
     this.speedY = 0;
+  // Sync hurt duration to knockback window exactly
+  this.hurtEndAt = this.knockbackEndAt;
   }
 
   // While dodging, ignore damage
@@ -760,5 +767,13 @@ class Character extends MoveableObject {
         img.src = c.path;
       } catch (_) {}
     }
+  }
+
+  // Prefer exact hurt timing synced to knockback
+  isHurt() {
+    if (this.hurtEndAt) {
+      return Date.now() < this.hurtEndAt;
+    }
+    return super.isHurt();
   }
 }
