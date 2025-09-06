@@ -54,9 +54,13 @@ class Goblin extends MoveableObject {
     // Hurt sheet (always 3 sprites)
     const hurtPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/4_hurt/1_hurt_3_sprites.png`;
     this.hurtSheet = { path: hurtPath, cols: 3, rows: 1, count: 3 };
-    // Death sheet (always 5 sprites)
-    const deadPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/5_dead/1_dead_5_sprites.png`;
-    this.deathSheet = { path: deadPath, cols: 5, rows: 1, count: 5 };
+    // Death sheet (varies by type: g1=5, g2=6, g3=4 sprites)
+    const deathCountByType = { 1: 5, 2: 6, 3: 4 };
+    const dCount = deathCountByType[clampedType] || 5;
+    const deadPath = `assets/img/3_enemies_goblins/goblin_${clampedType}/5_dead/1_dead_${dCount}_sprites.png`;
+    // prefer explicit count, also keep ability to infer from filename if pattern changes
+    const inferred = this.getSpriteCountFromFilename(deadPath) || dCount;
+    this.deathSheet = { path: deadPath, cols: inferred, rows: 1, count: inferred };
 
     // preload
     this.loadImage(idlePath);
@@ -104,8 +108,9 @@ class Goblin extends MoveableObject {
       // death animation has highest priority
       if (this.dying) {
         const sheet = this.deathSheet;
+        const dCount = sheet?.count || 5;
         if (now - this.deathLastAt >= this.DEATH_DELAY) {
-          const maxIdx = (sheet.count || 5) - 1;
+          const maxIdx = dCount - 1;
           if (this.deathFrameIdx < maxIdx) this.deathFrameIdx++;
           this.deathLastAt = now;
         }
@@ -151,6 +156,11 @@ class Goblin extends MoveableObject {
   }
 
   updateKnockback(now) {
+    // Ignore any knockback while dying/dead
+    if (this.dying || this.dead) {
+      this.knockbackVX = 0;
+      return;
+    }
     if (!this.knockbackEndAt || now < this.knockbackEndAt) {
       // apply horizontal knockback when active
       if (this.knockbackVX) {
@@ -163,6 +173,8 @@ class Goblin extends MoveableObject {
   }
 
   onHitByAttack(attacker) {
+    // Ignore further hits/knockback if already dying or dead
+    if (this.dying || this.dead) return;
     const now = Date.now();
     // debounce frequent hits
     if (now - (this.recentlyHitAt || 0) < 200) return;
@@ -195,8 +207,8 @@ class Goblin extends MoveableObject {
     // reset animation counters
     this.deathFrameIdx = 0;
     this.deathLastAt = now;
-    // compute despawn moment after full animation + linger
-    const frames = this.deathSheet.count || 5;
+    // compute despawn moment after full animation + linger using dynamic count
+    const frames = this.deathSheet?.count || 5;
     this._despawnAt = now + frames * this.DEATH_DELAY + this.DEAD_LINGER_MS;
   }
 

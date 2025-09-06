@@ -119,6 +119,7 @@ class World {
     if (!hitbox) return;
     for (const enemy of this.level.enemies) {
       if (!(enemy instanceof Goblin)) continue;
+      if (enemy.dying || enemy.dead) continue;
       // simple AABB vs rectangle
       const eb = enemy.getBoundsWithOffset?.(enemy) || {
         left: enemy.x,
