@@ -1,7 +1,7 @@
 class Character extends MoveableObject {
   height = 200; // was 240
   width = 210; // wider again
-  y = 200; // start directly on ground to avoid initial fall
+  y = 240; // start directly on ground to avoid initial fall
   groundY = 240;
   speed = 10;
   jumpFrameIndex = 0;

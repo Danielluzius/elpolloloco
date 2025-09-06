@@ -4,6 +4,16 @@ class Goblin extends MoveableObject {
   width = 210;
   y = 180; // align to same ground line as Character
   groundY = 180;
+  // enemy heart overlay
+  heartPaths = {
+    1: 'assets/img/7_statusbars/2_enemie_hearts/monster_heart1.png',
+    2: 'assets/img/7_statusbars/2_enemie_hearts/monster_heart2.png',
+    3: 'assets/img/7_statusbars/2_enemie_hearts/monster_heart3.png',
+    4: 'assets/img/7_statusbars/2_enemie_hearts/monster_heart4.png',
+  };
+  heartW = 20;
+  heartH = 20;
+  heartYOffset = -140; // how much space above the head
   // idle anim
   animDelay = 220;
   idleSheet = null; // { path, cols, rows, count }
@@ -19,8 +29,8 @@ class Goblin extends MoveableObject {
   attackSheet = null; // { path, cols, rows, count }
   attackFrameIdx = 0;
   attackLastAt = 0;
-  ATTACK_FRAME_DELAY = 70;
-  ATTACK_WINDUP_MS = 180;
+  ATTACK_FRAME_DELAY = 60;
+  ATTACK_WINDUP_MS = 120;
   attackWindupEndAt = 0;
   attackCooldownEndAt = 0;
   appliedAttackDamage = false;
@@ -72,9 +82,9 @@ class Goblin extends MoveableObject {
   // aggro/chase
   detectionRadius = 320;
   aware = false;
-  CHASE_SPEED_FACTOR = 1.6;
-  AWARE_SPEED_MULT = 1.35;
-  chaseSpeed = 2.6;
+  CHASE_SPEED_FACTOR = 2.7; // increased for faster chase base
+  AWARE_SPEED_MULT = 1.55; // increased multiplier while aware
+  chaseSpeed = 3.7; // nominal fallback when patrolSpeed is very low
   ATTACK_RANGE_X = 60;
   // knockback
   knockbackVX = 0;
@@ -182,6 +192,11 @@ class Goblin extends MoveableObject {
 
     this.applyGravity();
     this.animate();
+
+    // Preload heart images for overlay without changing current sprite
+    try {
+      this.loadImages(Object.values(this.heartPaths));
+    } catch (_) {}
   }
 
   animate() {
@@ -525,7 +540,7 @@ class Goblin extends MoveableObject {
     // end of attack
     if (this.attackFrameIdx >= (sheet.count || 1) - 1) {
       this.isAttacking = false;
-      this.attackCooldownEndAt = now + 450; // shorter cooldown for dynamic gameplay
+      this.attackCooldownEndAt = now + 380; // even shorter cooldown for more pressure
       this.attackFrameIdx = 0;
     }
   }
@@ -563,5 +578,29 @@ class Goblin extends MoveableObject {
     world.damageCharacterIfNeeded();
     // knockback the character from goblin
     ch.applyKnockbackFrom?.(this);
+  }
+
+  // Draw overlay elements (called after main sprite). This draws the heart above the head
+  // while the goblin has aggro (aware) or during the death sequence.
+  drawFrame(ctx) {
+    try {
+      // Only visible during aggro or death sequence
+      const show = (!!this.aware && !this.dead) || this.dying;
+      if (!show) return;
+      // Pick heart state: 1 (aggro, 0 hits), 2 (after 1 hit), 3 (after 2 hits), 4 (death)
+      let state = 1;
+      if (this.dying) state = 4;
+      else state = Math.min(3, 1 + (this.hitCount || 0));
+      const path = this.heartPaths[state];
+      const img = this.imageCache?.[path];
+      if (!img) return;
+      const cam = this.world?.camera_x || 0;
+      // Compute base draw origin consistent with World.drawObjectAt mirroring
+      const baseX = this.otherDirection ? 0 : Math.round(this.x + cam);
+      const baseY = Math.round(this.y);
+      const dx = Math.round(baseX + (this.width - this.heartW) / 2);
+      const dy = Math.round(baseY - this.heartH - this.heartYOffset);
+      ctx.drawImage(img, dx, dy, this.heartW, this.heartH);
+    } catch (_) {}
   }
 }
