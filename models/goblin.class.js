@@ -190,6 +190,28 @@ class Goblin extends MoveableObject {
   animate() {
     setInterval(() => {
       const now = Date.now();
+      // If the character is dead, force goblin into idle and keep playing idle animation
+      const chDead = this.world?.character?.isDead?.();
+      if (chDead) {
+        // reset behavior flags
+        this.aware = false;
+        this.isAttacking = false;
+        this.hurtActive = false;
+        this.knockbackVX = 0;
+        this._moving = false;
+        this.isPaused = true;
+        this.pauseEndAt = Date.now() + 60 * 60 * 1000; // effectively freeze patrol
+        // show and advance idle animation
+        if (now - this._lastFrameAt >= this.animDelay) {
+          const order = this.idleOrder && this.idleOrder.length ? this.idleOrder : [0];
+          this._idleIdx = (this._idleIdx + 1) % order.length;
+          const frame = order[this._idleIdx] ?? 0;
+          this.img = this.imageCache[this.idleSheet.path] || this.img;
+          this.setSheetFrameAuto(this.idleSheet, frame);
+          this._lastFrameAt = now;
+        }
+        return;
+      }
       // update knockback motion
       this.updateKnockback(now);
 
@@ -440,6 +462,7 @@ class Goblin extends MoveableObject {
     if (this.dying || this.hurtActive) return;
     const ch = this.world?.character;
     if (!ch) return;
+    if (ch.isDead?.()) return; // do nothing when the character is dead
     const leftBound = this.spawnX - this.patrolRadius;
     const rightBound = this.spawnX + this.patrolRadius;
     const dx = ch.x - this.x;

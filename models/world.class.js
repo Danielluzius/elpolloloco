@@ -108,13 +108,13 @@ class World {
     });
   }
 
-  // Character melee attack vs goblins
+  // Character melee attack vs goblins and endboss
   checkAttackHits() {
     if (!this.character.isAttackActiveWindow?.()) return;
     const hitbox = this.character.getAttackHitboxRect?.();
     if (!hitbox) return;
     for (const enemy of this.level.enemies) {
-      if (!(enemy instanceof Goblin)) continue;
+      if (!(enemy instanceof Goblin) && !(enemy instanceof Endboss)) continue;
       if (enemy.dying || enemy.dead) continue;
       // simple AABB vs rectangle
       const eb = enemy.getBoundsWithOffset?.(enemy) || {
@@ -126,7 +126,8 @@ class World {
       const overlap =
         eb.right > hitbox.left && eb.left < hitbox.right && eb.bottom > hitbox.top && eb.top < hitbox.bottom;
       if (!overlap) continue;
-      enemy.onHitByAttack?.(this.character);
+      if (typeof enemy.onHitByAttack === 'function') enemy.onHitByAttack(this.character);
+      else if (typeof enemy.applyHit === 'function') this.damageBossIfNeeded(enemy);
     }
   }
 
