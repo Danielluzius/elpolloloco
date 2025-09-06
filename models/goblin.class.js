@@ -522,6 +522,23 @@ class Goblin extends MoveableObject {
     const b = ch.getBoundsWithOffset?.(ch) || { top: ch.y, bottom: ch.y + ch.height };
     const vOverlap = a.bottom > b.top && a.top < b.bottom;
     if (!vOverlap) return;
+    // Block check: if character is blocking and facing toward the goblin, negate damage
+    if (ch.isBlocking) {
+      const goblinOnRight = this.x > ch.x;
+      const facingRight = !ch.otherDirection;
+      const blockCovers = (goblinOnRight && facingRight) || (!goblinOnRight && ch.otherDirection);
+      if (blockCovers) {
+        ch.triggerBlock?.();
+        // small penalty cooldown so goblin doesn't immediately re-hit
+        const now = Date.now();
+        this.attackCooldownEndAt = now + 350;
+        // apply a horizontal knockback to attacker away from the character
+        const dir = goblinOnRight ? 1 : -1; // push further away from the character
+        this.knockbackVX = dir * (this.KNOCKBACK_SPEED_X || 10);
+        this.knockbackEndAt = now + (this.KNOCKBACK_DURATION || 300);
+        return;
+      }
+    }
     // apply damage via world helper (respects isHurt timing)
     world.damageCharacterIfNeeded();
     // knockback the character from goblin

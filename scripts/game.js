@@ -178,6 +178,7 @@ const KEY_MAP = {
   32: 'SPACE',
   68: 'D',
   65: 'A',
+  83: 'S',
 };
 
 window.addEventListener('keydown', (e) => {

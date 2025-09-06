@@ -32,14 +32,24 @@ class Character extends MoveableObject {
   // Hurt animation timing (slower, non-loop)
   hurtFrameIndex = 0;
   lastHurtFrameTime = 0;
-  HURT_FRAME_DELAY = 110; // a bit faster
+  HURT_FRAME_DELAY = 90; // slightly faster per request
   // Knockback state
   knockbackActive = false;
   knockbackEndAt = 0;
   knockbackVX = 0;
   KNOCKBACK_SPEED_X = 10;
-  KNOCKBACK_SPEED_Y = 14;
+  KNOCKBACK_SPEED_Y = 14; // kept for compatibility, but not used anymore
   KNOCKBACK_DURATION = 350; // ms
+  // Jump state (separate from dodge)
+  jumpVX = 0;
+  JUMP_FORWARD_VX = 8;
+  JUMP_INIT_VY = 26; // higher than stomp bounce for small obstacles
+  // Block state
+  isBlocking = false;
+  blockFrameIndex = 0;
+  lastBlockFrameTime = 0;
+  BLOCK_FRAME_DELAY = 100;
+  _blockReady = false;
   // Sprite-sheet config for new idle
   IDLE_SHEET = {
     path: 'assets/img/2_character_man/1_idle.png',
@@ -86,6 +96,15 @@ class Character extends MoveableObject {
     rows: 1,
     count: 3,
   };
+  BLOCK_SHEET = {
+    // We'll try to load one of the expected assets for block; default to single-frame fallback
+    path: 'assets/img/2_character_man/10_block.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 1,
+    rows: 1,
+    count: 1,
+  };
   // Attack hitbox config
   ATTACK_RANGE_X = 80; // reach in front of character
   ATTACK_ACTIVE_START_FRAME = 1; // only frames >= this can hit
@@ -103,6 +122,8 @@ class Character extends MoveableObject {
   lastAttackFrameTime = 0;
   ATTACK_FRAME_DELAY = 90;
   attackEndAt = 0;
+  ATTACK_COOLDOWN_MS = 500;
+  nextAttackAt = 0;
   longIdleFrameIndex = 0;
   lastLongIdleFrameTime = 0;
   LONG_IDLE_FRAME_DELAY = 200;
@@ -129,6 +150,8 @@ class Character extends MoveableObject {
     this.loadImage(this.HURT_SHEET.path);
     this.loadImage(this.ATTACK_SHEET.path);
     this.loadImage(this.DEAD_SHEET.path);
+    // Try candidates for block sheet
+    this.prepareBlockSheet();
     // Set initial sprite to first idle frame so something is visible immediately
     const idleImg = this.imageCache[this.IDLE_SHEET.path];
     if (idleImg) {
@@ -153,10 +176,13 @@ class Character extends MoveableObject {
     setInterval(() => {
       if (this.isDead()) return;
       // During knockback, ignore player input
-      if (!this.knockbackActive && !this.isDodging && !this.isAttacking) this.handleHorizontalMove();
+      if (!this.knockbackActive && !this.isDodging && !this.isAttacking && !this.isBlocking)
+        this.handleHorizontalMove();
       this.updateKnockback();
+      this.updateJump();
       this.updateDodge();
       this.updateAttack();
+      this.updateBlockState();
       this.updateCamera();
       if (!this.knockbackActive) this.handleJumpKey();
       this.markActivityOnAction();
@@ -181,17 +207,20 @@ class Character extends MoveableObject {
   }
 
   markActivityOnAction() {
-    if (this.world.keyboard.D || this.world.keyboard.A) this.lastActivityAt = Date.now();
+    if (this.world.keyboard.D || this.world.keyboard.A || this.world.keyboard.SPACE) this.lastActivityAt = Date.now();
   }
 
   // Throwing removed; D is used for dodge now
 
   handleJumpKey() {
-    // SPACE or D trigger a directional dodge while grounded
-    const canDodgeGrounded = !this.isDodging && !this.isAttacking && !this.knockbackActive && !this.isAboveGround();
-    const wantsSpaceDodge = !!this.world.keyboard.SPACE;
-    const wantsDDodge = !!this.world.keyboard.D;
-    if ((wantsSpaceDodge || wantsDDodge) && canDodgeGrounded) {
+    // Start actions only when grounded and not in conflicting states
+    const canActionGrounded =
+      !this.isDodging && !this.isAttacking && !this.knockbackActive && !this.isAboveGround() && !this.isBlocking;
+    const wantsJump = !!this.world.keyboard.SPACE;
+    const wantsDodge = !!this.world.keyboard.D;
+    if (wantsJump && canActionGrounded) {
+      this.startJump();
+    } else if (wantsDodge && canActionGrounded) {
       this.startDodge();
     }
     // 'A' triggers a standing attack on ground
@@ -200,9 +229,46 @@ class Character extends MoveableObject {
       !this.isDodging &&
       !this.isAttacking &&
       !this.knockbackActive &&
-      !this.isAboveGround()
+      !this.isAboveGround() &&
+      !this.isBlocking
     ) {
       this.startAttack();
+    }
+  }
+
+  startJump() {
+    const now = Date.now();
+    this.isJumping = true;
+    this.speedY = this.JUMP_INIT_VY;
+    const dir = this.otherDirection ? -1 : 1;
+    this.jumpVX = dir * this.JUMP_FORWARD_VX;
+    // init animation counters
+    this.jumpFrameIndex = 0;
+    this.lastJumpFrameTime = now;
+    this.animKey = 'jump';
+    const sheetImg = this.imageCache[this.JUMP_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.JUMP_SHEET, 0);
+    }
+    this.lastActivityAt = now;
+  }
+
+  updateJump() {
+    if (!this.isJumping) return;
+    // forward drift with damping
+    if (Math.abs(this.jumpVX) > 0.1) {
+      this.x += this.jumpVX;
+      this.jumpVX *= 0.94;
+      if (this.world?.level) {
+        if (this.x < 0) this.x = 0;
+        if (this.x > this.world.level.level_end_x) this.x = this.world.level.level_end_x;
+      }
+    }
+    // end jump when landing (i.e., no longer above ground)
+    if (!this.isAboveGround()) {
+      this.isJumping = false;
+      this.jumpVX = 0;
     }
   }
 
@@ -258,7 +324,8 @@ class Character extends MoveableObject {
       if (this.isDodging) return this.setDodgeFrame(now);
       if (this.isHurt()) return this.setHurtFrame();
       if (this.isAttacking) return this.setAttackFrame(now);
-      if (this.isAboveGround()) return this.setJumpFrame(now);
+      if (this.isAboveGround() || this.isJumping) return this.setJumpFrame(now);
+      if (this.isBlocking) return this.setBlockFrame(now);
       this.setGroundedFrame(now);
     }, 50);
   }
@@ -373,6 +440,7 @@ class Character extends MoveableObject {
   // Attack logic
   startAttack() {
     const now = Date.now();
+    if (now < (this.nextAttackAt || 0)) return; // cooldown gate
     this.isAttacking = true;
     this.attackFrameIndex = 0;
     this.lastAttackFrameTime = now;
@@ -395,6 +463,7 @@ class Character extends MoveableObject {
     if (now >= this.attackEndAt) {
       this.isAttacking = false;
       this.attackFrameIndex = 0;
+      this.nextAttackAt = now + this.ATTACK_COOLDOWN_MS;
     }
   }
 
@@ -433,7 +502,7 @@ class Character extends MoveableObject {
     this.resetJumpStateIfNeeded();
     const moving = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
     const inactiveMs = now - this.lastActivityAt;
-    if (moving) return this.setWalkFrame();
+    if (moving && !this.isBlocking) return this.setWalkFrame();
     if (inactiveMs >= this.LONG_IDLE_AFTER_MS) return this.setLongIdleFrame(now);
     if (inactiveMs >= this.IDLE_AFTER_MS) return this.setIdleFrame(now);
     this.setDefaultStandFrame();
@@ -454,7 +523,8 @@ class Character extends MoveableObject {
     this.knockbackActive = true;
     this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
     this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
-    this.speedY = this.KNOCKBACK_SPEED_Y; // small hop
+    // Only horizontal push; no vertical hop
+    this.speedY = 0;
   }
 
   // While dodging, ignore damage
@@ -625,5 +695,70 @@ class Character extends MoveableObject {
     this.jumpFrameIndex = 0;
     this.currentImage = 0;
     this.lastJumpFrameTime = Date.now();
+  }
+
+  // Block helpers
+  updateBlockState() {
+    const wantsBlock = !!this.world?.keyboard?.S;
+    this.isBlocking = wantsBlock && !this.isDodging && !this.isAttacking && !this.isHurt();
+    if (!this.isBlocking) {
+      this.blockFrameIndex = 0; // reset when released
+    }
+  }
+
+  setBlockFrame(now) {
+    // if we have a multi-frame sheet, animate slowly; otherwise hold first frame
+    const sheetImg = this.imageCache[this.BLOCK_SHEET.path];
+    const cnt = this.getSheetCount(this.BLOCK_SHEET, sheetImg) || 1;
+    // Target frame to hold while blocking: third frame (index 2), but never exceed available frames
+    const holdIdx = Math.min(2, Math.max(0, cnt - 1));
+    if (cnt > 1) {
+      if (now - this.lastBlockFrameTime >= this.BLOCK_FRAME_DELAY && this.blockFrameIndex < holdIdx) {
+        this.blockFrameIndex = Math.min(this.blockFrameIndex + 1, holdIdx);
+        this.lastBlockFrameTime = now;
+      }
+    } else {
+      this.blockFrameIndex = 0;
+    }
+    // Always clamp to safe range to avoid invisible sprite due to OOB frame
+    const idx = Math.min(Math.max(0, this.blockFrameIndex), holdIdx);
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.BLOCK_SHEET, idx);
+      this.animKey = 'block';
+    }
+  }
+
+  triggerBlock() {
+    // Called when an attack is successfully blocked; can be used to reset animation or play SFX
+    this.blockFrameIndex = 0;
+    this.lastBlockFrameTime = Date.now();
+  }
+
+  prepareBlockSheet() {
+    // Try a few candidate paths to be resilient to asset layout
+    const candidates = [
+      { path: 'assets/img/2_character_man/10_block.png', count: 4 },
+      { path: 'assets/img/2_character_man/10_block/1_block_6_sprites.png', count: 6 },
+      { path: 'assets/img/2_character_man/10_block/1_block_5_sprites.png', count: 5 },
+      { path: 'assets/img/2_character_man/10_block/1_block_4_sprites.png', count: 4 },
+      { path: 'assets/img/2_character_man/10_block/1_block_3_sprites.png', count: 3 },
+    ];
+    for (const c of candidates) {
+      try {
+        const img = new Image();
+        img.onload = () => {
+          if (!this._blockReady) {
+            this._blockReady = true;
+            this.BLOCK_SHEET.path = c.path;
+            this.BLOCK_SHEET.cols = c.count;
+            this.BLOCK_SHEET.rows = 1;
+            this.BLOCK_SHEET.count = c.count;
+            this.imageCache[c.path] = img;
+          }
+        };
+        img.src = c.path;
+      } catch (_) {}
+    }
   }
 }
