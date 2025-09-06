@@ -32,6 +32,8 @@ class World {
 
   setWorld() {
     this.character.world = this;
+    // inject world reference into all enemies (for goblin AI)
+    (this.level.enemies || []).forEach((e) => (e.world = this));
   }
 
   startGameLoop() {
@@ -101,13 +103,7 @@ class World {
       if (enemy.shouldDespawn?.()) return false;
       if (enemy.dead) return true;
       if (!this.character.isColliding(enemy)) return true;
-      // No stomping kill anymore; apply damage + knockback
-      if (!(enemy instanceof Endboss)) {
-        this.damageCharacterIfNeeded();
-        if (typeof this.character.applyKnockbackFrom === 'function') {
-          this.character.applyKnockbackFrom(enemy);
-        }
-      }
+      // Let goblin attacks control damage; avoid auto damage on mere contact
       return true;
     });
   }
