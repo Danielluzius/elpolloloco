@@ -2,8 +2,8 @@ function createLevel1() {
   const rng = new Randomizer();
   const enemyGen = new EnemyGenerator(rng, { amount: 18, startX: 700, endX: 4200 });
   const rockGen = new RockGenerator(rng, {
-    startX: 650,
-    endX: 4200,
+    startX: 900,
+    endX: 4500,
     minAmount: 4,
     maxAmount: 7,
     minGap: 330,
