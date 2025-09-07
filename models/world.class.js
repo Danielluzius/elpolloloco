@@ -112,6 +112,34 @@ class World {
       // Let goblin attacks control damage; avoid auto damage on mere contact
       return true;
     });
+    // Rock collisions: block horizontal movement if colliding and not clearly above the rock
+    for (const rock of this.level.rocks || []) {
+      const a = this.character.getBoundsWithOffset?.(this.character) || {
+        left: this.character.x,
+        right: this.character.x + this.character.width,
+        top: this.character.y,
+        bottom: this.character.y + this.character.height,
+      };
+      const b = rock.getBoundsWithOffset?.(rock) || {
+        left: rock.x,
+        right: rock.x + rock.width,
+        top: rock.y,
+        bottom: rock.y + rock.height,
+      };
+      const overlap = a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
+      if (!overlap) continue;
+      // If the character's feet are at or above the rock top (jumping over), allow pass-through
+      const feetAboveTop = a.bottom <= b.top + 4;
+      if (feetAboveTop) continue;
+      // Resolve horizontal penetration by the minimal push
+      const pushLeft = a.right - b.left; // push character left by this
+      const pushRight = b.right - a.left; // push character right by this
+      if (pushLeft < pushRight) {
+        this.character.x -= pushLeft;
+      } else {
+        this.character.x += pushRight;
+      }
+    }
   }
 
   // Character melee attack vs goblins and endboss
@@ -218,6 +246,10 @@ class World {
     // Barriers before enemies if any
     for (const b of this.level.barriers || []) {
       this.drawObjectAt(b, Math.round(b.x + this.camera_x * f), Math.round(b.y));
+    }
+    // Static rocks (obstacles to jump over)
+    for (const r of this.level.rocks || []) {
+      this.drawObjectAt(r, Math.round(r.x + this.camera_x * f), Math.round(r.y));
     }
     // Enemies
     for (const e of this.level.enemies || []) {

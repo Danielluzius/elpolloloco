@@ -1,6 +1,18 @@
 function createLevel1() {
   const rng = new Randomizer();
   const enemyGen = new EnemyGenerator(rng, { amount: 18, startX: 700, endX: 4200 });
+  const rockGen = new RockGenerator(rng, {
+    startX: 650,
+    endX: 4200,
+    minAmount: 4,
+    maxAmount: 7,
+    minGap: 330,
+    maxExtraGap: 320,
+    jitter: 140,
+    minScale: 0.7,
+    maxScale: 0.9,
+    mirrorChance: 0.5,
+  });
   // Coins and bottles removed
 
   // Tile nature layers across the level in the order: 3_layer, cloud_layer, 2_layer, 1_layer, bird_layer
@@ -20,7 +32,8 @@ function createLevel1() {
     bg.push(new BackgroundObject(LBird, x, 0));
   });
 
-  return new Level([...enemyGen.generate(), new Endboss()], [], bg);
+  const rocks = rockGen.generate();
+  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks);
 }
 
 // Optional: initial instance for backward compatibility
