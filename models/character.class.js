@@ -8,11 +8,11 @@ class Character extends MoveableObject {
   introActive = false;
   introStartX = 0;
   introTargetX = 0;
-  introSpeed = 2.5; // ~150 px/s at 60fps
+  introSpeed = 3.5; // slightly faster intro walk (~210 px/s at 60fps)
   defaultStartX = 0;
   introFrameIndex = 0;
   lastIntroFrameTime = 0;
-  INTRO_FRAME_DELAY = 120; // ms per frame for natural walk cadence
+  INTRO_FRAME_DELAY = 80; // faster cadence for smoother intro walk
   jumpFrameIndex = 0;
   lastJumpFrameTime = 0;
   JUMP_FRAME_DELAY = 80;
@@ -236,7 +236,9 @@ class Character extends MoveableObject {
   updateCamera() {
     // Lock camera during intro to keep left edge anchored
     if (this.world?.introActive) {
-      this.world.camera_x = 0;
+      // During intro, keep camera already positioned at the final target location
+      const camAtTarget = typeof this.world.introCamX === 'number' ? this.world.introCamX : -this.introTargetX + 100;
+      this.world.camera_x = camAtTarget;
       return;
     }
     this.world.camera_x = -this.x + 100;
@@ -374,7 +376,12 @@ class Character extends MoveableObject {
       this.img = sheetImg;
       this.setSheetFrame(this.WALK_INTRO_SHEET, 0);
     }
-    if (this.world) this.world.introActive = true;
+    if (this.world) {
+      this.world.introActive = true;
+      // Immediately place camera at the end position so the scene starts focused there
+      this.world.introCamX = -targetX + 100;
+      this.world.camera_x = this.world.introCamX;
+    }
   }
 
   updateIntro() {
@@ -387,7 +394,11 @@ class Character extends MoveableObject {
     if (this.x >= this.introTargetX) {
       this.x = this.introTargetX;
       this.introActive = false;
-      if (this.world) this.world.introActive = false;
+      if (this.world) {
+        this.world.introActive = false;
+        // Clear intro camera lock; normal camera follow resumes next tick
+        delete this.world.introCamX;
+      }
       this.setDefaultStandFrame();
       this.lastActivityAt = Date.now();
     }
