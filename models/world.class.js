@@ -213,12 +213,17 @@ class World {
       const drift = typeof obj.getDriftSpeed === 'function' ? obj.getDriftSpeed() : 0; // px/s
       const tileW = typeof obj.getTileStep === 'function' ? obj.getTileStep() : 720; // per-layer step
       const baseX = Math.round(obj.x + this.camera_x * factor + drift * now);
-      const y = Math.round(obj.y + this.camera_x * 0 * factor); // fixed Y in this game
-      const firstTileOffset = Math.floor(-baseX / tileW) - 1;
-      const tilesNeeded = Math.ceil(viewW / tileW) + 3;
-      for (let i = 0; i < tilesNeeded; i++) {
-        const dx = baseX + (firstTileOffset + i) * tileW;
-        this.drawObjectAt(obj, dx, y);
+      const y = Math.round(obj.y);
+      if (tileW && tileW > 0) {
+        const firstTileOffset = Math.floor(-baseX / tileW) - 1;
+        const tilesNeeded = Math.ceil(viewW / tileW) + 3;
+        for (let i = 0; i < tilesNeeded; i++) {
+          const dx = baseX + (firstTileOffset + i) * tileW;
+          this.drawObjectAt(obj, dx, y);
+        }
+      } else {
+        // Non-tiled background sprite
+        this.drawObjectAt(obj, baseX, y);
       }
     }
   }

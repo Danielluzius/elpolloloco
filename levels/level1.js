@@ -23,14 +23,35 @@ function createLevel1() {
   const L2 = 'assets/img/5_background/nature/2_layer.png';
   const L1 = 'assets/img/5_background/nature/1_layer.png';
   const LBird = 'assets/img/5_background/nature/bird_layer.png';
-  const bg = [];
+  const bgL3 = [],
+    bgCloud = [],
+    bgL2 = [],
+    bgL1 = [],
+    bgBird = [];
   xs.forEach((x) => {
-    bg.push(new BackgroundObject(L3, x, 0));
-    bg.push(new BackgroundObject(LCloud, x, 0));
-    bg.push(new BackgroundObject(L2, x, 0));
-    bg.push(new BackgroundObject(L1, x, 0));
-    bg.push(new BackgroundObject(LBird, x, 0));
+    bgL3.push(new BackgroundObject(L3, x, 0));
+    bgCloud.push(new BackgroundObject(LCloud, x, 0));
+    bgL2.push(new BackgroundObject(L2, x, 0));
+    bgL1.push(new BackgroundObject(L1, x, 0));
+    bgBird.push(new BackgroundObject(LBird, x, 0));
   });
+  // Insert background rocks behind 1_layer: parallax ~0.9 (slightly behind foreground)
+  const bgRockGen = new BackgroundRockGenerator(rng, {
+    startX: 700,
+    endX: 4200,
+    amount: 10,
+    parallaxFactor: 0.9,
+    yBase: 320, // higher on screen
+    yJitter: 20,
+    minGap: 380,
+    maxExtraGap: 420,
+    jitter: 160,
+    minScale: 1.05, // larger
+    maxScale: 1.3,
+    mirrorChance: 0.35,
+  });
+  const bgRocks = bgRockGen.generate();
+  const bg = [...bgL3, ...bgCloud, ...bgL2, ...bgRocks, ...bgL1, ...bgBird];
 
   const rocks = rockGen.generate();
   return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks);
