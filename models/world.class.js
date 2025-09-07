@@ -80,9 +80,9 @@ class World {
   }
 
   initCharacterHealth() {
-  this.character.healthSegments = 5;
-  this.character.energy = 100; // compatibility with code that reads energy
-  this.characterHealthBar.setSegments(5);
+    this.character.healthSegments = 5;
+    this.character.energy = 100; // compatibility with code that reads energy
+    this.characterHealthBar.setSegments(5);
   }
 
   damageBossIfNeeded(boss) {

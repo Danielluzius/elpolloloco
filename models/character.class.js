@@ -138,8 +138,8 @@ class Character extends MoveableObject {
     this.DEATH_ACCEL = 3;
     this.deathArcInit = false;
     this.deathLastFrameLocked = false;
-  // New: 5-segment health model (L + 3xM + R). Start full by default; world may re-init.
-  this.healthSegments = 5;
+    // New: 5-segment health model (L + 3xM + R). Start full by default; world may re-init.
+    this.healthSegments = 5;
     this.energy = 100; // legacy compatibility for percentage-based bars
   }
 
@@ -546,14 +546,14 @@ class Character extends MoveableObject {
     // If already dead, ignore
     if (this.isDead && this.isDead()) return true;
     // Determine current segments and reduce by 1 (R -> M -> L maps to segments count)
-  const maxSeg = 5;
-  const current = typeof this.healthSegments === 'number' ? this.healthSegments : maxSeg;
+    const maxSeg = 5;
+    const current = typeof this.healthSegments === 'number' ? this.healthSegments : maxSeg;
     const next = Math.max(0, current - 1);
     this.healthSegments = next;
     // Map segments -> legacy energy (for existing logic/animations)
-  // 5 -> 100, 4 -> 80, 3 -> 60, 2 -> 40, 1 -> 20, 0 -> 0
-  const segToEnergy = { 5: 100, 4: 80, 3: 60, 2: 40, 1: 20, 0: 0 };
-  this.energy = segToEnergy[next] ?? Math.round((next / maxSeg) * 100);
+    // 5 -> 100, 4 -> 80, 3 -> 60, 2 -> 40, 1 -> 20, 0 -> 0
+    const segToEnergy = { 5: 100, 4: 80, 3: 60, 2: 40, 1: 20, 0: 0 };
+    this.energy = segToEnergy[next] ?? Math.round((next / maxSeg) * 100);
     // Mark lastHit for short invulnerability if hurtEndAt is not in use yet
     this.lastHit = Date.now();
     // Trigger hurt animation timing window if not already set by knockback
