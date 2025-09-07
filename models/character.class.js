@@ -4,6 +4,15 @@ class Character extends MoveableObject {
   y = 240; // start directly on ground to avoid initial fall
   groundY = 240;
   speed = 10;
+  // Intro auto-walk state
+  introActive = false;
+  introStartX = 0;
+  introTargetX = 0;
+  introSpeed = 2.5; // ~150 px/s at 60fps
+  defaultStartX = 0;
+  introFrameIndex = 0;
+  lastIntroFrameTime = 0;
+  INTRO_FRAME_DELAY = 120; // ms per frame for natural walk cadence
   jumpFrameIndex = 0;
   lastJumpFrameTime = 0;
   JUMP_FRAME_DELAY = 80;
@@ -76,6 +85,15 @@ class Character extends MoveableObject {
     frameH: 128,
     // cols/rows/count will be inferred from image dimensions
   };
+  // Intro WALK sheet (9 frames)
+  WALK_INTRO_SHEET = {
+    path: 'assets/img/2_character_man/9_walk.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 9,
+    rows: 1,
+    count: 9,
+  };
   JUMP_SHEET = {
     path: 'assets/img/2_character_man/6_jump.png',
     frameW: 128,
@@ -143,6 +161,8 @@ class Character extends MoveableObject {
     // New: 5-segment health model (L + 3xM + R). Start full by default; world may re-init.
     this.healthSegments = 5;
     this.energy = 100; // legacy compatibility for percentage-based bars
+    // Remember where the character normally starts (target for intro)
+    this.defaultStartX = this.x;
   }
 
   initImages() {
@@ -150,6 +170,7 @@ class Character extends MoveableObject {
     this.loadImage(this.IDLE_SHEET.path);
     this.loadImage(this.LONG_IDLE_SHEET.path);
     this.loadImage(this.WALK_SHEET.path);
+    this.loadImage(this.WALK_INTRO_SHEET.path);
     this.loadImage(this.JUMP_SHEET.path);
     this.loadImage(this.HURT_SHEET.path);
     this.loadImage(this.ATTACK_SHEET.path);
@@ -179,6 +200,12 @@ class Character extends MoveableObject {
   startInputLoop() {
     setInterval(() => {
       if (this.isDead()) return;
+      // During intro, auto-walk and lock camera; ignore player input
+      if (this.introActive) {
+        this.updateIntro();
+        this.updateCamera();
+        return;
+      }
       // During knockback, ignore player input
       if (!this.knockbackActive && !this.isDodging && !this.isAttacking && !this.isBlocking)
         this.handleHorizontalMove(); // applies both on ground and mid-air
@@ -207,6 +234,11 @@ class Character extends MoveableObject {
   }
 
   updateCamera() {
+    // Lock camera during intro to keep left edge anchored
+    if (this.world?.introActive) {
+      this.world.camera_x = 0;
+      return;
+    }
     this.world.camera_x = -this.x + 100;
   }
 
@@ -316,6 +348,7 @@ class Character extends MoveableObject {
     setInterval(() => {
       const now = Date.now();
       if (this.isDead()) return this.setDeadFrame();
+      if (this.introActive) return this.setIntroWalkFrame();
       // Dodge animation has priority over hurt and ground/air states
       if (this.isDodging) return this.setDodgeFrame(now);
       if (this.isHurt()) return this.setHurtFrame();
@@ -324,6 +357,58 @@ class Character extends MoveableObject {
       if (this.isBlocking) return this.setBlockFrame(now);
       this.setGroundedFrame(now);
     }, 50);
+  }
+
+  // Intro helpers
+  startIntroWalk(startX, targetX) {
+    this.introActive = true;
+    this.introStartX = startX;
+    this.introTargetX = targetX;
+    this.x = startX;
+    this.otherDirection = false; // walk in facing right
+    this.currentImage = 0;
+    this.introFrameIndex = 0;
+    this.lastIntroFrameTime = Date.now();
+    const sheetImg = this.imageCache[this.WALK_INTRO_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.WALK_INTRO_SHEET, 0);
+    }
+    if (this.world) this.world.introActive = true;
+  }
+
+  updateIntro() {
+    // Move smoothly towards target; stop exactly on target
+    const dx = this.introTargetX - this.x;
+    if (dx > 0) {
+      const step = Math.min(this.introSpeed, dx);
+      this.x += step;
+    }
+    if (this.x >= this.introTargetX) {
+      this.x = this.introTargetX;
+      this.introActive = false;
+      if (this.world) this.world.introActive = false;
+      this.setDefaultStandFrame();
+      this.lastActivityAt = Date.now();
+    }
+  }
+
+  setIntroWalkFrame() {
+    const now = Date.now();
+    if (this.animKey !== 'intro_walk') {
+      this.currentImage = 0;
+      this.introFrameIndex = 0;
+      this.lastIntroFrameTime = now;
+    }
+    const sheetImg = this.imageCache[this.WALK_INTRO_SHEET.path];
+    this.img = sheetImg;
+    const cnt = this.getSheetCount(this.WALK_INTRO_SHEET, sheetImg) || 9;
+    if (now - this.lastIntroFrameTime >= this.INTRO_FRAME_DELAY) {
+      this.introFrameIndex = (this.introFrameIndex + 1) % cnt;
+      this.lastIntroFrameTime = now;
+    }
+    this.setSheetFrame(this.WALK_INTRO_SHEET, this.introFrameIndex % cnt);
+    this.animKey = 'intro_walk';
   }
 
   setDeadFrame() {

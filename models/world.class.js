@@ -27,6 +27,14 @@ class World {
     this.startHudLoop();
     this.initBossHealth();
     this.initCharacterHealth();
+    // Start intro animation: character walks in from left edge to its default start X
+    try {
+      const targetX = this.character.defaultStartX || 0;
+      const startX = -Math.max(100, this.character.width); // off-screen left
+      if (typeof this.character.startIntroWalk === 'function') {
+        this.character.startIntroWalk(startX, targetX);
+      }
+    } catch (_) {}
   }
 
   setWorld() {
