@@ -10,7 +10,9 @@ class BackgroundRockGenerator {
     this.minScale = settings.minScale ?? 0.6;
     this.maxScale = settings.maxScale ?? 1.0;
     this.mirrorChance = settings.mirrorChance ?? 0.4;
-    this.yBase = settings.yBase ?? 160; // base Y so they sit near ground in background
+    // yBase is treated as the baseline (bottom) Y where rocks sit on the ground
+    this.yBase = settings.yBase ?? 160;
+    // Allow only downward jitter (bury slightly), to avoid floating rocks when sizes vary
     this.yJitter = settings.yJitter ?? 16;
     this.parallaxFactor = settings.parallaxFactor ?? 0.9; // behind 1_layer (1.0)
   }
@@ -29,7 +31,9 @@ class BackgroundRockGenerator {
       const scale = this.minScale + (this.maxScale - this.minScale) * this.rng.next();
       const width = Math.round(baseW * scale);
       const height = Math.round(baseH * scale);
-      const py = this.yBase + this.rng.int(-this.yJitter, this.yJitter);
+      // Anchor by bottom: compute y so bottom aligns to baseline, then optionally bury downwards a bit
+      const bury = this.rng.int(0, this.yJitter);
+      const py = this.yBase - height + bury;
       const sprite = new BackgroundSprite(path, px, py, { width, height, parallaxFactor: this.parallaxFactor });
       if (this.rng.next() < this.mirrorChance) sprite.otherDirection = true;
       items.push(sprite);

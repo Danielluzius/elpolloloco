@@ -41,7 +41,8 @@ function createLevel1() {
     endX: 4200,
     amount: 10,
     parallaxFactor: 0.9,
-    yBase: 320, // higher on screen
+    // Baseline at lower 15% of 480px canvas -> 480 * 0.85 ≈ 408
+    yBase: 408,
     yJitter: 20,
     minGap: 380,
     maxExtraGap: 420,
@@ -54,7 +55,9 @@ function createLevel1() {
   const bg = [...bgL3, ...bgCloud, ...bgL2, ...bgRocks, ...bgL1, ...bgBird];
 
   const rocks = rockGen.generate();
-  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks);
+  // Example: foreground rock placed near the start. Adjust x, y, width, height as desired.
+  const foreground = [new ForegroundRock(-200, 200, 360, 280)];
+  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks, foreground);
 }
 
 // Optional: initial instance for backward compatibility

@@ -273,6 +273,10 @@ class World {
     for (const c of this.level.clouds || []) {
       this.drawObjectAt(c, Math.round(c.x + this.camera_x * fMid), Math.round(c.y));
     }
+    // Foreground overlays: always drawn last so they appear above character and enemies
+    for (const fo of this.level.foregroundObjects || []) {
+      this.drawObjectAt(fo, Math.round(fo.x + this.camera_x * f), Math.round(fo.y));
+    }
     this.drawBossBarIfAny();
   }
 
