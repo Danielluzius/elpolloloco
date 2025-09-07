@@ -44,7 +44,7 @@ class Character extends MoveableObject {
   KNOCKBACK_DURATION = 350; // ms
   // Jump state (separate from dodge)
   jumpVX = 0;
-  JUMP_FORWARD_VX = 8;
+  JUMP_FORWARD_VX = 0; // no horizontal impulse on jump
   JUMP_INIT_VY = 26; // higher than stomp bounce for small obstacles
   // Block state
   isBlocking = false;
@@ -176,7 +176,7 @@ class Character extends MoveableObject {
       if (this.isDead()) return;
       // During knockback, ignore player input
       if (!this.knockbackActive && !this.isDodging && !this.isAttacking && !this.isBlocking)
-        this.handleHorizontalMove();
+        this.handleHorizontalMove(); // applies both on ground and mid-air
       this.updateKnockback();
       this.updateJump();
       this.updateDodge();
@@ -239,8 +239,8 @@ class Character extends MoveableObject {
     const now = Date.now();
     this.isJumping = true;
     this.speedY = this.JUMP_INIT_VY;
-    const dir = this.otherDirection ? -1 : 1;
-    this.jumpVX = dir * this.JUMP_FORWARD_VX;
+    // No horizontal impulse on jump; horizontal control remains via arrow keys
+    this.jumpVX = 0;
     // init animation counters
     this.jumpFrameIndex = 0;
     this.lastJumpFrameTime = now;
@@ -255,15 +255,7 @@ class Character extends MoveableObject {
 
   updateJump() {
     if (!this.isJumping) return;
-    // forward drift with damping
-    if (Math.abs(this.jumpVX) > 0.1) {
-      this.x += this.jumpVX;
-      this.jumpVX *= 0.94;
-      if (this.world?.level) {
-        if (this.x < 0) this.x = 0;
-        if (this.x > this.world.level.level_end_x) this.x = this.world.level.level_end_x;
-      }
-    }
+    // No forward drift; horizontal control is handled by handleHorizontalMove()
     // end jump when landing (i.e., no longer above ground)
     if (!this.isAboveGround()) {
       this.isJumping = false;
