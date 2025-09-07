@@ -52,6 +52,8 @@ class Character extends MoveableObject {
   lastBlockFrameTime = 0;
   BLOCK_FRAME_DELAY = 100;
   _blockReady = false;
+  // Block resource (5 charges)
+  blockSegments = 5;
   // Sprite-sheet config for new idle
   IDLE_SHEET = {
     path: 'assets/img/2_character_man/1_idle.png',
@@ -736,7 +738,8 @@ class Character extends MoveableObject {
   // Block helpers
   updateBlockState() {
     const wantsBlock = !!this.world?.keyboard?.S;
-    this.isBlocking = wantsBlock && !this.isDodging && !this.isAttacking && !this.isHurt();
+    const canBlockNow = (this.blockSegments || 0) > 0;
+    this.isBlocking = wantsBlock && canBlockNow && !this.isDodging && !this.isAttacking && !this.isHurt();
     if (!this.isBlocking) {
       this.blockFrameIndex = 0; // reset when released
     }
@@ -769,6 +772,12 @@ class Character extends MoveableObject {
     // Called when an attack is successfully blocked; can be used to reset animation or play SFX
     this.blockFrameIndex = 0;
     this.lastBlockFrameTime = Date.now();
+    // Consume one block charge on successful block
+    if (typeof this.blockSegments === 'number' && this.blockSegments > 0) {
+      this.blockSegments = Math.max(0, this.blockSegments - 1);
+      // Optional: brief lock to prevent immediate re-block exploits (keeps feel responsive)
+      // this._blockRecoverAt = Date.now() + 100; // if you want a tiny cooldown
+    }
   }
 
   prepareBlockSheet() {

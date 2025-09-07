@@ -3,6 +3,8 @@ class Endboss extends MoveableObject {
   height = 300;
   width = 240;
   y = 140;
+  // Tighter collision hitbox (narrower and shorter than sprite)
+  offset = { top: 90, right: 60, bottom: 0, left: 60 };
   // Movement
   speed = 1.4; // slow approach
   chaseSpeed = 1.4;

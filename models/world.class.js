@@ -7,6 +7,7 @@ class World {
   camera_x = 0;
   statusBar = new StatusBar();
   characterHealthBar = new CharacterHealthBar();
+  characterBlockBar = new CharacterBlockBar();
   bossSegBar = new BossSegmentHealthBar();
   bossStatusBar = new BossStatusBar();
   _gameLoop = null;
@@ -58,6 +59,10 @@ class World {
     if (typeof this.character.healthSegments === 'number') {
       this.characterHealthBar.setSegments(this.character.healthSegments);
     }
+    // Update block bar
+    if (typeof this.character.blockSegments === 'number') {
+      this.characterBlockBar.setSegments(this.character.blockSegments);
+    }
   }
 
   updateBossHud() {
@@ -83,6 +88,14 @@ class World {
     this.character.healthSegments = 5;
     this.character.energy = 100; // compatibility with code that reads energy
     this.characterHealthBar.setSegments(5);
+    // Init block bar (5 blocks)
+    this.character.blockSegments = 5;
+    // Align block bar size/position to health bar
+    this.characterBlockBar.width = this.characterHealthBar.width;
+    this.characterBlockBar.height = this.characterHealthBar.height;
+    this.characterBlockBar.x = this.characterHealthBar.x;
+    this.characterBlockBar.y = (this.characterHealthBar.y || 0) + (this.characterHealthBar.height || 20) + 4;
+    this.characterBlockBar.setSegments(this.character.blockSegments);
   }
 
   damageBossIfNeeded(boss) {
@@ -188,6 +201,12 @@ class World {
       this.characterHealthBar,
       Math.round(this.characterHealthBar.x),
       Math.round(this.characterHealthBar.y)
+    );
+    // Draw block bar under health bar
+    this.drawObjectAt(
+      this.characterBlockBar,
+      Math.round(this.characterBlockBar.x),
+      Math.round(this.characterBlockBar.y)
     );
   }
   // Removed coin/bottle HUD and icon helpers
