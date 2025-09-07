@@ -138,6 +138,9 @@ class Character extends MoveableObject {
     this.DEATH_ACCEL = 3;
     this.deathArcInit = false;
     this.deathLastFrameLocked = false;
+    // New: 3-segment health model (L,M,R). Start full by default; world may re-init.
+    this.healthSegments = 3;
+    this.energy = 100; // legacy compatibility for percentage-based bars
   }
 
   initImages() {
@@ -526,7 +529,40 @@ class Character extends MoveableObject {
   // While dodging, ignore damage
   hit() {
     if (this.isDodging) return;
-    super.hit();
+    // Route to segment-based logic; keep fallback to super if not set
+    if (typeof this.applySegmentHit === 'function') {
+      this.applySegmentHit();
+    } else {
+      super.hit();
+    }
+  }
+
+  // New: 3-segment hit processing. Depletes in order R -> M -> L, updates energy, returns true if dead.
+  applySegmentHit() {
+    // Debounce via isHurt handled by world; still guard here if needed
+    // If already dead, ignore
+    if (this.isDead && this.isDead()) return true;
+    // Determine current segments and reduce by 1 (R -> M -> L maps to segments count)
+    const current = typeof this.healthSegments === 'number' ? this.healthSegments : 3;
+    const next = Math.max(0, current - 1);
+    this.healthSegments = next;
+    // Map segments -> legacy energy (for existing logic/animations)
+    // 3 -> 100, 2 -> ~67, 1 -> ~33, 0 -> 0
+    const segToEnergy = { 3: 100, 2: 67, 1: 33, 0: 0 };
+    this.energy = segToEnergy[next] ?? Math.round((next / 3) * 100);
+    // Mark lastHit for short invulnerability if hurtEndAt is not in use yet
+    this.lastHit = Date.now();
+    // Trigger hurt animation timing window if not already set by knockback
+    const now = Date.now();
+    if (!this.hurtEndAt || now >= this.hurtEndAt) {
+      this.hurtEndAt = now + 350; // short default window; usually overwritten by knockback sync
+    }
+    // If no segments left, mark dead
+    if (this.healthSegments <= 0) {
+      this.energy = 0;
+      return true;
+    }
+    return false;
   }
 
   setDefaultStandFrame() {

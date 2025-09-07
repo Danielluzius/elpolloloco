@@ -6,6 +6,7 @@ class World {
   keyboard;
   camera_x = 0;
   statusBar = new StatusBar();
+  characterHealthBar = new CharacterHealthBar();
   bossStatusBar = new BossStatusBar();
   _gameLoop = null;
   _hudLoop = null;
@@ -23,6 +24,7 @@ class World {
     this.startGameLoop();
     this.startHudLoop();
     this.initBossHealth();
+    this.initCharacterHealth();
   }
 
   setWorld() {
@@ -49,7 +51,12 @@ class World {
   }
 
   updateHudBars() {
+    // Keep legacy percentage bar in sync (if used elsewhere)
     this.statusBar.setPercentage(this.character.energy);
+    // Update 3-segment character bar immediately
+    if (typeof this.character.healthSegments === 'number') {
+      this.characterHealthBar.setSegments(this.character.healthSegments);
+    }
   }
 
   updateBossHud() {
@@ -66,6 +73,12 @@ class World {
   initBossHealth() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (boss) boss.initHealth(this.bossStatusBar.getMaxSteps());
+  }
+
+  initCharacterHealth() {
+    this.character.healthSegments = 3;
+    this.character.energy = 100; // compatibility with code that reads energy
+    this.characterHealthBar.setSegments(3);
   }
 
   damageBossIfNeeded(boss) {
@@ -122,7 +135,9 @@ class World {
 
   damageCharacterIfNeeded() {
     if (!this.character.isHurt()) {
-      this.character.hit();
+      const died = this.character.applySegmentHit?.();
+      // Immediate HUD updates after each hit
+      this.characterHealthBar.setSegments(this.character.healthSegments || 0);
       this.statusBar.setPercentage(this.character.energy);
     }
   }
@@ -158,7 +173,11 @@ class World {
 
   drawHud() {
     // HUD/UI stays absolute: factor 0
-    this.drawObjectAt(this.statusBar, Math.round(this.statusBar.x), Math.round(this.statusBar.y));
+    this.drawObjectAt(
+      this.characterHealthBar,
+      Math.round(this.characterHealthBar.x),
+      Math.round(this.characterHealthBar.y)
+    );
   }
   // Removed coin/bottle HUD and icon helpers
 
