@@ -7,7 +7,9 @@ class CharacterHealthBar extends DrawableObject {
   MID_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
   RIGHT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
 
-  segments = 3; // 0..3 (left, middle, right in that fill order)
+  // Config: 5 segments total (left cap + 3 middle + right cap)
+  maxSegments = 5;
+  segments = 5; // 0..5
 
   constructor() {
     super();
@@ -24,32 +26,38 @@ class CharacterHealthBar extends DrawableObject {
     // Position: move a bit further down from the top
     this.y = 35;
     // Size: keep width, reduce height (vertical squash)
-    this.width = 210; // 3 equal segments, no gaps
-    this.height = 40;
+    this.width = 210; // keep total width; 5 segments squeezed in
+    this.height = 20;
   }
 
   setSegments(n) {
-    this.segments = Math.max(0, Math.min(3, Math.floor(n)));
+    const max = this.maxSegments || 5;
+    this.segments = Math.max(0, Math.min(max, Math.floor(n)));
   }
 
   // Determine which image to use for each slot
   getSlotPath(slotIndex) {
-    // slotIndex: 0=left, 1=middle, 2=right
-    const isFull = this.segments > slotIndex; // 3=>all, 2=>L+M, 1=>L
+    // 0 = left cap, max-1 = right cap, in-between = middle
+    const max = this.maxSegments || 5;
+    const isFull = this.segments > slotIndex; // fills from left to right; empties right to left
     if (slotIndex === 0) return isFull ? this.LEFT_FULL : this.LEFT_EMPTY;
-    if (slotIndex === 1) return isFull ? this.MID_FULL : this.MID_EMPTY;
-    return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
+    if (slotIndex === max - 1) return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
+    return isFull ? this.MID_FULL : this.MID_EMPTY;
   }
 
   // Override drawAt to render 3 adjacent segments with no gap
   drawAt(ctx, dx, dy) {
-    const segW = Math.floor(this.width / 3);
+    const count = this.maxSegments || 5;
+    const baseW = Math.floor(this.width / count);
     const segH = this.height;
-    for (let i = 0; i < 3; i++) {
+    // distribute remainder to last segment to avoid gaps
+    for (let i = 0; i < count; i++) {
       const path = this.getSlotPath(i);
       const img = this.imageCache?.[path];
       if (!img) continue;
-      const x = dx + i * segW;
+      const isLast = i === count - 1;
+      const segW = isLast ? this.width - baseW * (count - 1) : baseW;
+      const x = dx + i * baseW;
       ctx.drawImage(img, x, dy, segW, segH);
     }
   }

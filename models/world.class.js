@@ -7,6 +7,7 @@ class World {
   camera_x = 0;
   statusBar = new StatusBar();
   characterHealthBar = new CharacterHealthBar();
+  bossSegBar = new BossSegmentHealthBar();
   bossStatusBar = new BossStatusBar();
   _gameLoop = null;
   _hudLoop = null;
@@ -61,8 +62,11 @@ class World {
 
   updateBossHud() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (boss && typeof boss.healthSteps === 'number') {
-      this.bossStatusBar.setByStep(boss.healthSteps);
+    if (!boss || boss.dead || !boss.awake) return;
+    // Ensure segmented bar matches boss position and visibility
+    if (this.bossSegBar.updateFromBoss(boss)) {
+      const steps = typeof boss.healthSteps === 'number' ? boss.healthSteps : this.bossSegBar.getMaxSteps();
+      this.bossSegBar.setByStep(steps);
     }
   }
 
@@ -72,13 +76,13 @@ class World {
 
   initBossHealth() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (boss) boss.initHealth(this.bossStatusBar.getMaxSteps());
+    if (boss) boss.initHealth(10); // Exact 10 HP (10 segments)
   }
 
   initCharacterHealth() {
-    this.character.healthSegments = 3;
-    this.character.energy = 100; // compatibility with code that reads energy
-    this.characterHealthBar.setSegments(3);
+  this.character.healthSegments = 5;
+  this.character.energy = 100; // compatibility with code that reads energy
+  this.characterHealthBar.setSegments(5);
   }
 
   damageBossIfNeeded(boss) {
@@ -115,8 +119,15 @@ class World {
       const overlap =
         eb.right > hitbox.left && eb.left < hitbox.right && eb.bottom > hitbox.top && eb.top < hitbox.bottom;
       if (!overlap) continue;
-      if (typeof enemy.onHitByAttack === 'function') enemy.onHitByAttack(this.character);
-      else if (typeof enemy.applyHit === 'function') this.damageBossIfNeeded(enemy);
+      if (typeof enemy.onHitByAttack === 'function') {
+        enemy.onHitByAttack(this.character);
+      } else if (enemy instanceof Endboss && typeof enemy.applyHit === 'function') {
+        const atkId = this.character.attackId ?? null;
+        const now = Date.now();
+        enemy.applyHit(1, now, 10, atkId);
+      } else if (typeof enemy.applyHit === 'function') {
+        this.damageBossIfNeeded(enemy);
+      }
     }
   }
 
@@ -202,13 +213,17 @@ class World {
   }
 
   drawBossBarIfAny() {
+    // Draw boss segmented bar above the boss in world space
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
-    if (this.bossStatusBar.updateFromBoss(boss)) {
-      // Draw boss bar in world space near boss but as overlay: treat as main_world factor for now
-      const sx = Math.round(this.bossStatusBar.x + this.camera_x * 1.0);
-      const sy = Math.round(this.bossStatusBar.y);
-      this.drawObjectAt(this.bossStatusBar, sx, sy);
+    if (!boss || boss.dead || !boss.awake) return;
+    // Update bar dimensions/position from boss and sync steps
+    if (this.bossSegBar.updateFromBoss(boss)) {
+      if (typeof boss.healthSteps === 'number') this.bossSegBar.setByStep(boss.healthSteps);
     }
+    const f = 1.0; // same world parallax as entities
+    const sx = Math.round(this.bossSegBar.x + this.camera_x * f);
+    const sy = Math.round(this.bossSegBar.y);
+    this.drawObjectAt(this.bossSegBar, sx, sy);
   }
 
   // Helper: draw object with optional mirroring at a specific screen position

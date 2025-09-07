@@ -39,6 +39,12 @@ class Endboss extends MoveableObject {
     this.initImages();
     this.x = 4550;
     this.initLoops();
+    // Boss HP: 10 segments, not active until alert/awake
+    this.maxHealthSteps = 10;
+    this.healthSteps = 10;
+    this.lastHitAt = 0;
+    this.hitCooldownMs = 200; // in 150–250ms range
+    this._lastAttackIdHit = null; // to prevent multi-hit per player attack
   }
 
   initImages() {
@@ -74,6 +80,11 @@ class Endboss extends MoveableObject {
     const dx = Math.abs(character.x + character.width / 2 - (this.x + this.width / 2));
     if (dx <= this.detectionRadius) {
       this.awake = true;
+      // Ensure HP is initialized to 10 at first alert
+      if (this.healthSteps == null) {
+        this.maxHealthSteps = 10;
+        this.healthSteps = 10;
+      }
       if (!this.alertPlayed && this.state === 'idle') {
         this.state = 'alert';
         this.frameIndex = 0;
@@ -331,30 +342,36 @@ class Endboss extends MoveableObject {
   }
 
   // On hit: reduce HP, no knockback; do not re-trigger hurt animation while already in hurt/attack
-  applyHit(amount = 1, now = Date.now(), defaultMaxSteps = null) {
-    const cooldown = this.hitCooldownMs ?? 250;
-    if (!this.lastHitAt || now - this.lastHitAt >= cooldown) {
-      if (this.maxHealthSteps == null && defaultMaxSteps != null) this.maxHealthSteps = defaultMaxSteps;
-      const max = this.maxHealthSteps ?? defaultMaxSteps ?? 0;
-      const current = this.healthSteps ?? max;
-      this.healthSteps = Math.max(0, current - amount);
-      this.lastHitAt = now;
-      if (this.healthSteps === 0) {
-        this.dead = true;
-        this.speed = 0;
-        this.state = 'dead';
+  applyHit(amount = 1, now = Date.now(), defaultMaxSteps = null, attackId = null) {
+    // Ignore hits before boss is awake
+    if (!this.awake || this.dead) return false;
+    // Anti multi-hit per same player attack
+    if (attackId != null && this._lastAttackIdHit === attackId) return false;
+    const cooldown = this.hitCooldownMs ?? 200;
+    if (this.lastHitAt && now - this.lastHitAt < cooldown) return false;
+    // Initialize HP baseline
+    if (this.maxHealthSteps == null) this.maxHealthSteps = defaultMaxSteps ?? 10;
+    if (this.healthSteps == null) this.healthSteps = this.maxHealthSteps;
+    const max = this.maxHealthSteps;
+    const current = this.healthSteps;
+    const next = Math.max(0, current - 1); // always -1 segment per spec
+    this.healthSteps = next;
+    this.lastHitAt = now;
+    if (attackId != null) this._lastAttackIdHit = attackId;
+    if (this.healthSteps === 0) {
+      this.dead = true;
+      this.speed = 0;
+      this.state = 'dead';
+      this.frameIndex = 0; // Dead once
+    } else {
+      // Switch to hurt only if not already in non-stackable states
+      if (this.state !== 'hurt' && this.state !== 'attack') {
+        this.state = 'hurt';
         this.frameIndex = 0;
-      } else {
-        // Only switch to hurt if not already attacking or hurting (non-stackable animation)
-        if (this.state !== 'hurt' && this.state !== 'attack') {
-          this.state = 'hurt';
-          this.frameIndex = 0;
-          this.lastFrameTime = now;
-        }
+        this.lastFrameTime = now;
       }
-      return true;
     }
-    return false;
+    return true;
   }
 
   initHealth(maxSteps) {
