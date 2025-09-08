@@ -62,8 +62,9 @@
         <h3 id="howToTitle">How to Play</h3>
         <ul>
           <li>Move: Arrow Left / Right</li>
-          <li>Jump: Space</li>
-          <li>Dodge: D or Space (grounded)</li>
+          <li>Jump: Arrow Up or Space</li>
+          <li>Special: S (requires full charge)</li>
+          <li>Block: D</li>
           <li>Attack: A</li>
           <li>Goal: Defeat the Boss Chicken.</li>
         </ul>

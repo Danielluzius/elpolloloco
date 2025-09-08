@@ -17,18 +17,25 @@ class Character extends MoveableObject {
   lastJumpFrameTime = 0;
   JUMP_FRAME_DELAY = 80;
   isJumping = false;
-  // Dodge state (replaces jump)
-  isDodging = false;
-  dodgeFrameIndex = 0;
-  lastDodgeFrameTime = 0;
-  DODGE_FRAME_DELAY = 40; // legacy default; not used when per-frame delays below are set
-  DODGE_FAST_FRAME_DELAY = 25; // frames 0..7
-  DODGE_SLOW_FRAME_DELAY = 120; // frames 8..9
-  DODGE_FRAME_COUNT = 10; // use all frames of the sprite sheet
-  DODGE_SPEED = 30; // shorter reach
-  DODGE_DURATION = 800; // default; actual duration is tied to frames*delay
-  dodgeVX = 0;
-  dodgeEndAt = 0;
+  // Special attack state (replaces dodge on 'D')
+  isSpecialAttacking = false;
+  specialFrameIndex = 0;
+  lastSpecialFrameTime = 0;
+  SPECIAL_FRAME_DELAY = 90;
+  specialEndAt = 0;
+  // Visual effect for special (10 frames)
+  SPECIAL_EFFECT_PATHS = Array.from(
+    { length: 10 },
+    (_, i) => `assets/img/2_character_man/11_special_attack/${i + 1}.png`
+  );
+  effectFrameIndex = 0;
+  lastEffectFrameTime = 0;
+  EFFECT_FRAME_DELAY = 50;
+  SPECIAL_EFFECT_W = 200;
+  SPECIAL_EFFECT_H = 200;
+  SPECIAL_EFFECT_FEET_OFFSET = 60; // even lower at the feet/ground
+  EFFECT_MOVE_STEP = 26; // VFX travels faster away from player
+  WIND_PUSH_SPEED = 36; // stronger wind push for special
   lastActivityAt = Date.now();
   IDLE_AFTER_MS = 1500;
   LONG_IDLE_AFTER_MS = 6000;
@@ -118,6 +125,14 @@ class Character extends MoveableObject {
     rows: 1,
     count: 3,
   };
+  SPECIAL_SHEET = {
+    path: 'assets/img/2_character_man/3_attack_stand.png',
+    frameW: 128,
+    frameH: 128,
+    cols: 5,
+    rows: 1,
+    count: 5,
+  };
   BLOCK_SHEET = {
     // We'll try to load one of the expected assets for block; default to single-frame fallback
     path: 'assets/img/2_character_man/10_block.png',
@@ -143,6 +158,7 @@ class Character extends MoveableObject {
   attackEndAt = 0;
   ATTACK_COOLDOWN_MS = 500;
   nextAttackAt = 0;
+  // (no lunge for normal attack)
   longIdleFrameIndex = 0;
   lastLongIdleFrameTime = 0;
   LONG_IDLE_FRAME_DELAY = 200;
@@ -174,7 +190,10 @@ class Character extends MoveableObject {
     this.loadImage(this.JUMP_SHEET.path);
     this.loadImage(this.HURT_SHEET.path);
     this.loadImage(this.ATTACK_SHEET.path);
+    this.loadImage(this.SPECIAL_SHEET.path);
     this.loadImage(this.DEAD_SHEET.path);
+    // Preload special effect frames
+    this.SPECIAL_EFFECT_PATHS.forEach((p) => this.loadImage(p));
     // Try candidates for block sheet
     this.prepareBlockSheet();
     // Set initial sprite to first idle frame so something is visible immediately
@@ -207,11 +226,11 @@ class Character extends MoveableObject {
         return;
       }
       // During knockback, ignore player input
-      if (!this.knockbackActive && !this.isDodging && !this.isAttacking && !this.isBlocking)
+      if (!this.knockbackActive && !this.isSpecialAttacking && !this.isAttacking && !this.isBlocking)
         this.handleHorizontalMove(); // applies both on ground and mid-air
       this.updateKnockback();
       this.updateJump();
-      this.updateDodge();
+      this.updateSpecialAttack();
       this.updateAttack();
       this.updateBlockState();
       this.updateCamera();
@@ -245,26 +264,31 @@ class Character extends MoveableObject {
   }
 
   markActivityOnAction() {
-    if (this.world.keyboard.D || this.world.keyboard.A || this.world.keyboard.SPACE) this.lastActivityAt = Date.now();
+    if (this.world.keyboard.S || this.world.keyboard.A || this.world.keyboard.UP || this.world.keyboard.SPACE)
+      this.lastActivityAt = Date.now();
   }
 
-  // Throwing removed; D is used for dodge now
+  // Throwing removed; D is used for special now
 
   handleJumpKey() {
     // Start actions only when grounded and not in conflicting states
     const canActionGrounded =
-      !this.isDodging && !this.isAttacking && !this.knockbackActive && !this.isAboveGround() && !this.isBlocking;
-    const wantsJump = !!this.world.keyboard.SPACE;
-    const wantsDodge = !!this.world.keyboard.D;
+      !this.isSpecialAttacking &&
+      !this.isAttacking &&
+      !this.knockbackActive &&
+      !this.isAboveGround() &&
+      !this.isBlocking;
+    const wantsJump = !!(this.world.keyboard.UP || this.world.keyboard.SPACE);
+    const wantsSpecial = !!this.world.keyboard.S;
     if (wantsJump && canActionGrounded) {
       this.startJump();
-    } else if (wantsDodge && canActionGrounded) {
-      this.startDodge();
+    } else if (wantsSpecial && canActionGrounded) {
+      this.startSpecialAttack();
     }
     // 'A' triggers a standing attack on ground
     if (
       this.world.keyboard.A &&
-      !this.isDodging &&
+      !this.isSpecialAttacking &&
       !this.isAttacking &&
       !this.knockbackActive &&
       !this.isAboveGround() &&
@@ -302,48 +326,58 @@ class Character extends MoveableObject {
     }
   }
 
-  startDodge() {
-    const now = Date.now();
-    const dir = this.otherDirection ? -1 : 1; // left if facing left
-    this.isDodging = true;
-    this.dodgeVX = dir * this.DODGE_SPEED;
-    // Duration aligned exactly to animation frames with variable timing
-    const frames = Math.min(this.DODGE_FRAME_COUNT || 10, this.JUMP_SHEET?.count || 10);
-    const total = Array.from({ length: frames }, (_, i) =>
-      i <= 7 ? this.DODGE_FAST_FRAME_DELAY : this.DODGE_SLOW_FRAME_DELAY
-    ).reduce((a, b) => a + b, 0);
-    this.dodgeEndAt = now + total;
-    // init animation counters
-    this.dodgeFrameIndex = 0;
-    this.lastDodgeFrameTime = now;
-    this.animKey = 'dodge';
-    // ensure we don't have any residual vertical motion
-    this.speedY = 0;
-    // show first frame immediately to avoid visible delay
-    const sheetImg = this.imageCache[this.JUMP_SHEET.path];
-    if (sheetImg) {
-      this.img = sheetImg;
-      this.setSheetFrame(this.JUMP_SHEET, 0);
-    }
-    this.lastActivityAt = now;
-  }
+  // Dodge removed; replaced by special attack
 
-  updateDodge() {
-    if (!this.isDodging) return;
+  updateSpecialAttack() {
+    if (!this.isSpecialAttacking) return;
     const now = Date.now();
-    // Horizontal burst with moderate damping (ends quicker)
-    this.x += this.dodgeVX;
-    this.dodgeVX *= 0.9;
-    // Clamp within level bounds if world exists
-    if (this.world?.level) {
-      if (this.x < 0) this.x = 0;
-      if (this.x > this.world.level.level_end_x) this.x = this.world.level.level_end_x;
+    // Advance character special frames
+    const specImg = this.imageCache[this.SPECIAL_SHEET.path];
+    const specCnt = this.getSheetCount(this.SPECIAL_SHEET, specImg) || 5;
+    if (now - this.lastSpecialFrameTime >= this.SPECIAL_FRAME_DELAY && this.specialFrameIndex < specCnt - 1) {
+      this.specialFrameIndex++;
+      this.lastSpecialFrameTime = now;
     }
-    // End dodge when animation time is up or speed decays sufficiently
-    if (now >= this.dodgeEndAt || Math.abs(this.dodgeVX) < 1.5) {
-      this.isDodging = false;
-      this.dodgeVX = 0;
+    // Advance effect frames
+    const effCnt = this.SPECIAL_EFFECT_PATHS.length;
+    if (now - this.lastEffectFrameTime >= this.EFFECT_FRAME_DELAY && this.effectFrameIndex < effCnt - 1) {
+      this.effectFrameIndex++;
+      this.lastEffectFrameTime = now;
     }
+    // End when both animations have reached the end
+    if (this.specialFrameIndex >= specCnt - 1 && this.effectFrameIndex >= effCnt - 1) {
+      this.isSpecialAttacking = false;
+      this.specialFrameIndex = 0;
+      this.effectFrameIndex = 0;
+    }
+    // Apply wind push to enemies while special runs
+    try {
+      const world = this.world;
+      if (world && world.level && world.level.enemies) {
+        const dir = this.otherDirection ? -1 : 1;
+        const cx = this.x + this.width / 2;
+        const range = 90 + this.effectFrameIndex * 30; // larger expanding wave
+        for (const enemy of world.level.enemies) {
+          if (!enemy || enemy.dead || enemy.dying) continue;
+          const ex = enemy.x + (enemy.width || 0) / 2;
+          const dx = ex - cx;
+          const inFront = dir > 0 ? dx >= 0 && dx <= range : dx <= 0 && -dx <= range;
+          if (!inFront) continue;
+          // basic vertical overlap window
+          const ey = enemy.y + (enemy.height || 0) / 2;
+          const cy = this.y + this.height / 2;
+          if (Math.abs(ey - cy) > 200) continue;
+          // push away
+          const push = dir * this.WIND_PUSH_SPEED;
+          if (typeof enemy.knockbackVX === 'number') {
+            enemy.knockbackVX = push;
+            enemy.knockbackEndAt = Date.now() + 360; // longer push duration
+          } else {
+            enemy.x += push;
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   startAnimLoop() {
@@ -351,8 +385,8 @@ class Character extends MoveableObject {
       const now = Date.now();
       if (this.isDead()) return this.setDeadFrame();
       if (this.introActive) return this.setIntroWalkFrame();
-      // Dodge animation has priority over hurt and ground/air states
-      if (this.isDodging) return this.setDodgeFrame(now);
+      // Special has priority over hurt and ground/air states
+      if (this.isSpecialAttacking) return this.setSpecialFrame(now);
       if (this.isHurt()) return this.setHurtFrame();
       if (this.isAttacking) return this.setAttackFrame(now);
       if (this.isAboveGround() || this.isJumping) return this.setJumpFrame(now);
@@ -420,6 +454,69 @@ class Character extends MoveableObject {
     }
     this.setSheetFrame(this.WALK_INTRO_SHEET, this.introFrameIndex % cnt);
     this.animKey = 'intro_walk';
+  }
+
+  // Special attack sequence
+  startSpecialAttack() {
+    const maxSeg = this.world?.characterChargeBar?.maxSegments || 5;
+    const cur = Math.max(0, Math.min(maxSeg, this.world?.character?.chargeSegments ?? 0));
+    if (cur < maxSeg) return; // need full charge
+    const now = Date.now();
+    this.isSpecialAttacking = true;
+    this.specialFrameIndex = 0;
+    this.effectFrameIndex = 0;
+    this.lastSpecialFrameTime = now;
+    this.lastEffectFrameTime = now;
+    // Consume charge immediately and update HUD
+    if (this.world) {
+      this.world.character.chargeSegments = 0;
+      this.world.characterChargeBar?.setSegments(0);
+    }
+    // Lock into special pose immediately (first frame)
+    const sheetImg = this.imageCache[this.SPECIAL_SHEET.path];
+    if (sheetImg) {
+      this.img = sheetImg;
+      this.setSheetFrame(this.SPECIAL_SHEET, 0);
+      this.animKey = 'special';
+    }
+    this.lastActivityAt = now;
+  }
+
+  setSpecialFrame(now) {
+    const sheetImg = this.imageCache[this.SPECIAL_SHEET.path];
+    const cnt = this.getSheetCount(this.SPECIAL_SHEET, sheetImg) || 5;
+    if (this.specialFrameIndex < cnt - 1) {
+      if (now - this.lastSpecialFrameTime >= this.SPECIAL_FRAME_DELAY) {
+        this.specialFrameIndex++;
+        this.lastSpecialFrameTime = now;
+      }
+    }
+    this.img = sheetImg;
+    this.setSheetFrame(this.SPECIAL_SHEET, Math.min(this.specialFrameIndex, cnt - 1));
+    this.animKey = 'special';
+  }
+
+  // Draw overlay effect for special attack
+  drawFrame(ctx) {
+    if (!this.isSpecialAttacking) return;
+    const idx = Math.max(0, Math.min(this.SPECIAL_EFFECT_PATHS.length - 1, this.effectFrameIndex));
+    const path = this.SPECIAL_EFFECT_PATHS[idx];
+    const img = this.imageCache?.[path];
+    if (!img) return;
+    try {
+      const cam = this.world?.camera_x || 0;
+      // Base X depends on flip: when flipped, our draw context is mirrored and origin is at 0
+      const baseX = this.otherDirection ? 0 : Math.round(this.x + cam);
+      const baseY = Math.round(this.y);
+      // Move effect away from player over time
+      // In mirrored context, positive dx moves left on screen; in normal context, positive dx moves right.
+      // So use a positive move for both facings to always travel toward the facing direction visually.
+      const move = this.effectFrameIndex * this.EFFECT_MOVE_STEP;
+      const dx = Math.round(baseX + (this.width - this.SPECIAL_EFFECT_W) / 2 + move);
+      // Place even closer to the ground
+      const dy = Math.round(baseY + this.height - this.SPECIAL_EFFECT_H + this.SPECIAL_EFFECT_FEET_OFFSET);
+      ctx.drawImage(img, dx, dy, this.SPECIAL_EFFECT_W, this.SPECIAL_EFFECT_H);
+    } catch (_) {}
   }
 
   setDeadFrame() {
@@ -516,21 +613,7 @@ class Character extends MoveableObject {
     this.animKey = 'jump';
   }
 
-  setDodgeFrame(now) {
-    const sheetImg = this.imageCache[this.JUMP_SHEET.path];
-    const cntReal = this.getSheetCount(this.JUMP_SHEET, sheetImg) || 1;
-    const cnt = Math.min(cntReal, this.DODGE_FRAME_COUNT || cntReal);
-    if (this.dodgeFrameIndex < cnt - 1) {
-      const delay = this.dodgeFrameIndex <= 6 ? this.DODGE_FAST_FRAME_DELAY : this.DODGE_SLOW_FRAME_DELAY;
-      if (now - this.lastDodgeFrameTime >= delay) {
-        this.dodgeFrameIndex++;
-        this.lastDodgeFrameTime = now;
-      }
-    }
-    this.img = sheetImg;
-    this.setSheetFrame(this.JUMP_SHEET, Math.min(this.dodgeFrameIndex, cnt - 1));
-    this.animKey = 'dodge';
-  }
+  // setDodgeFrame removed
 
   // Attack logic
   startAttack() {
@@ -615,7 +698,7 @@ class Character extends MoveableObject {
 
   // Ignore knockback while dodging
   applyKnockbackFrom(enemy) {
-    if (this.isDodging) return; // invulnerable to knockback during dodge
+    if (this.isSpecialAttacking) return; // ignore knockback during special
     const now = Date.now();
     const dir = enemy?.x > this.x ? -1 : 1; // push away from enemy
     this.knockbackActive = true;
@@ -629,7 +712,7 @@ class Character extends MoveableObject {
 
   // While dodging, ignore damage
   hit() {
-    if (this.isDodging) return;
+    if (this.isSpecialAttacking) return;
     // Route to segment-based logic; keep fallback to super if not set
     if (typeof this.applySegmentHit === 'function') {
       this.applySegmentHit();
@@ -833,9 +916,9 @@ class Character extends MoveableObject {
 
   // Block helpers
   updateBlockState() {
-    const wantsBlock = !!this.world?.keyboard?.S;
+    const wantsBlock = !!this.world?.keyboard?.D;
     const canBlockNow = (this.blockSegments || 0) > 0;
-    this.isBlocking = wantsBlock && canBlockNow && !this.isDodging && !this.isAttacking && !this.isHurt();
+    this.isBlocking = wantsBlock && canBlockNow && !this.isSpecialAttacking && !this.isAttacking && !this.isHurt();
     if (!this.isBlocking) {
       this.blockFrameIndex = 0; // reset when released
     }

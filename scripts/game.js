@@ -180,10 +180,17 @@ const KEY_MAP = {
 
 window.addEventListener('keydown', (e) => {
   const key = KEY_MAP[e.keyCode];
-  if (key) keyboard[key] = true;
+  if (key) {
+    keyboard[key] = true;
+    // Avoid scrolling with arrow keys/space while playing
+    e.preventDefault?.();
+  }
 });
 
 window.addEventListener('keyup', (e) => {
   const key = KEY_MAP[e.keyCode];
-  if (key) keyboard[key] = false;
+  if (key) {
+    keyboard[key] = false;
+    e.preventDefault?.();
+  }
 });
