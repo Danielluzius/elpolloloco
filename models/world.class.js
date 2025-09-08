@@ -19,6 +19,14 @@ class World {
   _drawReqId = null;
   _stopped = false;
   bgSpeedScale = 1.0; // exact parallax factors without global scaling
+  // Boss intro cutscene state
+  bossIntroActive = false;
+  bossIntroDone = false;
+  _bossIntroCamTimer = null;
+  _bossIntroWalkTimer = null;
+  _bossIntroReturnCamTimer = null;
+  _savedKeyboardRef = null;
+  introCamX = undefined;
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
@@ -51,6 +59,8 @@ class World {
   startGameLoop() {
     this._gameLoop = setInterval(() => {
       if (this.character.isDead()) return;
+      // Trigger boss intro once when all goblins are defeated
+      this.checkBossIntroTrigger();
       this.checkCollisions();
       this.checkAttackHits();
       this.checkEndbossWake();
@@ -132,6 +142,104 @@ class World {
   }
 
   // Boss barrier removed; rely on level_end_x boundary in Character movement
+
+  // Cutscene: camera pans to boss, boss walks left briefly, back to idle, then camera returns
+  checkBossIntroTrigger() {
+    if (this.bossIntroDone || this.bossIntroActive) return;
+    if (!this.areAllGoblinsCleared()) return;
+    const boss = this.level.enemies.find((e) => e instanceof Endboss);
+    if (!boss) return;
+    this.startBossIntro(boss);
+  }
+
+  startBossIntro(boss) {
+    try {
+      this.bossIntroActive = true;
+      // Lock player controls
+      this._savedKeyboardRef = this.keyboard;
+      this.keyboard = {};
+      // Lock camera control (Character respects world.introCamX / bossIntroActive)
+      const from = this.camera_x || 0;
+      // Center boss on screen
+      const center = (this.canvas?.width || 720) / 2;
+      const target = Math.round(center - (boss.x + (boss.width || 0) / 2));
+      const dur = 1200;
+      this.animateCamera(from, target, dur, () => {
+        // Make boss walk a short distance to the left in walk animation
+        const walkDist = 220; // pixels
+        const walkSpeed = 2.0; // px per frame
+        const targetX = boss.x - walkDist;
+        // Force visual state to walk during the scripted move
+        boss.state = 'walk';
+        boss.frameIndex = 0;
+        boss.otherDirection = true; // face left
+        this._bossIntroWalkTimer = setInterval(() => {
+          // Stop conditions
+          if (!this.bossIntroActive) return this.clearBossIntroWalk();
+          const nextX = Math.max(targetX, boss.x - walkSpeed);
+          boss.x = nextX;
+          boss.otherDirection = true;
+          if (boss.x <= targetX + 0.5) {
+            this.clearBossIntroWalk();
+            // Switch back to idle
+            boss.state = 'idle';
+            boss.frameIndex = 0;
+            // Hold camera briefly, then return to character
+            setTimeout(() => this.returnCameraToCharacter(), 500);
+          }
+        }, 1000 / 60);
+      });
+    } catch (_) {
+      // On any error, make sure we resume gameplay
+      this.finishBossIntro();
+    }
+  }
+
+  clearBossIntroWalk() {
+    try {
+      if (this._bossIntroWalkTimer) clearInterval(this._bossIntroWalkTimer);
+    } catch (_) {}
+    this._bossIntroWalkTimer = null;
+  }
+
+  animateCamera(from, to, durationMs, onDone) {
+    const start = Date.now();
+    const easeInOutQuad = (t) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+    if (this._bossIntroCamTimer) {
+      try {
+        clearInterval(this._bossIntroCamTimer);
+      } catch (_) {}
+    }
+    this._bossIntroCamTimer = setInterval(() => {
+      const now = Date.now();
+      const t = Math.max(0, Math.min(1, (now - start) / durationMs));
+      const k = easeInOutQuad(t);
+      this.introCamX = from + (to - from) * k;
+      this.camera_x = this.introCamX;
+      if (t >= 1) {
+        clearInterval(this._bossIntroCamTimer);
+        this._bossIntroCamTimer = null;
+        if (typeof onDone === 'function') onDone();
+      }
+    }, 1000 / 60);
+  }
+
+  returnCameraToCharacter() {
+    const char = this.character;
+    const target = -char.x + 100;
+    const from = this.camera_x || 0;
+    this.animateCamera(from, target, 1000, () => this.finishBossIntro());
+  }
+
+  finishBossIntro() {
+    // Restore controls and clear flags
+    if (this._savedKeyboardRef) this.keyboard = this._savedKeyboardRef;
+    this._savedKeyboardRef = null;
+    this.bossIntroActive = false;
+    this.bossIntroDone = true;
+    // Ensure camera lock is released
+    this.introCamX = undefined;
+  }
 
   // Coins, bottles, and projectiles removed
 
@@ -411,6 +519,8 @@ class World {
   checkEndbossWake() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
+    // Do not wake during the intro cutscene
+    if (this.bossIntroActive) return;
     // Prevent any boss awareness before all goblins are cleared
     if (!this.areAllGoblinsCleared()) return;
     boss.wakeIfNear(this.character);
@@ -419,6 +529,8 @@ class World {
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
+    // Pause reactions during the intro cutscene
+    if (this.bossIntroActive) return;
     // No reactions/attacks until all goblins are defeated
     if (!this.areAllGoblinsCleared()) return;
     boss.checkAndStartAttack(this);
@@ -430,6 +542,9 @@ class World {
       if (this._gameLoop) clearInterval(this._gameLoop);
       if (this._hudLoop) clearInterval(this._hudLoop);
       if (this._drawReqId) cancelAnimationFrame(this._drawReqId);
+      if (this._bossIntroCamTimer) clearInterval(this._bossIntroCamTimer);
+      if (this._bossIntroWalkTimer) clearInterval(this._bossIntroWalkTimer);
+      if (this._bossIntroReturnCamTimer) clearInterval(this._bossIntroReturnCamTimer);
     } catch (e) {}
   }
 

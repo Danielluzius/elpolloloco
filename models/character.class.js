@@ -253,11 +253,10 @@ class Character extends MoveableObject {
   }
 
   updateCamera() {
-    // Lock camera during intro to keep left edge anchored
-    if (this.world?.introActive) {
-      // During intro, keep camera already positioned at the final target location
-      const camAtTarget = typeof this.world.introCamX === 'number' ? this.world.introCamX : -this.introTargetX + 100;
-      this.world.camera_x = camAtTarget;
+    // Lock camera during intros/cutscenes
+    if (this.world?.introActive || this.world?.bossIntroActive) {
+      const camX = typeof this.world.introCamX === 'number' ? this.world.introCamX : -this.x + 100;
+      this.world.camera_x = camX;
       return;
     }
     this.world.camera_x = -this.x + 100;
