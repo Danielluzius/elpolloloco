@@ -27,6 +27,8 @@ class World {
   _bossIntroReturnCamTimer = null;
   _savedKeyboardRef = null;
   introCamX = undefined;
+  // Positive values move the camera further left (boss appears more to the right)
+  bossIntroCamOffsetX = 200;
 
   constructor(canvas, keyboard) {
     this.canvas = canvas;
@@ -160,9 +162,10 @@ class World {
       this.keyboard = {};
       // Lock camera control (Character respects world.introCamX / bossIntroActive)
       const from = this.camera_x || 0;
-      // Center boss on screen
+      // Aim slightly left of center using an offset so we see more space on the right
       const center = (this.canvas?.width || 720) / 2;
-      const target = Math.round(center - (boss.x + (boss.width || 0) / 2));
+      const offset = this.bossIntroCamOffsetX || 0;
+      const target = Math.round(center + offset - (boss.x + (boss.width || 0) / 2));
       const dur = 1200;
       this.animateCamera(from, target, dur, () => {
         // Make boss walk a short distance to the left in walk animation
