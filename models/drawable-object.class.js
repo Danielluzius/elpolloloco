@@ -118,7 +118,7 @@ class DrawableObject {
 
   // Debug overlay: draw sprite bounds (blue) and collision bounds (red) when enabled via window.DEBUG_HITBOX
   drawDebugHitboxes(ctx, dx, dy) {
-  // disabled: no visual hitboxes in production
-  return;
+    // disabled: no visual hitboxes in production
+    return;
   }
 }
