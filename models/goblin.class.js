@@ -335,6 +335,15 @@ class Goblin extends MoveableObject {
     const now = Date.now();
     // debounce frequent hits
     if (now - (this.recentlyHitAt || 0) < 200) return;
+    // Award charge to the attacker once per attack sequence for this goblin
+    try {
+      const atkId = attacker?.attackId ?? null;
+      const marker = atkId != null ? `_lastHitByAttack_${atkId}` : null;
+      if (!marker || !this[marker]) {
+        attacker?.world?.awardCharge?.(1);
+        if (marker) this[marker] = now;
+      }
+    } catch (_) {}
     this.recentlyHitAt = now;
     // increase hit count and check for death
     this.hitCount = (this.hitCount || 0) + 1;

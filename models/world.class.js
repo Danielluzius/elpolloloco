@@ -8,6 +8,7 @@ class World {
   statusBar = new StatusBar();
   characterHealthBar = new CharacterHealthBar();
   characterBlockBar = new CharacterBlockBar();
+  characterChargeBar = new CharacterChargeBar();
   potionHud = new PotionHUD();
   blockPotionHud = new BlockPotionHUD();
   bossSegBar = new BossSegmentHealthBar();
@@ -77,11 +78,26 @@ class World {
     if (typeof this.character.blockSegments === 'number') {
       this.characterBlockBar.setSegments(this.character.blockSegments);
     }
+    // Update charge bar
+    if (typeof this.character.chargeSegments === 'number') {
+      this.characterChargeBar.setSegments(this.character.chargeSegments);
+    }
     // Update potion HUD (0 or 1)
     const count = this.getPotionCount();
     this.potionHud.setCount(count);
     // Update block potion HUD (0 or 1)
     this.blockPotionHud.setCount(this.getBlockPotionCount());
+  }
+
+  // Central helper to add charge and update HUD
+  awardCharge(amount = 1) {
+    const maxSeg = this.characterChargeBar?.maxSegments || 5;
+    const cur = Math.max(0, Math.min(maxSeg, this.character.chargeSegments ?? 0));
+    const next = Math.min(maxSeg, cur + Math.max(0, amount | 0));
+    if (next !== cur) {
+      this.character.chargeSegments = next;
+      this.characterChargeBar.setSegments(next);
+    }
   }
 
   updateBossHud() {
@@ -115,6 +131,13 @@ class World {
     this.characterBlockBar.x = this.characterHealthBar.x;
     this.characterBlockBar.y = (this.characterHealthBar.y || 0) + (this.characterHealthBar.height || 20) + 4;
     this.characterBlockBar.setSegments(this.character.blockSegments);
+    // Init and align charge bar (starts empty)
+    this.character.chargeSegments = 0;
+    this.characterChargeBar.width = this.characterHealthBar.width;
+    this.characterChargeBar.height = this.characterHealthBar.height;
+    this.characterChargeBar.x = this.characterHealthBar.x;
+    this.characterChargeBar.y = (this.characterBlockBar.y || 0) + (this.characterBlockBar.height || 20) + 4;
+    this.characterChargeBar.setSegments(this.character.chargeSegments);
     // Align potion HUD next to health bar
     this.potionHud.x = this.characterHealthBar.x + this.characterHealthBar.width + 12;
     this.potionHud.y =
@@ -187,11 +210,13 @@ class World {
         eb.right > hitbox.left && eb.left < hitbox.right && eb.bottom > hitbox.top && eb.top < hitbox.bottom;
       if (!overlap) continue;
       if (typeof enemy.onHitByAttack === 'function') {
+        // Goblin handles gating and will call world.awardCharge()
         enemy.onHitByAttack(this.character);
       } else if (enemy instanceof Endboss && typeof enemy.applyHit === 'function') {
         const atkId = this.character.attackId ?? null;
         const now = Date.now();
-        enemy.applyHit(1, now, 10, atkId);
+        const applied = enemy.applyHit(1, now, 10, atkId);
+        if (applied) this.awardCharge(1);
       } else if (typeof enemy.applyHit === 'function') {
         this.damageBossIfNeeded(enemy);
       }
@@ -266,6 +291,12 @@ class World {
       this.characterBlockBar,
       Math.round(this.characterBlockBar.x),
       Math.round(this.characterBlockBar.y)
+    );
+    // Draw charge bar under block bar
+    this.drawObjectAt(
+      this.characterChargeBar,
+      Math.round(this.characterChargeBar.x),
+      Math.round(this.characterChargeBar.y)
     );
     // Draw potion icon + count
     this.drawObjectAt(this.potionHud, Math.round(this.potionHud.x), Math.round(this.potionHud.y));
