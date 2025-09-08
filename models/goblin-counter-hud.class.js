@@ -26,7 +26,7 @@ class GoblinCounterHUD extends DrawableObject {
 
     const remaining = Math.max(0, (this.total || 0) - (this.kills || 0));
     const title = String(this.title || 'Goblins');
-    const line2 = `${this.kills || 0} • ${remaining} übrig`;
+    const line2 = `${this.kills || 0} • ${remaining} left`;
 
     ctx.save();
     ctx.textAlign = 'center';

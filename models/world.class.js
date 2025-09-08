@@ -123,6 +123,14 @@ class World {
     } catch (_) {}
   }
 
+  // True when the goblin counter is finished (all goblins defeated)
+  areAllGoblinsCleared() {
+    const total = this._goblinTotal ?? 0;
+    const killed = this._goblinsKilled ?? 0;
+    if (total <= 0) return false; // no data yet -> treat as not cleared
+    return killed >= total;
+  }
+
   // Boss barrier removed; rely on level_end_x boundary in Character movement
 
   // Coins, bottles, and projectiles removed
@@ -403,12 +411,16 @@ class World {
   checkEndbossWake() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
+    // Prevent any boss awareness before all goblins are cleared
+    if (!this.areAllGoblinsCleared()) return;
     boss.wakeIfNear(this.character);
   }
 
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
+    // No reactions/attacks until all goblins are defeated
+    if (!this.areAllGoblinsCleared()) return;
     boss.checkAndStartAttack(this);
   }
 
