@@ -57,9 +57,23 @@ function createLevel1() {
   const rocks = rockGen.generate();
   // Example: foreground rock placed near the start. Adjust x, y, width, height as desired.
   const foreground = [new ForegroundRock(-200, 200, 360, 280)];
-  // Place 3 heart potions along the path
-  const potions = [new Potion(1100), new Potion(2100), new Potion(3200)];
-  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks, foreground, potions);
+  // Vertical center of canvas (480px) for potions
+  const canvasH = 480;
+  const potionH = 36; // default
+  const yCenter = Math.round(canvasH / 2 - potionH / 2);
+  // Place 3 heart potions along the path (centered vertically)
+  const potions = [
+    new Potion(1100, { y: yCenter }),
+    new Potion(2100, { y: yCenter }),
+    new Potion(3200, { y: yCenter }),
+  ];
+  // Place 3 block potions along the path (centered vertically)
+  const blockPotions = [
+    new BlockPotion(1500, { y: yCenter }),
+    new BlockPotion(2600, { y: yCenter }),
+    new BlockPotion(3800, { y: yCenter }),
+  ];
+  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks, foreground, potions, blockPotions);
 }
 
 // Optional: initial instance for backward compatibility
