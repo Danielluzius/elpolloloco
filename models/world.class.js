@@ -13,6 +13,7 @@ class World {
   blockPotionHud = new BlockPotionHUD();
   bossSegBar = new BossSegmentHealthBar();
   bossStatusBar = new BossStatusBar();
+  goblinCounter = new GoblinCounterHUD();
   _gameLoop = null;
   _hudLoop = null;
   _drawReqId = null;
@@ -30,6 +31,7 @@ class World {
     this.startHudLoop();
     this.initBossHealth();
     this.initCharacterHealth();
+    this.initGoblinCounter();
     // Start intro animation: character walks in from left edge to its default start X
     try {
       const targetX = this.character.defaultStartX || 0;
@@ -64,6 +66,7 @@ class World {
     this._hudLoop = setInterval(() => {
       this.updateHudBars();
       this.updateBossHud();
+      this.updateGoblinCounter();
     }, 200);
   }
 
@@ -110,6 +113,16 @@ class World {
     }
   }
 
+  updateGoblinCounter() {
+    try {
+      const total =
+        this._goblinTotal != null
+          ? this._goblinTotal
+          : this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
+      this.goblinCounter.setTotals(total, this._goblinsKilled || 0);
+    } catch (_) {}
+  }
+
   // Boss barrier removed; rely on level_end_x boundary in Character movement
 
   // Coins, bottles, and projectiles removed
@@ -142,9 +155,21 @@ class World {
     this.potionHud.x = this.characterHealthBar.x + this.characterHealthBar.width + 12;
     this.potionHud.y =
       this.characterHealthBar.y + Math.floor((this.characterHealthBar.height - this.potionHud.height) / 2);
-    // Place block potion HUD to the right of heart potion HUD
-    this.blockPotionHud.x = this.potionHud.x + this.potionHud.width + 36;
-    this.blockPotionHud.y = this.potionHud.y;
+    // Place block potion HUD below the heart potion HUD
+    this.blockPotionHud.x = this.potionHud.x;
+    this.blockPotionHud.y = this.potionHud.y + this.potionHud.height + 8;
+  }
+
+  initGoblinCounter() {
+    // Compute total goblins in the level (exclude endboss)
+    const total = this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
+    this._goblinTotal = total;
+    this._goblinsKilled = 0;
+    // Move the counter a bit further down from the very top
+    this.goblinCounter.y = 56; // title at ~56px, numbers line at ~78px
+    // Shift a bit to the right from absolute center
+    this.goblinCounter.xOffset = 60; // tweak as desired
+    this.updateGoblinCounter();
   }
 
   damageBossIfNeeded(boss) {
@@ -302,6 +327,8 @@ class World {
     this.drawObjectAt(this.potionHud, Math.round(this.potionHud.x), Math.round(this.potionHud.y));
     // Draw block potion icon + count
     this.drawObjectAt(this.blockPotionHud, Math.round(this.blockPotionHud.x), Math.round(this.blockPotionHud.y));
+    // Draw goblin counter at the top center
+    this.drawObjectAt(this.goblinCounter, 0, Math.round(this.goblinCounter.y || 6));
   }
   // Removed coin/bottle HUD and icon helpers
 

@@ -376,6 +376,13 @@ class Goblin extends MoveableObject {
     // compute despawn moment after full animation + linger using dynamic count
     const frames = this.deathSheet?.count || 5;
     this._despawnAt = now + frames * this.DEATH_DELAY + this.DEAD_LINGER_MS;
+    // Inform world about a kill once per goblin
+    if (!this._countedKill) {
+      try {
+        this.world && (this.world._goblinsKilled = Math.max(0, (this.world._goblinsKilled || 0) + 1));
+        this._countedKill = true;
+      } catch (_) {}
+    }
   }
 
   shouldDespawn() {
