@@ -365,8 +365,8 @@ class World {
 
   // Potion helpers
   getPotionCount() {
-    // One-slot system: 1 if any picked up and not used yet
-    return this._hasPotion ? 1 : 0;
+    // Stacking up to 3
+    return Math.max(0, Math.min(3, this._potionCount || 0));
   }
 
   checkPotionPickup() {
@@ -377,16 +377,17 @@ class World {
       const pb = p.getBoundsWithOffset?.(p);
       const overlap = pb.right > charB.left && pb.left < charB.right && pb.bottom > charB.top && pb.top < charB.bottom;
       if (!overlap) return true;
-      // If already carrying one, keep potion in the world
-      if (this._hasPotion) return true;
+      // If already at cap 3, keep potion in the world
+      const cur = this.getPotionCount();
+      if (cur >= 3) return true;
       // Otherwise pick up and remove from world
-      this._hasPotion = true;
+      this._potionCount = cur + 1;
       return false;
     });
   }
 
   checkPotionUse() {
-    if (!this._hasPotion) return;
+    if (this.getPotionCount() <= 0) return;
     if (!this.keyboard?.ONE) return;
     // Use potion only once per key press
     if (this._usePotionLatch) return;
@@ -400,7 +401,7 @@ class World {
   }
 
   usePotion() {
-    if (!this._hasPotion) return;
+    if (this.getPotionCount() <= 0) return;
     const maxSeg = this.characterHealthBar?.maxSegments || 5;
     const cur = Math.max(0, Math.min(maxSeg, this.character.healthSegments ?? maxSeg));
     if (cur >= maxSeg) return; // already full, don't consume
@@ -409,16 +410,16 @@ class World {
     // Map to energy for legacy bar
     const segToEnergy = { 5: 100, 4: 80, 3: 60, 2: 40, 1: 20, 0: 0 };
     this.character.energy = segToEnergy[next] ?? Math.round((next / maxSeg) * 100);
-    this._hasPotion = false;
+    this._potionCount = Math.max(0, (this._potionCount || 0) - 1);
     // Immediate HUD update
     this.characterHealthBar.setSegments(next);
     this.statusBar.setPercentage(this.character.energy);
-    this.potionHud.setCount(0);
+    this.potionHud.setCount(this.getPotionCount());
   }
 
   // Block potion helpers
   getBlockPotionCount() {
-    return this._hasBlockPotion ? 1 : 0;
+    return Math.max(0, Math.min(3, this._blockPotionCount || 0));
   }
 
   checkBlockPotionPickup() {
@@ -428,14 +429,15 @@ class World {
       const bb = bp.getBoundsWithOffset?.(bp);
       const overlap = bb.right > charB.left && bb.left < charB.right && bb.bottom > charB.top && bb.top < charB.bottom;
       if (!overlap) return true;
-      if (this._hasBlockPotion) return true; // already carrying one
-      this._hasBlockPotion = true;
+      const cur = this.getBlockPotionCount();
+      if (cur >= 3) return true; // at cap, keep in world
+      this._blockPotionCount = cur + 1;
       return false;
     });
   }
 
   checkBlockPotionUse() {
-    if (!this._hasBlockPotion) return;
+    if (this.getBlockPotionCount() <= 0) return;
     if (!this.keyboard?.TWO) return;
     if (this._useBlockPotionLatch) return;
     this._useBlockPotionLatch = true;
@@ -447,15 +449,15 @@ class World {
   }
 
   useBlockPotion() {
-    if (!this._hasBlockPotion) return;
+    if (this.getBlockPotionCount() <= 0) return;
     const maxSeg = this.characterBlockBar?.maxSegments || 5;
     const cur = Math.max(0, Math.min(maxSeg, this.character.blockSegments ?? maxSeg));
     if (cur >= maxSeg) return; // already full, don't consume
     const next = Math.min(maxSeg, cur + 1);
     this.character.blockSegments = next;
-    this._hasBlockPotion = false;
+    this._blockPotionCount = Math.max(0, (this._blockPotionCount || 0) - 1);
     // Immediate HUD update
     this.characterBlockBar.setSegments(next);
-    this.blockPotionHud.setCount(0);
+    this.blockPotionHud.setCount(this.getBlockPotionCount());
   }
 }

@@ -11,7 +11,7 @@ class PotionHUD extends DrawableObject {
   }
 
   setCount(n) {
-    this.count = Math.max(0, Math.min(1, Math.floor(n)));
+    this.count = Math.max(0, Math.min(3, Math.floor(n)));
   }
 
   drawAt(ctx, dx, dy) {
