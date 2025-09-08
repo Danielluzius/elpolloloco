@@ -5,14 +5,14 @@ class World {
   ctx;
   keyboard;
   camera_x = 0;
-  statusBar = new StatusBar();
+  // Removed legacy StatusBar; only segmented bars remain
   characterHealthBar = new CharacterHealthBar();
   characterBlockBar = new CharacterBlockBar();
   characterChargeBar = new CharacterChargeBar();
   potionHud = new PotionHUD();
   blockPotionHud = new BlockPotionHUD();
   bossSegBar = new BossSegmentHealthBar();
-  bossStatusBar = new BossStatusBar();
+  // Removed BossStatusBar; we draw only the segmented boss bar
   goblinCounter = new GoblinCounterHUD();
   _gameLoop = null;
   _hudLoop = null;
@@ -84,8 +84,7 @@ class World {
   }
 
   updateHudBars() {
-    // Keep legacy percentage bar in sync (if used elsewhere)
-    this.statusBar.setPercentage(this.character.energy);
+    // Legacy StatusBar removed
     // Update 3-segment character bar immediately
     if (typeof this.character.healthSegments === 'number') {
       this.characterHealthBar.setSegments(this.character.healthSegments);
@@ -309,8 +308,7 @@ class World {
 
   damageBossIfNeeded(boss) {
     const now = Date.now();
-    const applied = boss.applyHit(1, now, this.bossStatusBar.getMaxSteps());
-    if (applied) this.bossStatusBar.setByStep(boss.healthSteps);
+    boss.applyHit(1, now, this.bossSegBar.getMaxSteps());
   }
 
   checkCollisions() {
@@ -383,25 +381,14 @@ class World {
     }
   }
 
-  stomp(enemy) {
-    if (typeof enemy.killByStomp === 'function') enemy.killByStomp();
-    this.character.placeOnTopOf(enemy);
-    this.character.bounceAfterStomp();
-    this.scheduleEnemyRemoval(enemy);
-  }
-
-  scheduleEnemyRemoval(enemy) {
-    setTimeout(() => {
-      this.level.enemies = this.level.enemies.filter((e) => e !== enemy);
-    }, 800);
-  }
+  // Removed legacy stomp/remove helpers (no longer used)
 
   damageCharacterIfNeeded() {
     if (!this.character.isHurt()) {
       const died = this.character.applySegmentHit?.();
       // Immediate HUD updates after each hit
       this.characterHealthBar.setSegments(this.character.healthSegments || 0);
-      this.statusBar.setPercentage(this.character.energy);
+      // legacy StatusBar removed
     }
   }
 
@@ -491,11 +478,7 @@ class World {
     for (const bp of this.level.blockPotions || []) {
       this.drawObjectAt(bp, Math.round(bp.x + this.camera_x * f), Math.round(bp.y));
     }
-    // Clouds as mid layer (0.4)
-    const fMid = 0.4;
-    for (const c of this.level.clouds || []) {
-      this.drawObjectAt(c, Math.round(c.x + this.camera_x * fMid), Math.round(c.y));
-    }
+    // Clouds removed from level; mid-layer handled by background parallax
     // Foreground overlays: always drawn last so they appear above character and enemies
     for (const fo of this.level.foregroundObjects || []) {
       this.drawObjectAt(fo, Math.round(fo.x + this.camera_x * f), Math.round(fo.y));
@@ -618,7 +601,7 @@ class World {
     this._potionCount = Math.max(0, (this._potionCount || 0) - 1);
     // Immediate HUD update
     this.characterHealthBar.setSegments(next);
-    this.statusBar.setPercentage(this.character.energy);
+    // legacy StatusBar removed
     this.potionHud.setCount(this.getPotionCount());
   }
 

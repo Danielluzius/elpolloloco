@@ -84,7 +84,7 @@ function createLevel1() {
     new BlockPotion(2600, { y: yCenter }),
     new BlockPotion(3800, { y: yCenter }),
   ];
-  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks, foreground, potions, blockPotions);
+  return new Level([...enemyGen.generate(), new Endboss()], bg, rocks, foreground, potions, blockPotions);
 }
 
 // Optional: initial instance for backward compatibility
