@@ -7,4 +7,5 @@ class Keyboard {
   D = false;
   A = false;
   S = false;
+  ONE = false; // key '1' for potion use
 }

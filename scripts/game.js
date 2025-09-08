@@ -172,6 +172,8 @@ const KEY_MAP = {
   68: 'D',
   65: 'A',
   83: 'S',
+  49: 'ONE', // '1'
+  97: 'ONE', // Numpad 1
 };
 
 window.addEventListener('keydown', (e) => {

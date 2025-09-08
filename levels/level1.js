@@ -57,7 +57,9 @@ function createLevel1() {
   const rocks = rockGen.generate();
   // Example: foreground rock placed near the start. Adjust x, y, width, height as desired.
   const foreground = [new ForegroundRock(-200, 200, 360, 280)];
-  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks, foreground);
+  // Place 3 heart potions along the path
+  const potions = [new Potion(1100), new Potion(2100), new Potion(3200)];
+  return new Level([...enemyGen.generate(), new Endboss()], [], bg, rocks, foreground, potions);
 }
 
 // Optional: initial instance for backward compatibility

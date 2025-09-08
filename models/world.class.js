@@ -8,6 +8,7 @@ class World {
   statusBar = new StatusBar();
   characterHealthBar = new CharacterHealthBar();
   characterBlockBar = new CharacterBlockBar();
+  potionHud = new PotionHUD();
   bossSegBar = new BossSegmentHealthBar();
   bossStatusBar = new BossStatusBar();
   _gameLoop = null;
@@ -50,6 +51,8 @@ class World {
       this.checkAttackHits();
       this.checkEndbossWake();
       this.checkEndbossAlertAndAttack();
+      this.checkPotionPickup();
+      this.checkPotionUse();
     }, 1000 / 60);
   }
 
@@ -71,6 +74,9 @@ class World {
     if (typeof this.character.blockSegments === 'number') {
       this.characterBlockBar.setSegments(this.character.blockSegments);
     }
+    // Update potion HUD (0 or 1)
+    const count = this.getPotionCount();
+    this.potionHud.setCount(count);
   }
 
   updateBossHud() {
@@ -104,6 +110,10 @@ class World {
     this.characterBlockBar.x = this.characterHealthBar.x;
     this.characterBlockBar.y = (this.characterHealthBar.y || 0) + (this.characterHealthBar.height || 20) + 4;
     this.characterBlockBar.setSegments(this.character.blockSegments);
+    // Align potion HUD next to health bar
+    this.potionHud.x = this.characterHealthBar.x + this.characterHealthBar.width + 12;
+    this.potionHud.y =
+      this.characterHealthBar.y + Math.floor((this.characterHealthBar.height - this.potionHud.height) / 2);
   }
 
   damageBossIfNeeded(boss) {
@@ -249,6 +259,8 @@ class World {
       Math.round(this.characterBlockBar.x),
       Math.round(this.characterBlockBar.y)
     );
+    // Draw potion icon + count
+    this.drawObjectAt(this.potionHud, Math.round(this.potionHud.x), Math.round(this.potionHud.y));
   }
   // Removed coin/bottle HUD and icon helpers
 
@@ -267,6 +279,10 @@ class World {
     // Enemies
     for (const e of this.level.enemies || []) {
       this.drawObjectAt(e, Math.round(e.x + this.camera_x * f), Math.round(e.y));
+    }
+    // Potions in world
+    for (const p of this.level.potions || []) {
+      this.drawObjectAt(p, Math.round(p.x + this.camera_x * f), Math.round(p.y));
     }
     // Clouds as mid layer (0.4)
     const fMid = 0.4;
@@ -331,5 +347,58 @@ class World {
       if (this._hudLoop) clearInterval(this._hudLoop);
       if (this._drawReqId) cancelAnimationFrame(this._drawReqId);
     } catch (e) {}
+  }
+
+  // Potion helpers
+  getPotionCount() {
+    // One-slot system: 1 if any picked up and not used yet
+    return this._hasPotion ? 1 : 0;
+  }
+
+  checkPotionPickup() {
+    if (!this.level?.potions?.length) return;
+    // simple AABB collision with character
+    const charB = this.character.getBoundsWithOffset?.(this.character);
+    this.level.potions = this.level.potions.filter((p) => {
+      const pb = p.getBoundsWithOffset?.(p);
+      const overlap = pb.right > charB.left && pb.left < charB.right && pb.bottom > charB.top && pb.top < charB.bottom;
+      if (!overlap) return true;
+      // If already carrying one, keep potion in the world
+      if (this._hasPotion) return true;
+      // Otherwise pick up and remove from world
+      this._hasPotion = true;
+      return false;
+    });
+  }
+
+  checkPotionUse() {
+    if (!this._hasPotion) return;
+    if (!this.keyboard?.ONE) return;
+    // Use potion only once per key press
+    if (this._usePotionLatch) return;
+    this._usePotionLatch = true;
+    try {
+      this.usePotion();
+    } finally {
+      // unlock after short delay to avoid auto-repeat
+      setTimeout(() => (this._usePotionLatch = false), 200);
+    }
+  }
+
+  usePotion() {
+    if (!this._hasPotion) return;
+    const maxSeg = this.characterHealthBar?.maxSegments || 5;
+    const cur = Math.max(0, Math.min(maxSeg, this.character.healthSegments ?? maxSeg));
+    if (cur >= maxSeg) return; // already full, don't consume
+    const next = Math.min(maxSeg, cur + 1);
+    this.character.healthSegments = next;
+    // Map to energy for legacy bar
+    const segToEnergy = { 5: 100, 4: 80, 3: 60, 2: 40, 1: 20, 0: 0 };
+    this.character.energy = segToEnergy[next] ?? Math.round((next / maxSeg) * 100);
+    this._hasPotion = false;
+    // Immediate HUD update
+    this.characterHealthBar.setSegments(next);
+    this.statusBar.setPercentage(this.character.energy);
+    this.potionHud.setCount(0);
   }
 }
