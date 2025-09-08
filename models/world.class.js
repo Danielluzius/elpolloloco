@@ -25,6 +25,7 @@ class World {
   _bossIntroCamTimer = null;
   _bossIntroWalkTimer = null;
   _bossIntroReturnCamTimer = null;
+  _bossIntroHudSwitchTimer = null;
   _savedKeyboardRef = null;
   introCamX = undefined;
   // Positive values move the camera further left (boss appears more to the right)
@@ -127,6 +128,8 @@ class World {
 
   updateGoblinCounter() {
     try {
+      // When in objective mode, keep the text; do not update numeric counter anymore
+      if (this.goblinCounter?.mode === 'objective') return;
       const total =
         this._goblinTotal != null
           ? this._goblinTotal
@@ -172,6 +175,14 @@ class World {
         const walkDist = 220; // pixels
         const walkSpeed = 2.0; // px per frame
         const targetX = boss.x - walkDist;
+        // Switch HUD to objective with a 2s delay after the boss starts moving
+        try {
+          if (this._bossIntroHudSwitchTimer) clearTimeout(this._bossIntroHudSwitchTimer);
+          this._bossIntroHudSwitchTimer = setTimeout(() => {
+            this._bossIntroHudSwitchTimer = null;
+            this.goblinCounter?.enableObjectiveMode?.('DEFEAT THE', 'GOBLIN KING');
+          }, 1000);
+        } catch (_) {}
         // Force visual state to walk during the scripted move
         boss.state = 'walk';
         boss.frameIndex = 0;
@@ -242,6 +253,11 @@ class World {
     this.bossIntroDone = true;
     // Ensure camera lock is released
     this.introCamX = undefined;
+    // Cleanup delayed HUD switch if still pending
+    try {
+      if (this._bossIntroHudSwitchTimer) clearTimeout(this._bossIntroHudSwitchTimer);
+    } catch (_) {}
+    this._bossIntroHudSwitchTimer = null;
   }
 
   // Coins, bottles, and projectiles removed
@@ -287,7 +303,7 @@ class World {
     // Move the counter a bit further down from the very top
     this.goblinCounter.y = 56; // title at ~56px, numbers line at ~78px
     // Shift a bit to the right from absolute center
-    this.goblinCounter.xOffset = 60; // tweak as desired
+    this.goblinCounter.xOffset = 140; // further right per request
     this.updateGoblinCounter();
   }
 
@@ -548,6 +564,7 @@ class World {
       if (this._bossIntroCamTimer) clearInterval(this._bossIntroCamTimer);
       if (this._bossIntroWalkTimer) clearInterval(this._bossIntroWalkTimer);
       if (this._bossIntroReturnCamTimer) clearInterval(this._bossIntroReturnCamTimer);
+      if (this._bossIntroHudSwitchTimer) clearTimeout(this._bossIntroHudSwitchTimer);
     } catch (e) {}
   }
 
