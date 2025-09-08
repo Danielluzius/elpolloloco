@@ -4,8 +4,6 @@ let keyboard = new Keyboard();
 let gameState = 'idle'; // idle | running | win | lose
 let ui = {};
 let isMuted = false;
-// Debug: toggle hitbox visualization with 'H'
-window.DEBUG_HITBOX = true;
 
 function init() {
   canvas = document.getElementById('canvas');
@@ -36,12 +34,7 @@ function bindUi() {
   ui.muteBtn?.addEventListener('click', toggleMute);
   ui.howToBtn?.addEventListener('click', openHowTo);
   ui.howToCloseBtn?.addEventListener('click', closeHowTo);
-  // Debug hotkey
-  window.addEventListener('keydown', (e) => {
-    if ((e.key || '').toLowerCase() === 'h') {
-      window.DEBUG_HITBOX = !window.DEBUG_HITBOX;
-    }
-  });
+  // removed: visual hitbox toggle
 }
 
 function startGame() {

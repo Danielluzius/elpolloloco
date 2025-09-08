@@ -118,23 +118,7 @@ class DrawableObject {
 
   // Debug overlay: draw sprite bounds (blue) and collision bounds (red) when enabled via window.DEBUG_HITBOX
   drawDebugHitboxes(ctx, dx, dy) {
-    try {
-      if (typeof window === 'undefined' || !window.DEBUG_HITBOX) return;
-      ctx.save();
-      // Sprite draw rectangle
-      ctx.strokeStyle = 'rgba(0,128,255,0.8)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(dx, dy, this.width, this.height);
-      // Collision rectangle with offset
-      const o = this.offset || { top: 0, right: 0, bottom: 0, left: 0 };
-      const cx = dx + o.left;
-      const cy = dy + o.top;
-      const cw = Math.max(0, this.width - (o.left + o.right));
-      const ch = Math.max(0, this.height - (o.top + o.bottom));
-      ctx.strokeStyle = 'rgba(255,0,0,0.85)';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(cx, cy, cw, ch);
-      ctx.restore();
-    } catch (_) {}
+  // disabled: no visual hitboxes in production
+  return;
   }
 }
