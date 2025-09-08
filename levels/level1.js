@@ -63,7 +63,11 @@ function createLevel1() {
 
   const rocks = rockGen.generate();
   // Example: foreground rock placed near the start. Adjust x, y, width, height as desired.
-  const foreground = [new ForegroundRock(-200, 200, 360, 280), ...fgL0];
+  const foreground = [
+    new ForegroundRock(-200, 200, 360, 280), // Barriere am Anfang
+    new ForegroundRock(4500, 200, 360, 280), // Barriere am Ende
+    ...fgL0,
+  ];
   // Vertical center of canvas (480px) for potions
   const canvasH = 480;
   const potionH = 36; // default
