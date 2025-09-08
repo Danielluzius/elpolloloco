@@ -22,18 +22,25 @@ function createLevel1() {
   const LCloud = 'assets/img/5_background/nature/cloud_layer.png';
   const L2 = 'assets/img/5_background/nature/2_layer.png';
   const L1 = 'assets/img/5_background/nature/1_layer.png';
+  // Topmost overlay layer under nature
+  const L0 = 'assets/img/5_background/nature/0_layer.png';
   const LBird = 'assets/img/5_background/nature/bird_layer.png';
   const bgL3 = [],
     bgCloud = [],
     bgL2 = [],
     bgL1 = [],
-    bgBird = [];
+    bgBird = [],
+    fgL0 = [];
+  // Shift 0_layer half a tile (50%) to the left for visual alignment
+  const L0_OFFSET = -Math.floor((BackgroundObject.computeTileStep?.(L0) || 720) * 0.5);
   xs.forEach((x) => {
     bgL3.push(new BackgroundObject(L3, x, 0));
     bgCloud.push(new BackgroundObject(LCloud, x, 0));
     bgL2.push(new BackgroundObject(L2, x, 0));
     bgL1.push(new BackgroundObject(L1, x, 0));
     bgBird.push(new BackgroundObject(LBird, x, 0));
+    // 0_layer should be drawn above the character -> add to foreground list, shifted left by 50%
+    fgL0.push(new BackgroundObject(L0, x + L0_OFFSET, 0));
   });
   // Insert background rocks behind 1_layer: parallax ~0.9 (slightly behind foreground)
   const bgRockGen = new BackgroundRockGenerator(rng, {
@@ -56,7 +63,7 @@ function createLevel1() {
 
   const rocks = rockGen.generate();
   // Example: foreground rock placed near the start. Adjust x, y, width, height as desired.
-  const foreground = [new ForegroundRock(-200, 200, 360, 280)];
+  const foreground = [new ForegroundRock(-200, 200, 360, 280), ...fgL0];
   // Vertical center of canvas (480px) for potions
   const canvasH = 480;
   const potionH = 36; // default

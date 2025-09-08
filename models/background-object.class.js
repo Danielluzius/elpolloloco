@@ -17,6 +17,7 @@ class BackgroundObject extends MoveableObject {
   static computeParallaxFactor(path) {
     const p = String(path || '');
     // Exact factors per design
+    if (p.includes('0_layer')) return 1.0; // foreground sheet, moves with world like 1_layer
     if (p.includes('1_layer')) return 1.0; // main_world
     if (p.includes('2_layer')) return 0.4; // bg_mid
     if (p.includes('cloud_layer')) return 0.4; // treat clouds as mid
