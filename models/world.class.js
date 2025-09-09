@@ -1,5 +1,5 @@
 class World {
-  character = new Character();
+  character = new CharacterPlayer();
   level = typeof createLevel1 === 'function' ? createLevel1() : level1;
   canvas;
   ctx;
