@@ -1,5 +1,5 @@
 class World {
-  character = new CharacterPlayer();
+  character = new CharacterPlayerComposed();
   level = typeof createLevel1 === 'function' ? createLevel1() : level1;
   canvas;
   ctx;
@@ -316,7 +316,10 @@ class World {
       if (enemy.shouldDespawn?.()) return false;
       if (enemy.dead) return true;
       if (!this.character.isColliding(enemy)) return true;
-      // Let goblin attacks control damage; avoid auto damage on mere contact
+      // Damage only if goblin attack is in active window
+      if (enemy instanceof Goblin && this.isGoblinAttackFrame(enemy)) {
+        if (typeof this.character.applySegmentHit === 'function') this.damageCharacterIfNeeded();
+      }
       return true;
     });
     // Rock collisions: block horizontal movement if colliding and not clearly above the rock
@@ -347,6 +350,18 @@ class World {
         this.character.x += pushRight;
       }
     }
+  }
+
+  isGoblinAttackFrame(goblin) {
+    if (!goblin.isAttacking) return false;
+    const sheet = goblin.attackSheet;
+    const cnt = sheet?.count || 1;
+    // define single hit frame (middle frame) as active window
+    const hitFrame = Math.floor(cnt / 2);
+    if (goblin.attackFrameIdx === hitFrame && !goblin.appliedAttackDamage) {
+      return true;
+    }
+    return false;
   }
 
   // Character melee attack vs goblins and endboss
