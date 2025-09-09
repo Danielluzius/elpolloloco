@@ -12,13 +12,10 @@ class BossSegmentHealthBar extends DrawableObject {
   RIGHT_EMPTY =
     'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
 
-  // 10 segments: left cap, 8 middles, right cap
   maxSegments = 10;
-  segmentsFull = 10; // 10..0
-  // Visual scale relative to the character bar segments (narrower and slightly shorter)
-  scaleX = 0.4; // 40% of character segment width
-  scaleY = 0.6; // 60% of character bar height
-  // Optional IDs for reference/testing
+  segmentsFull = 10;
+  scaleX = 0.4;
+  scaleY = 0.6;
   segmentIds = [
     'boss_hp_left',
     'boss_hp_mid1',
@@ -42,9 +39,8 @@ class BossSegmentHealthBar extends DrawableObject {
       this.MID_EMPTY,
       this.RIGHT_EMPTY,
     ]);
-    // Default size; will be aligned to character bar scale when updating from boss
-    this.width = 700; // 10 x 70px segments by default
-    this.height = 40; // same vertical scale as character bar
+    this.width = 700;
+    this.height = 40;
     this.x = 0;
     this.y = 0;
   }
@@ -60,12 +56,11 @@ class BossSegmentHealthBar extends DrawableObject {
 
   updateFromBoss(boss) {
     if (!boss || boss.dead || !boss.awake) return false;
-    // Match segment width/height to the character bar for consistent look
     try {
       const chBar = boss.world?.characterHealthBar;
       if (chBar) {
         const baseSegW = (chBar.width || 210) / 3;
-        const segW = Math.max(5, Math.round(baseSegW * this.scaleX)); // narrower than character bar
+        const segW = Math.max(5, Math.round(baseSegW * this.scaleX));
         this.width = segW * this.maxSegments;
         this.height = Math.max(
           6,
@@ -73,20 +68,18 @@ class BossSegmentHealthBar extends DrawableObject {
         );
       }
     } catch (_) {}
-    // Anchor directly above the boss (small gap)
     this.x = boss.x + boss.width / 2 - this.width / 2;
     this.y = boss.y - (this.height + 8);
     return true;
   }
 
   drawAt(ctx, dx, dy) {
-    // Pixel-snapping ensured by world; double-snap here for safety
     const baseX = Math.round(dx);
     const baseY = Math.round(dy);
     const segW = Math.floor(this.width / this.maxSegments);
     const segH = this.height;
     for (let i = 0; i < this.maxSegments; i++) {
-      const isFull = i < this.segmentsFull; // empties from right as segmentsFull decreases
+      const isFull = i < this.segmentsFull;
       const isLeft = i === 0;
       const isRight = i === this.maxSegments - 1;
       const path = isLeft

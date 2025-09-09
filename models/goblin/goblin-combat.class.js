@@ -1,6 +1,4 @@
-// Combat + damage + block interaction for Goblin.
 class GoblinCombat extends GoblinAnim {
-  // Update knockback physics each tick
   updateKnockback(now) {
     if (this.dying || this.dead) {
       this.knockbackVX = 0;
@@ -13,7 +11,6 @@ class GoblinCombat extends GoblinAnim {
     } else if (!active) this.knockbackVX = 0;
   }
 
-  // Handle being hit by player attack
   onHitByAttack(attacker) {
     if (this.dying || this.dead) return;
     const now = Date.now();
@@ -25,7 +22,6 @@ class GoblinCombat extends GoblinAnim {
     this.enterHurtState(now, attacker);
   }
 
-  // Grant charge to attacker once per attack id
   tryAwardCharge(attacker, now) {
     try {
       const id = attacker?.attackId ?? null;
@@ -37,7 +33,6 @@ class GoblinCombat extends GoblinAnim {
     } catch (_) {}
   }
 
-  // Enter hurt state with knockback
   enterHurtState(now, attacker) {
     this.hurtActive = true;
     this.hurtFrameIdx = 0;
@@ -49,7 +44,6 @@ class GoblinCombat extends GoblinAnim {
     this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
   }
 
-  // Start death sequence and schedule despawn
   startDeath(now = Date.now()) {
     this.dying = true;
     this.dead = true;
@@ -63,7 +57,6 @@ class GoblinCombat extends GoblinAnim {
     if (!this._countedKill) this.countKill();
   }
 
-  // Count kill on world once
   countKill() {
     try {
       this.world &&
@@ -75,12 +68,10 @@ class GoblinCombat extends GoblinAnim {
     } catch (_) {}
   }
 
-  // Determine if ready to despawn
   shouldDespawn() {
     return !!(this._despawnAt && Date.now() >= this._despawnAt);
   }
 
-  // Begin an attack animation
   beginAttack(now, target) {
     this.isPaused = false;
     this.segmentTargetX = undefined;
@@ -92,7 +83,6 @@ class GoblinCombat extends GoblinAnim {
     this._moving = false;
   }
 
-  // Advance attack frames & apply damage
   animateAttack(now) {
     const s = this.attackSheet;
     const img = this.imageCache[s.path];
@@ -114,14 +104,12 @@ class GoblinCombat extends GoblinAnim {
     if (this.attackFrameIdx >= (s.count || 1) - 1) this.finishAttack(now);
   }
 
-  // Finish attack and set cooldown
   finishAttack(now) {
     this.isAttacking = false;
     this.attackCooldownEndAt = now + 380;
     this.attackFrameIdx = 0;
   }
 
-  // Try to apply attack damage to character
   tryApplyAttackDamage() {
     const w = this.world;
     const ch = w?.character;
@@ -139,7 +127,6 @@ class GoblinCombat extends GoblinAnim {
     ch.applyKnockbackFrom?.(this);
   }
 
-  // Attempt block response and knockback
   tryBlockInteraction(ch) {
     if (!ch.isBlocking) return false;
     const right = this.x > ch.x;

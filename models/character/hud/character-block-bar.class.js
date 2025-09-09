@@ -11,12 +11,15 @@ class CharacterBlockBar extends DrawableObject {
     'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
   RIGHT_EMPTY =
     'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
+
   maxSegments = 5;
   segments = 5;
+
   width = 210;
   height = 20;
   x = 40;
   y = 60;
+
   constructor() {
     super();
     this.loadImages([
@@ -28,10 +31,12 @@ class CharacterBlockBar extends DrawableObject {
       this.RIGHT_EMPTY,
     ]);
   }
+
   setSegments(n) {
     const max = this.maxSegments || 5;
     this.segments = Math.max(0, Math.min(max, Math.floor(n)));
   }
+
   getSlotPath(i) {
     const max = this.maxSegments || 5;
     const isFull = this.segments > i;
@@ -39,6 +44,7 @@ class CharacterBlockBar extends DrawableObject {
     if (i === max - 1) return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
     return isFull ? this.MID_FULL : this.MID_EMPTY;
   }
+
   drawAt(ctx, dx, dy) {
     const count = this.maxSegments || 5;
     const baseW = Math.floor(this.width / count);

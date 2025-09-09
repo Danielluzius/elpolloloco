@@ -1,5 +1,4 @@
 class World extends WorldBase {
-  // Core world state & managers
   character = new CharacterPlayerComposed();
   level = typeof createLevel1 === 'function' ? createLevel1() : level1;
   characterHealthBar = new CharacterHealthBar();
@@ -141,7 +140,6 @@ class World extends WorldBase {
   startBossIntro(boss) {
     this._introMgr?.trigger(boss);
   }
-  // Boss intro flow delegated to WorldIntroManager
 
   animateCamera(from, to, durationMs, onDone) {
     super.animateCamera(from, to, durationMs, onDone, (x) => {
@@ -224,13 +222,11 @@ class World extends WorldBase {
     this._collisionMgr.tick();
   }
 
-  // Backward compatibility for Goblin.tryApplyAttackDamage()
   damageCharacterIfNeeded() {
     if (this.character.isHurt?.()) return;
     this.character.applySegmentHit?.();
     this.characterHealthBar.setSegments(this.character.healthSegments || 0);
   }
-  // Rendering handled by WorldRenderManager
 
   checkEndbossWake() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
@@ -287,8 +283,6 @@ class World extends WorldBase {
     });
   }
 
-  // pickup handled inline
-
   checkPotionUse() {
     if (
       this.getPotionCount() <= 0 ||
@@ -328,8 +322,6 @@ class World extends WorldBase {
     });
   }
 
-  // block potion pickup handled inline
-
   checkBlockPotionUse() {
     if (
       this.getBlockPotionCount() <= 0 ||
@@ -350,8 +342,6 @@ class World extends WorldBase {
   }
 }
 
-// Backward compatible draw() entry point
 World.prototype.draw = function () {
   this._renderMgr.draw();
 };
-// end of world.class.js

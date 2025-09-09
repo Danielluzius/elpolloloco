@@ -2,7 +2,6 @@ class Level {
   enemies;
   backgroundObjects;
   rocks;
-  // Objects drawn above the character and enemies
   foregroundObjects;
   potions;
   blockPotions;

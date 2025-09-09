@@ -1,13 +1,11 @@
 class GoblinCounterHUD extends DrawableObject {
   constructor() {
     super();
-    // Render-only HUD: uses canvas size to center; x/width not used for layout
-    this.y = 6; // top padding
-    this.xOffset = 0; // shift from exact center (positive -> right, negative -> left)
+    this.y = 6;
+    this.xOffset = 0;
     this.kills = 0;
     this.total = 0;
     this.title = 'Goblins';
-    // Modes: 'counter' (default) or 'objective'
     this.mode = 'counter';
     this.objectiveSmall = '';
     this.objectiveBig = '';
@@ -22,7 +20,6 @@ class GoblinCounterHUD extends DrawableObject {
     this.kills = Math.max(0, Math.floor(kills || 0));
   }
 
-  // Switch to boss objective mode with two lines: small on top, bigger below
   enableObjectiveMode(smallText = 'DEFEAT THE', bigText = 'GOBLIN KING') {
     this.mode = 'objective';
     this.objectiveSmall = String(smallText || '');
@@ -30,7 +27,6 @@ class GoblinCounterHUD extends DrawableObject {
   }
 
   drawAt(ctx, dx, dy) {
-    // Center text horizontally within the canvas; ignore dx for centering
     const baseCenter = Math.floor(
       ctx?.canvas?.width
         ? ctx.canvas.width / 2
@@ -51,12 +47,10 @@ class GoblinCounterHUD extends DrawableObject {
     ctx.lineWidth = 4;
 
     if (this.mode === 'objective') {
-      // Small line on top
       const small = this.objectiveSmall || 'DEFEAT THE';
       ctx.font = 'bold 14px Arial';
       ctx.strokeText(small, centerX, topY);
       ctx.fillText(small, centerX, topY);
-      // Bigger line below
       const bigY = topY + 24;
       const big = this.objectiveBig || 'GOBLIN KING';
       ctx.font = 'bold 24px Arial';
@@ -64,20 +58,16 @@ class GoblinCounterHUD extends DrawableObject {
       ctx.strokeText(big, centerX, bigY);
       ctx.fillText(big, centerX, bigY);
     } else {
-      // Counter mode styled like objective:
-      // 1) small top instruction
       const small = 'DEFEAT THE';
       ctx.font = 'bold 14px Arial';
       ctx.strokeText(small, centerX, topY);
       ctx.fillText(small, centerX, topY);
-      // 2) big entity name (title uppercased)
       const bigY = topY + 24;
       const bigTitle = (this.title || 'Goblins').toUpperCase();
       ctx.font = 'bold 24px Arial';
       ctx.lineWidth = 4;
       ctx.strokeText(bigTitle, centerX, bigY);
       ctx.fillText(bigTitle, centerX, bigY);
-      // 3) counter line below
       const countY = bigY + 22;
       ctx.font = '16px Arial';
       ctx.lineWidth = 3;

@@ -1,4 +1,3 @@
-// Base player with only shared state & loop bootstrap. Feature logic is composed via segment classes onto CharacterPlayerComposed.
 class CharacterPlayer extends Character {
   introActive = false;
   introStartX = 0;
@@ -48,10 +47,9 @@ class CharacterPlayer extends Character {
   blockFrameIndex = 0;
   lastBlockFrameTime = 0;
   BLOCK_FRAME_DELAY = 100;
-  // Added composition-era misc constants
-  BLOCK_DURATION_MS = 800; // estimated original value; adjust if needed
-  IDLE_AFTER_MS = 1200; // delay before switching to idle anim
-  LONG_IDLE_AFTER_MS = 4000; // delay before long idle anim
+  BLOCK_DURATION_MS = 800;
+  IDLE_AFTER_MS = 1200;
+  LONG_IDLE_AFTER_MS = 4000;
   STOMP_FRAME_DELAY = 90;
   HEART_POTION_HEAL = 2;
   ATTACK_RANGE_X = 120;
@@ -109,16 +107,12 @@ class CharacterPlayer extends Character {
     setInterval(() => this.animTick?.(), 50);
   }
 
-  // Lightweight defaults (no-op stubs) ----------------------------------
   processInputTick() {}
   animTick() {}
   drawFrame() {}
-  // Utility used by subclasses
   markActivity() {
     this.lastActivityAt = Date.now();
   }
-
-  // Methods expected by segments (fallback no-ops if segment not mixed in) ------
   updateBlockState() {}
   startHurt() {
     this.hurtEndAt = Date.now() + 600;

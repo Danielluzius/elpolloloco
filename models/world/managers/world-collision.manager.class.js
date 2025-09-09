@@ -2,11 +2,13 @@ class WorldCollisionManager {
   constructor(world) {
     this.w = world;
   }
+
   tick() {
     this.filterEnemies();
     this.resolveRocks();
     this.checkAttackHits();
   }
+
   filterEnemies() {
     const w = this.w;
     w.level.enemies = w.level.enemies.filter((e) => {
@@ -22,6 +24,7 @@ class WorldCollisionManager {
       return true;
     });
   }
+
   resolveRocks() {
     const w = this.w;
     const a = w.character.getBoundsWithOffset?.(w.character) || {
@@ -50,12 +53,14 @@ class WorldCollisionManager {
       else w.character.x += pushRight;
     }
   }
+
   isGoblinAttackFrame(g) {
     if (!g.isAttacking) return false;
     const cnt = g.attackSheet?.count || 1;
     const hf = Math.floor(cnt / 2);
     return g.attackFrameIdx === hf && !g.appliedAttackDamage;
   }
+
   checkAttackHits() {
     const w = this.w;
     if (!w.character.isAttackActiveWindow?.()) return;
@@ -63,6 +68,7 @@ class WorldCollisionManager {
     if (!hitbox) return;
     for (const enemy of w.level.enemies) this.processAttackHit(enemy, hitbox);
   }
+
   processAttackHit(enemy, hitbox) {
     if (!(enemy instanceof Goblin) && !(enemy instanceof Endboss)) return;
     if (enemy.dying || enemy.dead) return;
@@ -91,9 +97,11 @@ class WorldCollisionManager {
       if (applied) w.awardCharge(1);
     } else if (enemy.applyHit) this.damageBossIfNeeded(enemy);
   }
+
   damageBossIfNeeded(boss) {
     boss.applyHit(1, Date.now(), this.w.bossSegBar.getMaxSteps());
   }
+
   damageCharacterIfNeeded() {
     const w = this.w;
     if (w.character.isHurt()) return;

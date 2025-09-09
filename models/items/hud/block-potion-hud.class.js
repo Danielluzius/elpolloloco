@@ -7,7 +7,7 @@ class BlockPotionHUD extends DrawableObject {
     this.y = 10;
     this.width = 28;
     this.height = 28;
-    this.count = 0; // 0 or 1
+    this.count = 0;
   }
 
   setCount(n) {

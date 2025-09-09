@@ -1,4 +1,3 @@
-// Attack segment
 class CharacterPlayerAttack extends CharacterPlayer {
   startAttack() {
     const now = Date.now();

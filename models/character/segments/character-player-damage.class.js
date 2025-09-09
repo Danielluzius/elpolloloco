@@ -1,4 +1,3 @@
-// Damage & health segment
 class CharacterPlayerDamage extends CharacterPlayer {
   isDead() {
     return (

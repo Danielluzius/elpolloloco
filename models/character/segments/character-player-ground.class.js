@@ -1,4 +1,3 @@
-// Grounded movement & idle segment
 class CharacterPlayerGround extends CharacterPlayer {
   setGroundedFrame(now) {
     this.resetJumpStateIfNeeded();

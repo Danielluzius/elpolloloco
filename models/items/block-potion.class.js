@@ -5,7 +5,6 @@ class BlockPotion extends MoveableObject {
     this.loadImage('assets/img/6_potions/block_potion.png');
     this.width = options.width ?? 36;
     this.height = options.height ?? 36;
-    // Default to vertical center if y provided; otherwise ground baseline like rocks
     const groundBottom = 440;
     this.y = options.y ?? groundBottom - this.height;
     this._baseY = this.y;

@@ -1,4 +1,3 @@
-// Base class providing core data + utility for Endboss.
 class EndbossBase extends MoveableObject {
   height = 300;
   width = 240;
@@ -55,7 +54,6 @@ class EndbossBase extends MoveableObject {
     this.hitCooldownMs = 200;
     this._lastAttackIdHit = null;
   }
-  // Utility: ensure sheet meta from filename.
   ensureSheetMeta(sheet) {
     if (!sheet) return;
     const cnt = this.getSpriteCountFromFilename?.(sheet.path);
@@ -65,13 +63,11 @@ class EndbossBase extends MoveableObject {
       sheet.rows = sheet.rows || 1;
     }
   }
-  // Sheet count helper with fallback.
   getSheetCountAutoWithFallback(sheet) {
     const fromName = this.getSpriteCountFromFilename(sheet.path);
     if (fromName && fromName > 0) return fromName;
     return this.getSheetCountAuto(sheet);
   }
-  // Safe frame index respecting non-loop states.
   safeFrameIndex(sheet) {
     const count = this.getSheetCountAutoWithFallback(sheet);
     const nonLoop = ['dead', 'alert', 'hurt', 'attack'].includes(this.state);
@@ -79,7 +75,6 @@ class EndbossBase extends MoveableObject {
     if (count <= 0) return 0;
     return this.frameIndex % count;
   }
-  // Basic alive check.
   isAlive() {
     return !this.dead;
   }

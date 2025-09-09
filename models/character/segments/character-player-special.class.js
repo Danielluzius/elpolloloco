@@ -1,4 +1,3 @@
-// Special attack segment
 class CharacterPlayerSpecial extends CharacterPlayer {
   startSpecialAttack() {
     const maxSeg = this.world?.characterChargeBar?.maxSegments || 5;

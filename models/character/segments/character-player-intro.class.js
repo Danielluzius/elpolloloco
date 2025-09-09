@@ -1,4 +1,3 @@
-// Intro walk / cutscene segment
 class CharacterPlayerIntro extends CharacterPlayer {
   startIntroWalk(startX, targetX) {
     this.introActive = true;

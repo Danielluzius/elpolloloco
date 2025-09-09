@@ -82,6 +82,3 @@ class WorldBase {
     } catch (_) {}
   }
 }
-
-// Export global for existing code expecting World symbol later
-// (World will extend this) if modules not used

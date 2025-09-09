@@ -2,6 +2,7 @@ class WorldIntroManager {
   constructor(world) {
     this.w = world;
   }
+
   trigger(boss) {
     try {
       this.prepare();
@@ -10,12 +11,14 @@ class WorldIntroManager {
       this.finish();
     }
   }
+
   prepare() {
     const w = this.w;
     w.bossIntroActive = true;
     w._savedKeyboardRef = w.keyboard;
     w.keyboard = {};
   }
+
   panToBoss(boss) {
     const w = this.w;
     const from = w.camera_x || 0;
@@ -25,6 +28,7 @@ class WorldIntroManager {
     );
     w.animateCamera(from, target, 1200, () => this.startBossWalk(boss));
   }
+
   startBossWalk(boss) {
     const w = this.w;
     this.scheduleHudObjective();
@@ -43,11 +47,13 @@ class WorldIntroManager {
       }
     }, 1000 / 60);
   }
+
   finishBossWalk(boss) {
     boss.state = 'idle';
     boss.frameIndex = 0;
     setTimeout(() => this.w.returnCameraToCharacter(), 500);
   }
+
   scheduleHudObjective() {
     const w = this.w;
     try {
@@ -58,6 +64,7 @@ class WorldIntroManager {
       }, 1000);
     } catch (_) {}
   }
+
   clearWalk() {
     const w = this.w;
     try {
@@ -65,6 +72,7 @@ class WorldIntroManager {
     } catch (_) {}
     w._bossIntroWalkTimer = null;
   }
+
   finish() {
     const w = this.w;
     if (w._savedKeyboardRef) w.keyboard = w._savedKeyboardRef;

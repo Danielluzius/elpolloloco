@@ -1,4 +1,3 @@
-// Input and camera handling segment
 class CharacterPlayerInput extends CharacterPlayer {
   processInputTick() {
     if (this.isDead()) return;

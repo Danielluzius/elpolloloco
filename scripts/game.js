@@ -1,7 +1,7 @@
 let canvas;
 let world;
 let keyboard = new Keyboard();
-let gameState = 'idle'; // idle | running | win | lose
+let gameState = 'idle';
 let ui = {};
 let isMuted = false;
 
@@ -34,14 +34,11 @@ function bindUi() {
   ui.muteBtn?.addEventListener('click', toggleMute);
   ui.howToBtn?.addEventListener('click', openHowTo);
   ui.howToCloseBtn?.addEventListener('click', closeHowTo);
-  // removed: visual hitbox toggle
 }
 
 function startGame() {
-  // Fade out landing hero first, then start the game
   const hero = document.querySelector('#landing .hero');
   if (hero) {
-    // Trigger CSS-based fade even if hero currently has inline opacity from reveal
     hero.classList.add('hero--off');
     try {
       hero.style.opacity = '0';
@@ -49,7 +46,7 @@ function startGame() {
     } catch (_) {}
   }
 
-  const FADE_OUT_MS = 350; // keep in sync with CSS
+  const FADE_OUT_MS = 350;
   setTimeout(() => {
     hideAllOverlays();
     gameState = 'running';
@@ -59,9 +56,7 @@ function startGame() {
 }
 
 function restartGame() {
-  // Hard reset by reloading level constructs
   hideAllOverlays();
-  // Canvas austauschen und World neu erstellen (ohne Seiten-Reload)
   const stage = document.getElementById('stage');
   const oldCanvas = document.getElementById('canvas');
   if (world && typeof world.stop === 'function') {
@@ -70,7 +65,6 @@ function restartGame() {
     } catch (e) {}
   }
   if (!stage || !oldCanvas) {
-    // Fallback: direkt neu starten
     world = new World(canvas, keyboard);
     hookWinLose(world);
     return;
@@ -79,7 +73,6 @@ function restartGame() {
   newCanvas.id = 'canvas';
   newCanvas.width = oldCanvas.width;
   newCanvas.height = oldCanvas.height;
-  // Ersetze das Canvas als erstes Kind der Stage
   stage.replaceChild(newCanvas, oldCanvas);
   canvas = newCanvas;
   gameState = 'running';
@@ -119,7 +112,6 @@ function hideAllOverlays() {
 }
 
 function hookWinLose(world) {
-  // Poll for character death or boss death
   const checkInterval = setInterval(() => {
     if (!world) return;
     const charDead = world.character?.isDead?.();
@@ -147,7 +139,6 @@ function toggleFullscreen() {
 function toggleMute() {
   isMuted = !isMuted;
   ui.muteBtn && (ui.muteBtn.textContent = isMuted ? 'Unmute' : 'Mute');
-  // Optional: Hier Audio-Objekte global muten, wenn du welche einbindest
 }
 
 function openHowTo() {
@@ -158,7 +149,6 @@ function closeHowTo() {
   ui.howToModal?.classList.add('hidden');
 }
 
-// Initialize when page has loaded
 window.addEventListener('load', () => {
   init();
 });
@@ -172,17 +162,16 @@ const KEY_MAP = {
   68: 'D',
   65: 'A',
   83: 'S',
-  49: 'ONE', // '1'
-  97: 'ONE', // Numpad 1
-  50: 'TWO', // '2'
-  98: 'TWO', // Numpad 2
+  49: 'ONE',
+  97: 'ONE',
+  50: 'TWO',
+  98: 'TWO',
 };
 
 window.addEventListener('keydown', (e) => {
   const key = KEY_MAP[e.keyCode];
   if (key) {
     keyboard[key] = true;
-    // Avoid scrolling with arrow keys/space while playing
     e.preventDefault?.();
   }
 });

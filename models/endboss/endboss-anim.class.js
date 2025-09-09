@@ -1,6 +1,4 @@
-// Animation + loop logic for Endboss.
 class EndbossAnim extends EndbossBase {
-  // Preload images + set initial frame.
   initImages() {
     this._loadAllSheets();
     this._ensureAllSheetMeta();

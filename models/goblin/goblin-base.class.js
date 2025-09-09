@@ -1,6 +1,4 @@
-// Base data + sheet setup for Goblin.
 class GoblinBase extends MoveableObject {
-  // Core dimensions & defaults
   height = 260;
   width = 210;
   y = 180;
@@ -83,7 +81,6 @@ class GoblinBase extends MoveableObject {
   KNOCKBACK_SPEED_Y = 12;
   recentlyHitAt = 0;
 
-  // Constructor sets basic state and sheets
   constructor(type = 1, x = 800) {
     super();
     this.initBaseState(x);
@@ -93,7 +90,6 @@ class GoblinBase extends MoveableObject {
     this.preloadHearts();
   }
 
-  // Initialize base position & offsets
   initBaseState(x) {
     this.x = typeof x === 'number' ? x : 800;
     this.spawnX = this.x;
@@ -102,7 +98,6 @@ class GoblinBase extends MoveableObject {
     this.offset = { top: 150, right: 80, bottom: 0, left: 80 };
   }
 
-  // Load all required sprite sheets
   initSheets(type) {
     const t = Math.max(1, Math.min(3, Math.floor(type)));
     this.setupIdleSheet(t);
@@ -111,7 +106,6 @@ class GoblinBase extends MoveableObject {
     this.setupAttackSheet(t);
   }
 
-  // Setup idle sheet and initial frame
   setupIdleSheet(t) {
     const p = `assets/img/3_enemies_goblins/goblin_${t}/3_idle/1_idle_6_sprites.png`;
     const c = this.getSpriteCountFromFilename(p) || 6;
@@ -124,7 +118,6 @@ class GoblinBase extends MoveableObject {
     this.setSheetFrameAuto(this.idleSheet, this.idleOrder[0] || 0);
   }
 
-  // Setup hurt & death sheets
   setupHurtDeathSheets(t) {
     this.hurtSheet = {
       path: `assets/img/3_enemies_goblins/goblin_${t}/4_hurt/1_hurt_3_sprites.png`,
@@ -143,7 +136,6 @@ class GoblinBase extends MoveableObject {
     this.bindReadyFlag(dp, '_deathReady');
   }
 
-  // Setup walk & run sheets
   setupWalkRunSheets(t) {
     const wMap = { 1: 8, 2: 9, 3: 9 };
     const wc = wMap[t] || 8;
@@ -166,7 +158,6 @@ class GoblinBase extends MoveableObject {
     this.bindReadyFlag(this.runSheet.path, '_runReady');
   }
 
-  // Setup attack sheet
   setupAttackSheet(t) {
     const aMap = { 1: 5, 2: 5, 3: 6 };
     const ac = aMap[t] || 5;
@@ -180,7 +171,6 @@ class GoblinBase extends MoveableObject {
     this.bindReadyFlag(this.attackSheet.path, '_attackReady');
   }
 
-  // Attach load listener to update ready flag
   bindReadyFlag(path, flag) {
     const img = this.imageCache[path];
     if (!img) return;
@@ -190,7 +180,6 @@ class GoblinBase extends MoveableObject {
     } catch (_) {}
   }
 
-  // Randomize per instance movement parameters
   randomizeMovement() {
     this.patrolSpeed = this.PATROL_SPEED * this.randBetween(0.8, 1.1);
     this.chaseSpeed = Math.max(2.2, this.patrolSpeed * this.CHASE_SPEED_FACTOR);
@@ -200,14 +189,12 @@ class GoblinBase extends MoveableObject {
       Date.now() + this.randBetween(this.PAUSE_MIN_MS, this.PAUSE_MAX_MS);
   }
 
-  // Preload heart overlay images
   preloadHearts() {
     try {
       this.loadImages(Object.values(this.heartPaths));
     } catch (_) {}
   }
 
-  // Utility random helper
   randBetween(min, max) {
     return min + Math.random() * (max - min);
   }

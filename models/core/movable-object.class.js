@@ -11,10 +11,13 @@ class MoveableObject extends DrawableObject {
     setInterval(() => {
       if (typeof this.isDead === 'function' && this.isDead()) return;
       if (this.disableGravity) return;
+
       if (this.isAboveGround() || this.speedY > 0) {
         this.y -= this.speedY;
         this.speedY -= this.acceleration;
+
         const gy = typeof this.groundY === 'number' ? this.groundY : 120;
+
         if (this.y > gy) {
           this.y = gy;
           this.speedY = 0;
@@ -36,6 +39,7 @@ class MoveableObject extends DrawableObject {
 
   getBoundsWithOffset(obj) {
     const o = obj.offset || { top: 0, right: 0, bottom: 0, left: 0 };
+
     return {
       left: obj.x + o.left,
       right: obj.x + obj.width - o.right,
@@ -55,6 +59,7 @@ class MoveableObject extends DrawableObject {
 
   hit() {
     this.energy -= 20;
+
     if (this.energy < 0) {
       this.energy = 0;
     } else {
@@ -64,17 +69,17 @@ class MoveableObject extends DrawableObject {
 
   isHurt() {
     let timepassed = new Date().getTime() - this.lastHit;
-    timepassed = timepassed / 1000;
+    timepassed /= 1000;
     return timepassed < 1.0;
   }
 
   isDead() {
-    return this.energy == 0;
+    return this.energy === 0;
   }
 
   playAnimation(images) {
-    let i = this.currentImage % images.length;
-    let path = images[i];
+    const i = this.currentImage % images.length;
+    const path = images[i];
     this.img = this.imageCache[path];
     this.currentImage++;
   }

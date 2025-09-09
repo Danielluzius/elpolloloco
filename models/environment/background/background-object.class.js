@@ -2,7 +2,7 @@ class BackgroundObject extends MoveableObject {
   width = 720;
   height = 480;
   parallaxFactor = 1;
-  driftSpeed = 0; // px per second, positive -> move to the right, negative -> left
+  driftSpeed = 0;
 
   constructor(imagePath, x, y) {
     super();
@@ -16,26 +16,24 @@ class BackgroundObject extends MoveableObject {
 
   static computeParallaxFactor(path) {
     const p = String(path || '');
-    // Exact factors per design
-    if (p.includes('0_layer')) return 1.0; // foreground sheet, moves with world like 1_layer
-    if (p.includes('1_layer')) return 1.0; // main_world
-    if (p.includes('2_layer')) return 0.4; // bg_mid
-    if (p.includes('cloud_layer')) return 0.4; // treat clouds as mid
-    if (p.includes('3_layer')) return 0.1; // bg_far
-    if (p.includes('bird_layer')) return 0.6; // optional: birds in between
+    if (p.includes('0_layer')) return 1.0;
+    if (p.includes('1_layer')) return 1.0;
+    if (p.includes('2_layer')) return 0.4;
+    if (p.includes('cloud_layer')) return 0.4;
+    if (p.includes('3_layer')) return 0.1;
+    if (p.includes('bird_layer')) return 0.6;
     return 1.0;
   }
 
   static computeDriftSpeed(path) {
     const p = String(path || '');
-    if (p.includes('cloud_layer')) return -6; // slow drift right->left
-    if (p.includes('bird_layer')) return 8; // slow drift left->right
+    if (p.includes('cloud_layer')) return -6;
+    if (p.includes('bird_layer')) return 8;
     return 0;
   }
 
   static computeTileStep(path) {
     const p = String(path || '');
-    // Use a 1px overlap for cloud_layer to avoid visible seams
     if (p.includes('cloud_layer')) return 719;
     return 720;
   }

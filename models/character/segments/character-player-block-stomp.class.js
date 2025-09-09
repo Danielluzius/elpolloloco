@@ -1,9 +1,8 @@
-// Block and stomp segment
 class CharacterPlayerBlockStomp extends CharacterPlayer {
   updateBlockState() {
     const now = Date.now();
     const kb = this.world?.keyboard;
-    const wantsBlock = !!kb?.D; // only D triggers block (restore original mapping)
+    const wantsBlock = !!kb?.D;
     const canBlock =
       (this.blockSegments || 0) > 0 &&
       !this.isSpecialAttacking &&

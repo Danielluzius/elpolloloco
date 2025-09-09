@@ -1,6 +1,4 @@
-// Aggro + chase logic for Goblin.
 class GoblinAggro extends GoblinPatrol {
-  // Update awareness, chase and attack decisions
   updateAggroAndChase(now) {
     if (this.dying || this.hurtActive) return;
     const ch = this.world?.character;

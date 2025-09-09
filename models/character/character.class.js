@@ -1,18 +1,15 @@
 class Character extends MoveableObject {
-  // Basic physical appearance and movement
   height = 200;
   width = 210;
   y = 240;
   groundY = 240;
   speed = 10;
 
-  // Minimal shared state used by subclasses
   animKey = 'stand';
   lastActivityAt = Date.now();
   IDLE_AFTER_MS = 1500;
   LONG_IDLE_AFTER_MS = 6000;
 
-  // Sprite-sheet configs (used across subclasses)
   IDLE_SHEET = {
     path: 'assets/img/2_character_man/1_idle.png',
     frameW: 128,
@@ -85,7 +82,6 @@ class Character extends MoveableObject {
     count: 5,
   };
 
-  // Attack config
   ATTACK_RANGE_X = 80;
   ATTACK_ACTIVE_START_FRAME = 1;
 
@@ -118,16 +114,15 @@ class Character extends MoveableObject {
     }
   }
 
-  // Utilities shared by subclasses
   setSheetFrame(sheet, index) {
     const img = this.imageCache?.[sheet.path] || this.img;
     const frameW = sheet.frameW || 128;
     const frameH = sheet.frameH || 128;
-    let cols = sheet.cols,
-      rows = sheet.rows;
+    let cols = sheet.cols;
+    let rows = sheet.rows;
     if (!cols || !rows) {
-      const w = img?.naturalWidth || 0,
-        h = img?.naturalHeight || 0;
+      const w = img?.naturalWidth || 0;
+      const h = img?.naturalHeight || 0;
       if (w && frameW) cols = Math.max(1, Math.floor(w / frameW));
       if (h && frameH) rows = Math.max(1, Math.floor(h / frameH));
       cols = cols || sheet.count || 1;
@@ -137,8 +132,8 @@ class Character extends MoveableObject {
       sheet.count ||= cols * rows;
     }
     const safeCols = Math.max(1, cols || 1);
-    const col = index % safeCols,
-      row = Math.floor(index / safeCols);
+    const col = index % safeCols;
+    const row = Math.floor(index / safeCols);
     this.currentFrameRect = {
       sx: col * frameW,
       sy: row * frameH,
@@ -166,6 +161,5 @@ class Character extends MoveableObject {
     return sheet.count;
   }
 
-  // Base drawFrame does nothing; subclasses can overlay VFX
   drawFrame(ctx) {}
 }

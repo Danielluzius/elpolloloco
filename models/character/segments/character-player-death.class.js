@@ -1,4 +1,3 @@
-// Death animation segment
 class CharacterPlayerDeath extends CharacterPlayer {
   setDeadFrame() {
     this.updateDeadFrameIndex();

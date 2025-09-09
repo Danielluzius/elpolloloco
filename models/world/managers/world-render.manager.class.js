@@ -2,6 +2,7 @@ class WorldRenderManager {
   constructor(world) {
     this.w = world;
   }
+
   draw() {
     const w = this.w;
     if (w._stopped) return;
@@ -11,6 +12,7 @@ class WorldRenderManager {
     this.drawEntities();
     w._drawReqId = requestAnimationFrame(() => this.draw());
   }
+
   drawBackground() {
     const w = this.w;
     const objs = w.level.backgroundObjects || [];
@@ -18,6 +20,7 @@ class WorldRenderManager {
     const viewW = w.canvas.width;
     for (const obj of objs) this._bg(obj, now, viewW);
   }
+
   _bg(obj, now, viewW) {
     const w = this.w;
     const factor = (obj.getParallaxFactor?.() ?? 1) * w.bgSpeedScale;
@@ -31,6 +34,7 @@ class WorldRenderManager {
     for (let i = 0; i < need; i++)
       w.drawObjectAt(obj, baseX + (first + i) * tileW, y);
   }
+
   drawHud() {
     const w = this.w;
     w.drawObjectAt(
@@ -56,6 +60,7 @@ class WorldRenderManager {
     );
     w.drawObjectAt(w.goblinCounter, 0, (w.goblinCounter.y || 6) | 0);
   }
+
   drawEntities() {
     const w = this.w;
     this._main();
@@ -63,6 +68,7 @@ class WorldRenderManager {
     this._fg();
     this._bossBar();
   }
+
   _main() {
     const w = this.w;
     const f = 1.0;
@@ -78,6 +84,7 @@ class WorldRenderManager {
     for (const e of w.level.enemies || [])
       w.drawObjectAt(e, (e.x + w.camera_x * f) | 0, e.y | 0);
   }
+
   _cons() {
     const w = this.w;
     const f = 1.0;
@@ -86,12 +93,14 @@ class WorldRenderManager {
     for (const bp of w.level.blockPotions || [])
       w.drawObjectAt(bp, (bp.x + w.camera_x * f) | 0, bp.y | 0);
   }
+
   _fg() {
     const w = this.w;
     const f = 1.0;
     for (const fo of w.level.foregroundObjects || [])
       w.drawObjectAt(fo, (fo.x + w.camera_x * f) | 0, fo.y | 0);
   }
+
   _bossBar() {
     const w = this.w;
     const boss = w.level.enemies.find((e) => e instanceof Endboss);

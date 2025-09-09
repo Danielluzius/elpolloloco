@@ -1,12 +1,7 @@
-// Composed player class that merges all segment prototypes into one concrete playable class.
-// This avoids deep multiple inheritance; we copy methods from segment classes onto this prototype.
-
 class CharacterPlayerComposed extends CharacterPlayer {
   constructor() {
     super();
   }
-
-  // Central animation dispatch replicating logic from full version but delegating to segment methods.
   animTick() {
     const now = Date.now();
     if (this.isDead()) return this.setDeadFrame?.();
@@ -29,7 +24,6 @@ class CharacterPlayerComposed extends CharacterPlayer {
   }
 }
 
-// List of segment classes to merge. Order matters when methods overlap; later ones override earlier.
 const __PLAYER_SEGMENTS = [
   CharacterPlayerInput,
   CharacterPlayerJump,

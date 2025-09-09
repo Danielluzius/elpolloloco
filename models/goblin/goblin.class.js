@@ -1,12 +1,9 @@
-// Final composed Goblin class assembling all segmented behaviors.
 class Goblin extends GoblinAggro {
-  // Construct composed goblin (calls chain up to GoblinBase)
   constructor(type = 1, x = 800) {
     super(type, x);
     this.animate();
   }
 
-  // Draws heart overlay above goblin
   drawFrame(ctx) {
     try {
       if (!((this.aware && !this.dead) || this.dying)) return;

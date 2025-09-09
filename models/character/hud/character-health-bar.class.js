@@ -11,8 +11,10 @@ class CharacterHealthBar extends DrawableObject {
     'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
   RIGHT_EMPTY =
     'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
+
   maxSegments = 5;
   segments = 5;
+
   constructor() {
     super();
     this.loadImages([
@@ -28,10 +30,12 @@ class CharacterHealthBar extends DrawableObject {
     this.width = 210;
     this.height = 20;
   }
+
   setSegments(n) {
     const max = this.maxSegments || 5;
     this.segments = Math.max(0, Math.min(max, Math.floor(n)));
   }
+
   getSlotPath(slotIndex) {
     const max = this.maxSegments || 5;
     const isFull = this.segments > slotIndex;
@@ -40,6 +44,7 @@ class CharacterHealthBar extends DrawableObject {
       return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
     return isFull ? this.MID_FULL : this.MID_EMPTY;
   }
+
   drawAt(ctx, dx, dy) {
     const count = this.maxSegments || 5;
     const baseW = Math.floor(this.width / count);

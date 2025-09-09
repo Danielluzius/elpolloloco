@@ -1,4 +1,3 @@
-// Hurt / knockback segment
 class CharacterPlayerHurt extends CharacterPlayer {
   setHurtFrame() {
     const now = Date.now();

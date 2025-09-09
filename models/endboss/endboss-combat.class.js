@@ -1,4 +1,3 @@
-// Combat (attack + damage) logic for Endboss.
 class EndbossCombat extends EndbossAnim {
   wakeIfNear(character) {
     const dx = Math.abs(

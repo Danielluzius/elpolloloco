@@ -1,4 +1,3 @@
-// Jump handling segment
 class CharacterPlayerJump extends CharacterPlayer {
   handleJumpKey() {
     const grounded = !this.isAboveGround();
@@ -8,7 +7,6 @@ class CharacterPlayerJump extends CharacterPlayer {
       !this.isAttacking &&
       !this.knockbackActive &&
       !this.isBlocking;
-    // Jump only on UP or SPACE (original mapping)
     if ((this.world.keyboard.UP || this.world.keyboard.SPACE) && clear)
       return this.startJump();
     if (this.world.keyboard.S && clear) return this.startSpecialAttack();

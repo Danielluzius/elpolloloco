@@ -1,4 +1,3 @@
-// Movement + chase logic for Endboss.
 class EndbossMove extends EndbossCombat {
   startWalkLoop() {
     setInterval(() => this._walkTick(), 1000 / 60);

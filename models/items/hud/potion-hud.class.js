@@ -3,11 +3,11 @@ class PotionHUD extends DrawableObject {
     super();
     this.iconPath = 'assets/img/6_potions/heart_potion.png';
     this.loadImage(this.iconPath);
-    this.x = 260; // to the right of health + block bars
+    this.x = 260;
     this.y = 10;
     this.width = 28;
     this.height = 28;
-    this.count = 0; // 0 or 1 (one-slot system)
+    this.count = 0;
   }
 
   setCount(n) {
@@ -15,9 +15,7 @@ class PotionHUD extends DrawableObject {
   }
 
   drawAt(ctx, dx, dy) {
-    // Draw icon
     super.drawAt(ctx, dx, dy);
-    // Draw count text next to it
     ctx.save();
     ctx.font = '16px Arial';
     ctx.fillStyle = '#fff';
