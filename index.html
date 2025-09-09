@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="./style/standart.css" />
 
     <!-- Game classes (safe to load; game won't start until we inject the UI) -->
-    <script src="./models/drawable-object.class.js" defer></script>
-    <script src="./models/movable-object.class.js" defer></script>
-    <script src="./models/character.class.js" defer></script>
+    <!-- Core base classes -->
+    <script src="./models/core/drawable-object.class.js" defer></script>
+    <script src="./models/core/movable-object.class.js" defer></script>
+    <script src="./models/character/character.class.js" defer></script>
     <!-- Character core -->
     <script src="./models/character/core/character-player.class.js" defer></script>
     <!-- Character segments -->
@@ -34,20 +35,26 @@
     <script src="./models/goblin/goblin-patrol.class.js" defer></script>
     <script src="./models/goblin/goblin-aggro.class.js" defer></script>
     <script src="./models/goblin/goblin.class.js" defer></script>
-    <script src="./models/background-sprite.class.js" defer></script>
+    <!-- Environment & terrain -->
+    <script src="./models/environment/background/background-object.class.js" defer></script>
+    <script src="./models/environment/background/background-sprite.class.js" defer></script>
+    <script src="./models/environment/terrain/rock.class.js" defer></script>
+    <script src="./models/environment/terrain/foreground-rock.class.js" defer></script>
     <!-- Character HUD -->
     <script src="./models/character/hud/character-health-bar.class.js" defer></script>
     <script src="./models/character/hud/character-block-bar.class.js" defer></script>
     <script src="./models/character/hud/character-charge-bar.class.js" defer></script>
-    <script src="./models/boss-segment-health-bar.class.js" defer></script>
-    <script src="./models/rock.class.js" defer></script>
+    <!-- HUD elements -->
+    <script src="./models/hud/boss-segment-health-bar.class.js" defer></script>
+    <script src="./models/hud/goblin-counter-hud.class.js" defer></script>
+    <!-- Items & item HUD -->
+    <script src="./models/items/potion.class.js" defer></script>
+    <script src="./models/items/block-potion.class.js" defer></script>
+    <script src="./models/items/hud/potion-hud.class.js" defer></script>
+    <script src="./models/items/hud/block-potion-hud.class.js" defer></script>
+    <!-- Generators -->
     <script src="./models/generators/rock-generator.class.js" defer></script>
     <script src="./models/generators/background-rock-generator.class.js" defer></script>
-    <script src="./models/potion.class.js" defer></script>
-    <script src="./models/potion-hud.class.js" defer></script>
-    <script src="./models/block-potion.class.js" defer></script>
-    <script src="./models/block-potion-hud.class.js" defer></script>
-    <script src="./models/goblin-counter-hud.class.js" defer></script>
     <!-- World architecture (restructured) -->
     <script src="./models/world/world-base.class.js" defer></script>
     <script src="./models/world/managers/world-render.manager.class.js" defer></script>
@@ -55,9 +62,8 @@
     <script src="./models/world/managers/world-collision.manager.class.js" defer></script>
     <script src="./models/world/managers/world-intro.manager.class.js" defer></script>
     <script src="./models/world/world.class.js" defer></script>
-    <script src="./models/background-object.class.js" defer></script>
-    <script src="./models/keyboard.class.js" defer></script>
-    <script src="./models/level.class.js" defer></script>
+    <script src="./models/core/keyboard.class.js" defer></script>
+    <script src="./models/core/level.class.js" defer></script>
     <!-- Endboss segmented classes -->
     <script src="./models/endboss/endboss-base.class.js" defer></script>
     <script src="./models/endboss/endboss-anim.class.js" defer></script>
@@ -66,7 +72,6 @@
     <script src="./models/endboss/endboss.class.js" defer></script>
     <script src="./models/generators/randomizer.class.js" defer></script>
     <script src="./models/generators/enemy-generator.class.js" defer></script>
-    <script src="./models/foreground-rock.class.js" defer></script>
     <script src="./levels/level1.js" defer></script>
     <script src="./scripts/game.js" defer></script>
     <script src="./scripts/landing.js" defer></script>

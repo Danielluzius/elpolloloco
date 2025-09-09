@@ -34,7 +34,13 @@ class BackgroundRockGenerator {
       // Anchor by bottom: compute y so bottom aligns to baseline, then optionally bury downwards a bit
       const bury = this.rng.int(0, this.yJitter);
       const py = this.yBase - height + bury;
-      const sprite = new BackgroundSprite(path, px, py, { width, height, parallaxFactor: this.parallaxFactor });
+      const sprite = new BackgroundSprite(path, px, py, {
+        width,
+        height,
+        parallaxFactor: this.parallaxFactor,
+        single: true, // prevent tiling
+        useAbsoluteY: true, // py already computed as top coordinate (baseline logic handled here)
+      });
       if (this.rng.next() < this.mirrorChance) sprite.otherDirection = true;
       items.push(sprite);
       x += gap;

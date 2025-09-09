@@ -7,6 +7,6 @@ class Keyboard {
   D = false;
   A = false;
   S = false;
-  ONE = false; // key '1' for potion use
-  TWO = false; // key '2' for block potion
+  ONE = false;
+  TWO = false;
 }
