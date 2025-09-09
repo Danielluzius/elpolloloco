@@ -49,40 +49,46 @@ class Endboss extends MoveableObject {
     this._lastAttackIdHit = null; // to prevent multi-hit per player attack
   }
 
+  // Preloads all sprite sheets and sets initial image.
   initImages() {
-    // Preload all sheets; set initial to idle first frame
-    this.loadImage(this.SHEET_IDLE.path);
-    this.loadImage(this.SHEET_ALERT.path);
-    this.loadImage(this.SHEET_WALK.path);
-    this.loadImage(this.SHEET_ATTACK.path);
-    this.loadImage(this.SHEET_HURT.path);
-    this.loadImage(this.SHEET_DEAD.path);
-    // Ensure sheet metadata (cols/count) from filename counts
-    this.ensureSheetMeta(this.SHEET_IDLE);
-    this.ensureSheetMeta(this.SHEET_ALERT);
-    this.ensureSheetMeta(this.SHEET_WALK);
-    this.ensureSheetMeta(this.SHEET_ATTACK);
-    this.ensureSheetMeta(this.SHEET_HURT);
-    this.ensureSheetMeta(this.SHEET_DEAD);
-    const idleImg = this.imageCache[this.SHEET_IDLE.path];
-    if (idleImg) {
-      this.img = idleImg;
-      // Try to clamp to first frame
-      this.setSheetFrameAuto(this.SHEET_IDLE, 0);
-    }
+    this._loadAllSheets();
+    this._ensureAllSheetMeta();
+    this._setInitialIdleFrame();
   }
 
+  // Loads all boss sheet images.
+  _loadAllSheets() {
+    [this.SHEET_IDLE, this.SHEET_ALERT, this.SHEET_WALK, this.SHEET_ATTACK, this.SHEET_HURT, this.SHEET_DEAD].forEach(
+      (s) => this.loadImage(s.path)
+    );
+  }
+
+  // Ensures meta (count/cols) for each sheet.
+  _ensureAllSheetMeta() {
+    [this.SHEET_IDLE, this.SHEET_ALERT, this.SHEET_WALK, this.SHEET_ATTACK, this.SHEET_HURT, this.SHEET_DEAD].forEach(
+      (s) => this.ensureSheetMeta(s)
+    );
+  }
+
+  // Sets initial idle frame.
+  _setInitialIdleFrame() {
+    const idleImg = this.imageCache[this.SHEET_IDLE.path];
+    if (!idleImg) return;
+    this.img = idleImg;
+    this.setSheetFrameAuto(this.SHEET_IDLE, 0);
+  }
+
+  // Starts update loops for animation and movement.
   initLoops() {
     this.startStateAnimLoop();
     this.startWalkLoop();
   }
 
-  // Wake and start alert once when character enters detection radius
+  // Wakes the boss when player is within detection radius.
   wakeIfNear(character) {
     const dx = Math.abs(character.x + character.width / 2 - (this.x + this.width / 2));
     if (dx <= this.detectionRadius) {
       this.awake = true;
-      // Ensure HP is initialized to 10 at first alert
       if (this.healthSteps == null) {
         this.maxHealthSteps = 10;
         this.healthSteps = 10;
@@ -95,126 +101,154 @@ class Endboss extends MoveableObject {
     }
   }
 
-  // Attempt to start an attack when in range with a small windup and cooldown
+  // Attempts to initiate an attack sequence with windup.
   checkAndStartAttack(world) {
-    if (!this.awake || this.dead || world.character.isDead()) return;
-    const now = Date.now();
+    if (!this._canAttemptAttack(world)) return;
+    if (this._attackWindupTimer) return;
+    this._attackWindupTimer = setTimeout(() => this._executeAttackStart(world), this.attackWindupMs);
+  }
+
+  // Checks preconditions for attack attempt.
+  _canAttemptAttack(world) {
+    if (!this.awake || this.dead || world.character.isDead()) return false;
     const dx = Math.abs(world.character.x + world.character.width / 2 - (this.x + this.width / 2));
-    const inRange = dx <= this.attackRange;
-    const cooled = now - (this.lastAttackAt || 0) >= this.attackCooldown;
-    const busy = this.state === 'attack' || this.state === 'hurt' || this.dead;
-    if (!inRange || !cooled || busy) return;
-    // windup before switching to attack
-    if (this._attackWindupTimer) return; // already preparing
-    this._attackWindupTimer = setTimeout(() => {
-      this._attackWindupTimer = null;
-      if (this.dead) return;
-      // recheck conditions
-      const now2 = Date.now();
-      const cx = world.character.x + world.character.width / 2;
-      const bx = this.x + this.width / 2;
-      const stillInRange = Math.abs(cx - bx) <= this.attackRange;
-      const cooled2 = now2 - (this.lastAttackAt || 0) >= this.attackCooldown;
-      if (!stillInRange || !cooled2) return;
-      this.state = 'attack';
-      this.frameIndex = 0;
-      this.lastFrameTime = now2;
-      this.lastAttackAt = now2;
-      this.scheduleAttackHitCheck(world);
-    }, this.attackWindupMs);
+    if (dx > this.attackRange) return false;
+    const cooled = Date.now() - (this.lastAttackAt || 0) >= this.attackCooldown;
+    if (!cooled) return false;
+    const busy = ['attack', 'hurt'].includes(this.state);
+    return !busy;
   }
 
+  // Executes actual attack state switch after windup.
+  _executeAttackStart(world) {
+    this._attackWindupTimer = null;
+    if (this.dead) return;
+    if (!this._stillCanAttack(world)) return;
+    const now = Date.now();
+    this.state = 'attack';
+    this.frameIndex = 0;
+    this.lastFrameTime = now;
+    this.lastAttackAt = now;
+    this.scheduleAttackHitCheck(world);
+  }
+
+  // Revalidates attack conditions after windup.
+  _stillCanAttack(world) {
+    const cx = world.character.x + world.character.width / 2;
+    const bx = this.x + this.width / 2;
+    const inRange = Math.abs(cx - bx) <= this.attackRange;
+    const cooled = Date.now() - (this.lastAttackAt || 0) >= this.attackCooldown;
+    return inRange && cooled && !this.dead;
+  }
+
+  // Schedules the damage frame inside the attack.
   scheduleAttackHitCheck(world) {
-    // Hit around frame 3 of attack sequence
-    const hitWindowStart = 3;
-    setTimeout(() => {
-      if (this.state !== 'attack' || this.dead) return;
-      this.tryApplyBossAttackDamage(world);
-    }, hitWindowStart * this.ATTACK_DELAY);
+    const hitFrame = 3;
+    setTimeout(() => this._attackHitWindow(world), hitFrame * this.ATTACK_DELAY);
   }
 
+  // Processes hit window of the attack.
+  _attackHitWindow(world) {
+    if (this.state !== 'attack' || this.dead) return;
+    this.tryApplyBossAttackDamage(world);
+  }
+
+  // Applies damage to player if in range or handles block.
   tryApplyBossAttackDamage(world) {
     const ch = world?.character;
     if (!ch || ch.isDead?.()) return;
-    // Check distance
-    const cx = ch.x + ch.width / 2;
-    const bx = this.x + this.width / 2;
-    const closeNow = Math.abs(cx - bx) <= this.attackRange + 10;
-    if (!closeNow) return;
-    // Vertical overlap check
-    const a = this.getBoundsWithOffset?.(this) || { top: this.y, bottom: this.y + this.height };
-    const b = ch.getBoundsWithOffset?.(ch) || { top: ch.y, bottom: ch.y + ch.height };
-    const vOverlap = a.bottom > b.top && a.top < b.bottom;
-    if (!vOverlap) return;
-    // Block check similar to goblin
-    if (ch.isBlocking) {
-      const bossOnRight = this.x > ch.x;
-      const facingRight = !ch.otherDirection;
-      const blockCovers = (bossOnRight && facingRight) || (!bossOnRight && ch.otherDirection);
-      if (blockCovers) {
-        ch.triggerBlock?.();
-        // Apply a short horizontal knockback to the boss away from the character (grounded; no hurt anim)
-        const now = Date.now();
-        const dir = bossOnRight ? 1 : -1; // push boss further away from the character
-        // Use MoveableObject mechanics for horizontal motion
-        this.speedY = 0; // keep grounded; no vertical impulse
-        // Implement a tiny manual knockback over a brief window using a transient vx on the boss
-        const kbDuration = 220;
-        const kbSpeed = 8;
-        this._blockKnockbackEndAt = now + kbDuration;
-        this._blockKnockbackVX = dir * kbSpeed;
-        // Start/refresh a mini loop to process knockback without interfering with main movement
-        if (!this._blockKbLoop) {
-          this._blockKbLoop = setInterval(() => {
-            const t = Date.now();
-            if (t >= (this._blockKnockbackEndAt || 0)) {
-              this._blockKnockbackVX = 0;
-              clearInterval(this._blockKbLoop);
-              this._blockKbLoop = null;
-              return;
-            }
-            if (this._blockKnockbackVX) {
-              this.x += this._blockKnockbackVX;
-              this._blockKnockbackVX *= 0.9; // damping
-            }
-          }, 1000 / 60);
-        }
-        // small penalty to avoid immediate re-hit
-        this.lastAttackAt = now; // reset cooldown baseline
-        return;
-      }
-    }
-    // Apply normal goblin damage
+    if (!this._isPlayerVerticallyInRange(ch)) return;
+    if (this._attemptBlockResponse(ch)) return;
     world.damageCharacterIfNeeded();
     ch.applyKnockbackFrom?.(this);
   }
 
-  startStateAnimLoop() {
-    setInterval(() => {
-      // If character is dead, force idle state and animate idle only
-      const chDead = this.world?.character?.isDead?.();
-      if (chDead && !this.dead) {
-        this.awake = false;
-        this.alertPlayed = false;
-        this.state = 'idle';
-        // keep cycling idle frames
-        const nowIdle = Date.now();
-        const { sheet, delay } = { sheet: this.SHEET_IDLE, delay: this.IDLE_DELAY };
-        this.advanceFrameIfDue(nowIdle, delay);
-        const len = this.getSheetCountAutoWithFallback(sheet);
-        if (this.frameIndex >= len) this.loopFrame(len);
-        this.setCurrentSheetFrame(sheet);
-        return;
-      }
-      const now = Date.now();
-      const { sheet, delay } = this.pickAnim();
-      this.advanceFrameIfDue(now, delay);
-      const len = this.getSheetCountAutoWithFallback(sheet);
-      this.applyTransitions(len);
-      this.setCurrentSheetFrame(sheet);
-    }, 50);
+  // Checks vertical & horizontal proximity.
+  _isPlayerVerticallyInRange(ch) {
+    const cx = ch.x + ch.width / 2;
+    const bx = this.x + this.width / 2;
+    if (Math.abs(cx - bx) > this.attackRange + 10) return false;
+    const a = this.getBoundsWithOffset?.(this) || { top: this.y, bottom: this.y + this.height };
+    const b = ch.getBoundsWithOffset?.(ch) || { top: ch.y, bottom: ch.y + ch.height };
+    return a.bottom > b.top && a.top < b.bottom;
   }
 
+  // Handles block logic and returns true if attack was blocked.
+  _attemptBlockResponse(ch) {
+    if (!ch.isBlocking) return false;
+    const bossOnRight = this.x > ch.x;
+    const facingRight = !ch.otherDirection;
+    const blockCovers = (bossOnRight && facingRight) || (!bossOnRight && ch.otherDirection);
+    if (!blockCovers) return false;
+    ch.triggerBlock?.();
+    this._startBlockKnockback(bossOnRight ? 1 : -1);
+    this.lastAttackAt = Date.now();
+    return true;
+  }
+
+  // Starts a short knockback animation after block.
+  _startBlockKnockback(dir) {
+    this.speedY = 0;
+    const duration = 220;
+    const speed = 8;
+    this._blockKnockbackEndAt = Date.now() + duration;
+    this._blockKnockbackVX = dir * speed;
+    if (!this._blockKbLoop) this._startBlockKbLoop();
+  }
+
+  // Starts the knockback loop interval.
+  _startBlockKbLoop() {
+    this._blockKbLoop = setInterval(() => this._blockKbTick(), 1000 / 60);
+  }
+
+  // Processes a single knockback frame.
+  _blockKbTick() {
+    const t = Date.now();
+    if (t >= (this._blockKnockbackEndAt || 0)) return this._endBlockKb();
+    if (!this._blockKnockbackVX) return;
+    this.x += this._blockKnockbackVX;
+    this._blockKnockbackVX *= 0.9;
+  }
+
+  // Ends the knockback loop.
+  _endBlockKb() {
+    this._blockKnockbackVX = 0;
+    clearInterval(this._blockKbLoop);
+    this._blockKbLoop = null;
+  }
+
+  // Starts main state animation interval.
+  startStateAnimLoop() {
+    setInterval(() => this._stateAnimTick(), 50);
+  }
+
+  // Executes a single animation tick.
+  _stateAnimTick() {
+    if (this._handleCharDeadAnim()) return;
+    const now = Date.now();
+    const { sheet, delay } = this.pickAnim();
+    this.advanceFrameIfDue(now, delay);
+    const len = this.getSheetCountAutoWithFallback(sheet);
+    this.applyTransitions(len);
+    this.setCurrentSheetFrame(sheet);
+  }
+
+  // Handles forced idle cycle when character dead.
+  _handleCharDeadAnim() {
+    const chDead = this.world?.character?.isDead?.();
+    if (!chDead || this.dead) return false;
+    this.awake = false;
+    this.alertPlayed = false;
+    this.state = 'idle';
+    const now = Date.now();
+    this.advanceFrameIfDue(now, this.IDLE_DELAY);
+    const len = this.getSheetCountAutoWithFallback(this.SHEET_IDLE);
+    if (this.frameIndex >= len) this.loopFrame(len);
+    this.setCurrentSheetFrame(this.SHEET_IDLE);
+    return true;
+  }
+
+  // Advances frame counter if delay passed.
   advanceFrameIfDue(now, delay) {
     if (now - this.lastFrameTime >= delay) {
       this.frameIndex++;
@@ -222,6 +256,7 @@ class Endboss extends MoveableObject {
     }
   }
 
+  // Picks current sheet + delay based on state.
   pickAnim() {
     if (this.state === 'dead' || this.dead) return { sheet: this.SHEET_DEAD, delay: this.DEAD_DELAY };
     if (this.state === 'alert') return { sheet: this.SHEET_ALERT, delay: this.ALERT_DELAY };
@@ -232,6 +267,7 @@ class Endboss extends MoveableObject {
     return { sheet: this.SHEET_IDLE, delay: this.IDLE_DELAY };
   }
 
+  // Applies animation state transitions.
   applyTransitions(length) {
     if (this.state === 'dead') return this.clampOnDead(length);
     if (this.state === 'alert' && this.frameIndex >= this.getSheetCountAutoWithFallback(this.SHEET_ALERT))
@@ -244,32 +280,37 @@ class Endboss extends MoveableObject {
     }
   }
 
+  // Clamps frame index on death sequence end.
   clampOnDead(length) {
     this.frameIndex = Math.min(this.frameIndex, length - 1);
   }
 
+  // Handles end of alert animation.
   onAlertDone() {
     this.alertPlayed = true;
     this.state = 'walk';
     this.frameIndex = 0;
   }
 
+  // Handles end of attack animation.
   onAttackDone() {
     this.state = 'walk';
     this.frameIndex = 0;
   }
 
+  // Handles end of hurt animation.
   onHurtDone() {
     this.state = 'walk';
     this.frameIndex = 0;
   }
 
+  // Loops a frame sequence.
   loopFrame(length) {
     this.frameIndex = 0;
   }
 
+  // Sets current frame image from sheet.
   setCurrentSheetFrame(sheet) {
-    // set img to sheet and select frame region
     this.ensureSheetMeta(sheet);
     const img = this.imageCache[sheet.path];
     if (img) this.img = img;
@@ -277,14 +318,14 @@ class Endboss extends MoveableObject {
     this.setSheetFrameAuto(sheet, idx);
   }
 
+  // Returns sprite count for a sheet.
   getSheetCountAutoWithFallback(sheet) {
-    // Prefer count from filename; else approximate with helper
     const fromName = this.getSpriteCountFromFilename(sheet.path);
     if (fromName && fromName > 0) return fromName;
     return this.getSheetCountAuto(sheet);
   }
 
-  // Ensure we have sensible cols/count for auto sheet cutter
+  // Ensures sheet meta (count/cols) derived from filename.
   ensureSheetMeta(sheet) {
     if (!sheet) return;
     const cnt = this.getSpriteCountFromFilename?.(sheet.path);
@@ -295,66 +336,56 @@ class Endboss extends MoveableObject {
     }
   }
 
+  // Returns safe frame index (looping or clamped).
   safeFrameIndex(sheet) {
     const count = this.getSheetCountAutoWithFallback(sheet);
-    // Clamp for non-looping sequences
     const nonLoop = this.state === 'dead' || this.state === 'alert' || this.state === 'hurt' || this.state === 'attack';
     if (nonLoop) return Math.min(this.frameIndex, Math.max(0, count - 1));
-    // loop for idle/walk
     if (count <= 0) return 0;
     return this.frameIndex % count;
   }
 
+  // Starts walking / chasing interval.
   startWalkLoop() {
-    setInterval(() => {
-      if (this.dead) return;
-      if (this.world?.character?.isDead?.()) {
-        // stop all movement when character is dead
-        this.speed = 0;
-        return;
-      }
-      // Update facing direction towards character when awake
-      const char = this.world?.character;
-      if (char) this.otherDirection = char.x < this.x; // face the character
-
-      // Simple chase when awake
-      if (this.awake && (this.state === 'walk' || this.state === 'attack')) {
-        if (char) {
-          const dx = char.x - this.x;
-          if (Math.abs(dx) > 2) {
-            this.speed = this.chaseSpeed;
-            if (dx < 0) this.moveLeft();
-            else this.moveRight();
-          }
-        }
-      }
-
-      // Keep chasing once awakened; do not revert to idle when player moves away
-    }, 1000 / 60);
+    setInterval(() => this._walkTick(), 1000 / 60);
   }
 
+  // Executes a single walk tick.
+  _walkTick() {
+    if (this.dead) return;
+    const ch = this.world?.character;
+    if (ch?.isDead?.()) return (this.speed = 0);
+    if (ch) this.otherDirection = ch.x < this.x;
+    if (!this.awake || !['walk', 'attack'].includes(this.state) || !ch) return;
+    const dx = ch.x - this.x;
+    if (Math.abs(dx) <= 2) return;
+    this.speed = this.chaseSpeed;
+    dx < 0 ? this.moveLeft() : this.moveRight();
+  }
+
+  // Returns true if boss is not dead.
   isAlive() {
     return !this.dead;
   }
+
+  // Returns whether boss is awake.
   isAwake() {
     return !!this.awake;
   }
+
+  // Returns current remaining health steps.
   getHealthStep() {
     return this.healthSteps;
   }
 
-  // On hit: reduce HP, no knockback; do not re-trigger hurt animation while already in hurt/attack
+  // Applies a damage hit and manages state changes.
   applyHit(amount = 1, now = Date.now(), defaultMaxSteps = null, attackId = null) {
-    // Ignore hits before boss is awake
     if (!this.awake || this.dead) return false;
-    // Anti multi-hit per same player attack
     if (attackId != null && this._lastAttackIdHit === attackId) return false;
     const cooldown = this.hitCooldownMs ?? 200;
     if (this.lastHitAt && now - this.lastHitAt < cooldown) return false;
-    // Initialize HP baseline
     if (this.maxHealthSteps == null) this.maxHealthSteps = defaultMaxSteps ?? 10;
     if (this.healthSteps == null) this.healthSteps = this.maxHealthSteps;
-    const max = this.maxHealthSteps;
     const current = this.healthSteps;
     const next = Math.max(0, current - 1); // always -1 segment per spec
     this.healthSteps = next;
@@ -366,7 +397,6 @@ class Endboss extends MoveableObject {
       this.state = 'dead';
       this.frameIndex = 0; // Dead once
     } else {
-      // Switch to hurt only if not already in non-stackable states
       if (this.state !== 'hurt' && this.state !== 'attack') {
         this.state = 'hurt';
         this.frameIndex = 0;
@@ -376,15 +406,11 @@ class Endboss extends MoveableObject {
     return true;
   }
 
+  // Initializes boss health steps.
   initHealth(maxSteps) {
     this.healthSteps = maxSteps;
     this.maxHealthSteps = maxSteps;
     this.lastHitAt = 0;
     this.hitCooldownMs = this.hitCooldownMs ?? 250;
-  }
-
-  getBarrierRect(margin, width) {
-    const x = this.x + this.width - margin;
-    return { x, y: -1000, width, height: 3000, offset: { top: 0, right: 0, bottom: 0, left: 0 } };
   }
 }
