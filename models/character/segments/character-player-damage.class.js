@@ -1,7 +1,10 @@
 // Damage & health segment
 class CharacterPlayerDamage extends CharacterPlayer {
   isDead() {
-    return (this.healthSegments != null && this.healthSegments <= 0) || super.isDead?.();
+    return (
+      (this.healthSegments != null && this.healthSegments <= 0) ||
+      super.isDead?.()
+    );
   }
 
   startDeath() {

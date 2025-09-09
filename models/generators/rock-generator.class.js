@@ -3,7 +3,8 @@ class RockGenerator {
     this.rng = rng || new Randomizer();
     this.minAmount = settings.minAmount ?? 7;
     this.maxAmount = settings.maxAmount ?? 12;
-    this.amount = settings.amount ?? this.rng.int(this.minAmount, this.maxAmount);
+    this.amount =
+      settings.amount ?? this.rng.int(this.minAmount, this.maxAmount);
     this.startX = settings.startX ?? 1000;
     this.endX = settings.endX ?? 5900;
     this.minGap = settings.minGap ?? 530; // base spacing (further apart)
@@ -20,13 +21,20 @@ class RockGenerator {
     let x = this.startX + this.rng.int(80, 200);
     for (let i = 0; i < this.amount; i++) {
       const gap = this.minGap + this.rng.int(0, this.maxExtraGap);
-      const rx = clamp(x + this.rng.int(-this.jitter, this.jitter), this.startX + 60, this.endX - 60);
+      const rx = clamp(
+        x + this.rng.int(-this.jitter, this.jitter),
+        this.startX + 60,
+        this.endX - 60
+      );
       // Choose sprite and random size scale
       const useRock4 = this.rng.next() < 0.4; // 40% chance of slightly larger rock_4
-      const path = useRock4 ? 'assets/img/5_background/rocks/rock_4.png' : 'assets/img/5_background/rocks/rock_5.png';
+      const path = useRock4
+        ? 'assets/img/5_background/rocks/rock_4.png'
+        : 'assets/img/5_background/rocks/rock_5.png';
       const baseW = useRock4 ? 96 : 82;
       const baseH = useRock4 ? 68 : 60;
-      const scale = this.minScale + (this.maxScale - this.minScale) * this.rng.next();
+      const scale =
+        this.minScale + (this.maxScale - this.minScale) * this.rng.next();
       const width = Math.max(42, Math.round(baseW * scale));
       const height = Math.max(30, Math.round(baseH * scale));
       const rock = new Rock(rx, { width, height, path });

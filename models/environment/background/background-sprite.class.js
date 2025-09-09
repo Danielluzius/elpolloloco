@@ -10,7 +10,8 @@ class BackgroundSprite extends BackgroundObject {
     super(imagePath, x, 0);
     if (options.width) this.width = options.width;
     if (options.height) this.height = options.height;
-    if (typeof options.parallaxFactor === 'number') this.parallaxFactor = options.parallaxFactor;
+    if (typeof options.parallaxFactor === 'number')
+      this.parallaxFactor = options.parallaxFactor;
     this._single = !!options.single || this.width < 720; // auto mark small assets as single
     if (options.useAbsoluteY) {
       this.y = y; // treat provided y as final top

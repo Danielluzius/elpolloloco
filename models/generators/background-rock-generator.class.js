@@ -23,12 +23,19 @@ class BackgroundRockGenerator {
     let x = this.startX + this.rng.int(100, 240);
     for (let i = 0; i < this.amount; i++) {
       const gap = this.minGap + this.rng.int(0, this.maxExtraGap);
-      const px = clamp(x + this.rng.int(-this.jitter, this.jitter), this.startX + 40, this.endX - 40);
+      const px = clamp(
+        x + this.rng.int(-this.jitter, this.jitter),
+        this.startX + 40,
+        this.endX - 40
+      );
       const useThree = this.rng.next() < 0.5; // mix rock_2 / rock_3
-      const path = useThree ? 'assets/img/5_background/rocks/rock_3.png' : 'assets/img/5_background/rocks/rock_2.png';
+      const path = useThree
+        ? 'assets/img/5_background/rocks/rock_3.png'
+        : 'assets/img/5_background/rocks/rock_2.png';
       const baseW = useThree ? 120 : 100;
       const baseH = useThree ? 90 : 75;
-      const scale = this.minScale + (this.maxScale - this.minScale) * this.rng.next();
+      const scale =
+        this.minScale + (this.maxScale - this.minScale) * this.rng.next();
       const width = Math.round(baseW * scale);
       const height = Math.round(baseH * scale);
       // Anchor by bottom: compute y so bottom aligns to baseline, then optionally bury downwards a bit

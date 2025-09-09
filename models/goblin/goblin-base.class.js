@@ -116,7 +116,9 @@ class GoblinBase extends MoveableObject {
     const p = `assets/img/3_enemies_goblins/goblin_${t}/3_idle/1_idle_6_sprites.png`;
     const c = this.getSpriteCountFromFilename(p) || 6;
     this.idleSheet = { path: p, cols: c, rows: 1, count: c };
-    this.idleOrder = Array.from({ length: c }, (_, i) => i).filter((i) => i !== 1);
+    this.idleOrder = Array.from({ length: c }, (_, i) => i).filter(
+      (i) => i !== 1
+    );
     this.loadImage(p);
     this.img = this.imageCache[p];
     this.setSheetFrameAuto(this.idleSheet, this.idleOrder[0] || 0);
@@ -194,7 +196,8 @@ class GoblinBase extends MoveableObject {
     this.chaseSpeed = Math.max(2.2, this.patrolSpeed * this.CHASE_SPEED_FACTOR);
     this.patrolDir = Math.random() < 0.5 ? -1 : 1;
     this.isPaused = true;
-    this.pauseEndAt = Date.now() + this.randBetween(this.PAUSE_MIN_MS, this.PAUSE_MAX_MS);
+    this.pauseEndAt =
+      Date.now() + this.randBetween(this.PAUSE_MIN_MS, this.PAUSE_MAX_MS);
   }
 
   // Preload heart overlay images

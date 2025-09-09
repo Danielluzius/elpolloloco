@@ -19,7 +19,17 @@ class DrawableObject {
     if (!this.img) return;
     const r = this.currentFrameRect;
     if (r && typeof r.sx === 'number') {
-      ctx.drawImage(this.img, r.sx, r.sy, r.sw, r.sh, this.x, this.y, this.width, this.height);
+      ctx.drawImage(
+        this.img,
+        r.sx,
+        r.sy,
+        r.sw,
+        r.sh,
+        this.x,
+        this.y,
+        this.width,
+        this.height
+      );
     } else {
       ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
     }
@@ -30,7 +40,17 @@ class DrawableObject {
     if (!this.img) return;
     const r = this.currentFrameRect;
     if (r && typeof r.sx === 'number') {
-      ctx.drawImage(this.img, r.sx, r.sy, r.sw, r.sh, dx, dy, this.width, this.height);
+      ctx.drawImage(
+        this.img,
+        r.sx,
+        r.sy,
+        r.sw,
+        r.sh,
+        dx,
+        dy,
+        this.width,
+        this.height
+      );
     } else {
       ctx.drawImage(this.img, dx, dy, this.width, this.height);
     }
@@ -85,8 +105,12 @@ class DrawableObject {
     };
     const spacingX = pickSpacing(fullW, cols);
     const spacingY = pickSpacing(fullH, rows);
-    const fw = sheet.frameW || (fullW ? Math.round((fullW - spacingX * (cols - 1)) / cols) : 128);
-    const fh = sheet.frameH || (fullH ? Math.round((fullH - spacingY * (rows - 1)) / rows) : 128);
+    const fw =
+      sheet.frameW ||
+      (fullW ? Math.round((fullW - spacingX * (cols - 1)) / cols) : 128);
+    const fh =
+      sheet.frameH ||
+      (fullH ? Math.round((fullH - spacingY * (rows - 1)) / rows) : 128);
 
     // Compute symmetric outer margins if any
     const usedW = cols * fw + (cols - 1) * spacingX;

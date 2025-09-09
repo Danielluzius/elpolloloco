@@ -9,9 +9,12 @@ class CharacterPlayerDeath extends CharacterPlayer {
 
   updateDeadFrameIndex() {
     if (!this.deadStartedAt) this.deadStartedAt = Date.now();
-    let idx = Math.floor((Date.now() - this.deadStartedAt) / this.DEAD_FRAME_DELAY);
+    let idx = Math.floor(
+      (Date.now() - this.deadStartedAt) / this.DEAD_FRAME_DELAY
+    );
     const img = this.imageCache[this.DEAD_SHEET.path];
-    const cnt = this.getSheetCount(this.DEAD_SHEET, img) || this.DEAD_SHEET.count || 1;
+    const cnt =
+      this.getSheetCount(this.DEAD_SHEET, img) || this.DEAD_SHEET.count || 1;
     if (idx >= cnt) {
       idx = cnt - 1;
       this.deathLastFrameLocked = true;

@@ -23,12 +23,30 @@ class EndbossBase extends MoveableObject {
   lastAttackAt = 0;
   attackWindupMs = 250;
   _attackWindupTimer = null;
-  SHEET_IDLE = { path: 'assets/img/4_enemie_boss_goblin/1_idle_6_sprites.png', rows: 1 };
-  SHEET_ALERT = { path: 'assets/img/4_enemie_boss_goblin/1_alert_3_sprites.png', rows: 1 };
-  SHEET_WALK = { path: 'assets/img/4_enemie_boss_goblin/1_walk_12_sprites.png', rows: 1 };
-  SHEET_ATTACK = { path: 'assets/img/4_enemie_boss_goblin/1_attack_5_sprites.png', rows: 1 };
-  SHEET_HURT = { path: 'assets/img/4_enemie_boss_goblin/1_hurt_3_sprites.png', rows: 1 };
-  SHEET_DEAD = { path: 'assets/img/4_enemie_boss_goblin/1_dead_3_sprites.png', rows: 1 };
+  SHEET_IDLE = {
+    path: 'assets/img/4_enemie_boss_goblin/1_idle_6_sprites.png',
+    rows: 1,
+  };
+  SHEET_ALERT = {
+    path: 'assets/img/4_enemie_boss_goblin/1_alert_3_sprites.png',
+    rows: 1,
+  };
+  SHEET_WALK = {
+    path: 'assets/img/4_enemie_boss_goblin/1_walk_12_sprites.png',
+    rows: 1,
+  };
+  SHEET_ATTACK = {
+    path: 'assets/img/4_enemie_boss_goblin/1_attack_5_sprites.png',
+    rows: 1,
+  };
+  SHEET_HURT = {
+    path: 'assets/img/4_enemie_boss_goblin/1_hurt_3_sprites.png',
+    rows: 1,
+  };
+  SHEET_DEAD = {
+    path: 'assets/img/4_enemie_boss_goblin/1_dead_3_sprites.png',
+    rows: 1,
+  };
   constructor() {
     super();
     this.maxHealthSteps = 10;

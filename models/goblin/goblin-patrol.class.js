@@ -3,7 +3,8 @@ class GoblinPatrol extends GoblinCombat {
   // Update patrol logic if not aggro
   updatePatrol(now) {
     this._moving = false;
-    if (this.dying || this.hurtActive || Math.abs(this.knockbackVX) > 0.1) return;
+    if (this.dying || this.hurtActive || Math.abs(this.knockbackVX) > 0.1)
+      return;
     if (this.handlePatrolPause(now)) return;
     const l = this.spawnX - this.patrolRadius,
       r = this.spawnX + this.patrolRadius;
@@ -32,7 +33,8 @@ class GoblinPatrol extends GoblinCombat {
 
   // Ensure there is a segment target
   ensureSegmentTarget(l, r) {
-    if (typeof this.segmentTargetX !== 'number') this.segmentTargetX = this.pickNextSegmentTarget(l, r);
+    if (typeof this.segmentTargetX !== 'number')
+      this.segmentTargetX = this.pickNextSegmentTarget(l, r);
   }
 
   // Advance along current segment
@@ -40,7 +42,9 @@ class GoblinPatrol extends GoblinCombat {
     const dir = Math.sign(this.segmentTargetX - this.x) || this.patrolDir || -1;
     if (this.hitPatrolEdge(dir, l, r)) return this.flipAtEdge(now, dir);
     const nextX = this.x + dir * this.patrolSpeed;
-    const reached = (dir < 0 && nextX <= this.segmentTargetX) || (dir > 0 && nextX >= this.segmentTargetX);
+    const reached =
+      (dir < 0 && nextX <= this.segmentTargetX) ||
+      (dir > 0 && nextX >= this.segmentTargetX);
     if (reached) return this.finishSegment(now, dir);
     this.x = nextX;
     this._moving = true;
@@ -87,7 +91,8 @@ class GoblinPatrol extends GoblinCombat {
     const radius = this.patrolRadius;
     const minLen = Math.max(20, radius * this.SEGMENT_MIN_FRAC);
     const maxLen = Math.max(minLen + 10, radius * this.SEGMENT_MAX_FRAC);
-    const raw = this.x + (this.patrolDir || -1) * this.randBetween(minLen, maxLen);
+    const raw =
+      this.x + (this.patrolDir || -1) * this.randBetween(minLen, maxLen);
     return Math.max(l, Math.min(r, raw));
   }
 }

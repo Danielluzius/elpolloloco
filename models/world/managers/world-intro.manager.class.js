@@ -20,7 +20,9 @@ class WorldIntroManager {
     const w = this.w;
     const from = w.camera_x || 0;
     const center = (w.canvas?.width || 720) / 2;
-    const target = Math.round(center + (w.bossIntroCamOffsetX || 0) - (boss.x + (boss.width || 0) / 2));
+    const target = Math.round(
+      center + (w.bossIntroCamOffsetX || 0) - (boss.x + (boss.width || 0) / 2)
+    );
     w.animateCamera(from, target, 1200, () => this.startBossWalk(boss));
   }
   startBossWalk(boss) {

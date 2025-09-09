@@ -15,7 +15,12 @@ class CharacterPlayerInput extends CharacterPlayer {
   }
 
   canProcessHorizontal() {
-    return !this.knockbackActive && !this.isSpecialAttacking && !this.isAttacking && !this.isBlocking;
+    return (
+      !this.knockbackActive &&
+      !this.isSpecialAttacking &&
+      !this.isAttacking &&
+      !this.isBlocking
+    );
   }
 
   updateAllStateTicks() {
@@ -44,7 +49,11 @@ class CharacterPlayerInput extends CharacterPlayer {
     const w = this.world;
     if (!w) return;
     const intro = w.introActive || w.bossIntroActive;
-    w.camera_x = intro ? (typeof w.introCamX === 'number' ? w.introCamX : -this.x + 100) : -this.x + 100;
+    w.camera_x = intro
+      ? typeof w.introCamX === 'number'
+        ? w.introCamX
+        : -this.x + 100
+      : -this.x + 100;
   }
 
   markActivityOnAction() {

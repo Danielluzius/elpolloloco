@@ -15,7 +15,11 @@ class CharacterPlayerAttack extends CharacterPlayer {
     this.isAttacking = true;
     this.attackFrameIndex = 0;
     this.lastAttackFrameTime = now;
-    const frames = this.getSheetCount(this.ATTACK_SHEET, this.imageCache[this.ATTACK_SHEET.path]) || 3;
+    const frames =
+      this.getSheetCount(
+        this.ATTACK_SHEET,
+        this.imageCache[this.ATTACK_SHEET.path]
+      ) || 3;
     this.attackEndAt = now + frames * this.ATTACK_FRAME_DELAY;
   }
 
@@ -39,17 +43,26 @@ class CharacterPlayerAttack extends CharacterPlayer {
   setAttackFrame(now) {
     const img = this.imageCache[this.ATTACK_SHEET.path];
     const cnt = this.getSheetCount(this.ATTACK_SHEET, img) || 3;
-    if (this.attackFrameIndex < cnt - 1 && now - this.lastAttackFrameTime >= this.ATTACK_FRAME_DELAY) {
+    if (
+      this.attackFrameIndex < cnt - 1 &&
+      now - this.lastAttackFrameTime >= this.ATTACK_FRAME_DELAY
+    ) {
       this.attackFrameIndex++;
       this.lastAttackFrameTime = now;
     }
     this.img = img;
-    this.setSheetFrame(this.ATTACK_SHEET, Math.min(this.attackFrameIndex, cnt - 1));
+    this.setSheetFrame(
+      this.ATTACK_SHEET,
+      Math.min(this.attackFrameIndex, cnt - 1)
+    );
     this.animKey = 'attack';
   }
 
   isAttackActiveWindow() {
-    return this.isAttacking && this.attackFrameIndex >= this.ATTACK_ACTIVE_START_FRAME;
+    return (
+      this.isAttacking &&
+      this.attackFrameIndex >= this.ATTACK_ACTIVE_START_FRAME
+    );
   }
 
   getAttackHitboxRect() {

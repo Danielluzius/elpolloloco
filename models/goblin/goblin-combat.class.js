@@ -66,7 +66,11 @@ class GoblinCombat extends GoblinAnim {
   // Count kill on world once
   countKill() {
     try {
-      this.world && (this.world._goblinsKilled = Math.max(0, (this.world._goblinsKilled || 0) + 1));
+      this.world &&
+        (this.world._goblinsKilled = Math.max(
+          0,
+          (this.world._goblinsKilled || 0) + 1
+        ));
       this._countedKill = true;
     } catch (_) {}
   }
@@ -95,7 +99,10 @@ class GoblinCombat extends GoblinAnim {
     if (this._attackReady && img) this.img = img;
     if (now < this.attackWindupEndAt) return this.setSheetFrameAuto(s, 0);
     if (now - this.attackLastAt >= this.ATTACK_FRAME_DELAY) {
-      this.attackFrameIdx = Math.min(this.attackFrameIdx + 1, (s.count || 1) - 1);
+      this.attackFrameIdx = Math.min(
+        this.attackFrameIdx + 1,
+        (s.count || 1) - 1
+      );
       this.attackLastAt = now;
     }
     this.setSheetFrameAuto(s, this.attackFrameIdx);
@@ -121,7 +128,10 @@ class GoblinCombat extends GoblinAnim {
     if (!ch || !w) return;
     if (Math.abs(ch.x - this.x) > this.ATTACK_RANGE_X + 10) return;
     const a = this.getBoundsWithOffset(this);
-    const b = ch.getBoundsWithOffset?.(ch) || { top: ch.y, bottom: ch.y + ch.height };
+    const b = ch.getBoundsWithOffset?.(ch) || {
+      top: ch.y,
+      bottom: ch.y + ch.height,
+    };
     const overlap = a.bottom > b.top && a.top < b.bottom;
     if (!overlap) return;
     if (this.tryBlockInteraction(ch)) return;

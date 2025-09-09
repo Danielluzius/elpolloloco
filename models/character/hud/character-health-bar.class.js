@@ -1,10 +1,16 @@
 class CharacterHealthBar extends DrawableObject {
-  LEFT_FULL = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_left.png';
-  MID_FULL = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_middle.png';
-  RIGHT_FULL = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_right.png';
-  LEFT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
-  MID_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
-  RIGHT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
+  LEFT_FULL =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_left.png';
+  MID_FULL =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_middle.png';
+  RIGHT_FULL =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_right.png';
+  LEFT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
+  MID_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
+  RIGHT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
   maxSegments = 5;
   segments = 5;
   constructor() {
@@ -30,7 +36,8 @@ class CharacterHealthBar extends DrawableObject {
     const max = this.maxSegments || 5;
     const isFull = this.segments > slotIndex;
     if (slotIndex === 0) return isFull ? this.LEFT_FULL : this.LEFT_EMPTY;
-    if (slotIndex === max - 1) return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
+    if (slotIndex === max - 1)
+      return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
     return isFull ? this.MID_FULL : this.MID_EMPTY;
   }
   drawAt(ctx, dx, dy) {

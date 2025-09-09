@@ -7,14 +7,24 @@ class EndbossAnim extends EndbossBase {
     this._setInitialIdleFrame();
   }
   _loadAllSheets() {
-    [this.SHEET_IDLE, this.SHEET_ALERT, this.SHEET_WALK, this.SHEET_ATTACK, this.SHEET_HURT, this.SHEET_DEAD].forEach(
-      (s) => this.loadImage(s.path)
-    );
+    [
+      this.SHEET_IDLE,
+      this.SHEET_ALERT,
+      this.SHEET_WALK,
+      this.SHEET_ATTACK,
+      this.SHEET_HURT,
+      this.SHEET_DEAD,
+    ].forEach((s) => this.loadImage(s.path));
   }
   _ensureAllSheetMeta() {
-    [this.SHEET_IDLE, this.SHEET_ALERT, this.SHEET_WALK, this.SHEET_ATTACK, this.SHEET_HURT, this.SHEET_DEAD].forEach(
-      (s) => this.ensureSheetMeta(s)
-    );
+    [
+      this.SHEET_IDLE,
+      this.SHEET_ALERT,
+      this.SHEET_WALK,
+      this.SHEET_ATTACK,
+      this.SHEET_HURT,
+      this.SHEET_DEAD,
+    ].forEach((s) => this.ensureSheetMeta(s));
   }
   _setInitialIdleFrame() {
     const img = this.imageCache[this.SHEET_IDLE.path];
@@ -58,21 +68,35 @@ class EndbossAnim extends EndbossBase {
     }
   }
   pickAnim() {
-    if (this.state === 'dead' || this.dead) return { sheet: this.SHEET_DEAD, delay: this.DEAD_DELAY };
-    if (this.state === 'alert') return { sheet: this.SHEET_ALERT, delay: this.ALERT_DELAY };
-    if (this.state === 'attack') return { sheet: this.SHEET_ATTACK, delay: this.ATTACK_DELAY };
-    if (this.state === 'hurt') return { sheet: this.SHEET_HURT, delay: this.HURT_DELAY };
-    if (this.state === 'walk') return { sheet: this.SHEET_WALK, delay: this.WALK_DELAY };
+    if (this.state === 'dead' || this.dead)
+      return { sheet: this.SHEET_DEAD, delay: this.DEAD_DELAY };
+    if (this.state === 'alert')
+      return { sheet: this.SHEET_ALERT, delay: this.ALERT_DELAY };
+    if (this.state === 'attack')
+      return { sheet: this.SHEET_ATTACK, delay: this.ATTACK_DELAY };
+    if (this.state === 'hurt')
+      return { sheet: this.SHEET_HURT, delay: this.HURT_DELAY };
+    if (this.state === 'walk')
+      return { sheet: this.SHEET_WALK, delay: this.WALK_DELAY };
     return { sheet: this.SHEET_IDLE, delay: this.IDLE_DELAY };
   }
   applyTransitions(length) {
     if (this.state === 'dead') return this.clampOnDead(length);
-    if (this.state === 'alert' && this.frameIndex >= this.getSheetCountAutoWithFallback(this.SHEET_ALERT))
+    if (
+      this.state === 'alert' &&
+      this.frameIndex >= this.getSheetCountAutoWithFallback(this.SHEET_ALERT)
+    )
       return this.onAlertDone();
-    if (this.state === 'attack' && this.frameIndex >= length) return this.onAttackDone();
-    if (this.state === 'hurt' && this.frameIndex >= length) return this.onHurtDone();
-    if (this.state === 'walk' && this.frameIndex >= length) return this.loopFrame(length);
-    if (this.state === 'idle' && this.frameIndex >= this.getSheetCountAutoWithFallback(this.SHEET_IDLE))
+    if (this.state === 'attack' && this.frameIndex >= length)
+      return this.onAttackDone();
+    if (this.state === 'hurt' && this.frameIndex >= length)
+      return this.onHurtDone();
+    if (this.state === 'walk' && this.frameIndex >= length)
+      return this.loopFrame(length);
+    if (
+      this.state === 'idle' &&
+      this.frameIndex >= this.getSheetCountAutoWithFallback(this.SHEET_IDLE)
+    )
       this.loopFrame(length);
   }
   clampOnDead(length) {

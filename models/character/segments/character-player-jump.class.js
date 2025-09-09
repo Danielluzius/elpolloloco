@@ -3,9 +3,14 @@ class CharacterPlayerJump extends CharacterPlayer {
   handleJumpKey() {
     const grounded = !this.isAboveGround();
     const clear =
-      grounded && !this.isSpecialAttacking && !this.isAttacking && !this.knockbackActive && !this.isBlocking;
+      grounded &&
+      !this.isSpecialAttacking &&
+      !this.isAttacking &&
+      !this.knockbackActive &&
+      !this.isBlocking;
     // Jump only on UP or SPACE (original mapping)
-    if ((this.world.keyboard.UP || this.world.keyboard.SPACE) && clear) return this.startJump();
+    if ((this.world.keyboard.UP || this.world.keyboard.SPACE) && clear)
+      return this.startJump();
     if (this.world.keyboard.S && clear) return this.startSpecialAttack();
     if (this.world.keyboard.A && clear) return this.startAttack();
   }
@@ -36,7 +41,10 @@ class CharacterPlayerJump extends CharacterPlayer {
   setJumpFrame(now) {
     const img = this.imageCache[this.JUMP_SHEET.path];
     const cnt = this.getSheetCount(this.JUMP_SHEET, img) || 1;
-    if (this.jumpFrameIndex < cnt - 1 && now - this.lastJumpFrameTime >= this.JUMP_FRAME_DELAY) {
+    if (
+      this.jumpFrameIndex < cnt - 1 &&
+      now - this.lastJumpFrameTime >= this.JUMP_FRAME_DELAY
+    ) {
       this.jumpFrameIndex++;
       this.lastJumpFrameTime = now;
     }

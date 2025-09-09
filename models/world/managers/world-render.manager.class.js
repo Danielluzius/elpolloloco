@@ -28,15 +28,32 @@ class WorldRenderManager {
     if (!tileW) return w.drawObjectAt(obj, baseX, y);
     const first = Math.floor(-baseX / tileW) - 1;
     const need = Math.ceil(viewW / tileW) + 3;
-    for (let i = 0; i < need; i++) w.drawObjectAt(obj, baseX + (first + i) * tileW, y);
+    for (let i = 0; i < need; i++)
+      w.drawObjectAt(obj, baseX + (first + i) * tileW, y);
   }
   drawHud() {
     const w = this.w;
-    w.drawObjectAt(w.characterHealthBar, w.characterHealthBar.x | 0, w.characterHealthBar.y | 0);
-    w.drawObjectAt(w.characterBlockBar, w.characterBlockBar.x | 0, w.characterBlockBar.y | 0);
-    w.drawObjectAt(w.characterChargeBar, w.characterChargeBar.x | 0, w.characterChargeBar.y | 0);
+    w.drawObjectAt(
+      w.characterHealthBar,
+      w.characterHealthBar.x | 0,
+      w.characterHealthBar.y | 0
+    );
+    w.drawObjectAt(
+      w.characterBlockBar,
+      w.characterBlockBar.x | 0,
+      w.characterBlockBar.y | 0
+    );
+    w.drawObjectAt(
+      w.characterChargeBar,
+      w.characterChargeBar.x | 0,
+      w.characterChargeBar.y | 0
+    );
     w.drawObjectAt(w.potionHud, w.potionHud.x | 0, w.potionHud.y | 0);
-    w.drawObjectAt(w.blockPotionHud, w.blockPotionHud.x | 0, w.blockPotionHud.y | 0);
+    w.drawObjectAt(
+      w.blockPotionHud,
+      w.blockPotionHud.x | 0,
+      w.blockPotionHud.y | 0
+    );
     w.drawObjectAt(w.goblinCounter, 0, (w.goblinCounter.y || 6) | 0);
   }
   drawEntities() {
@@ -49,27 +66,40 @@ class WorldRenderManager {
   _main() {
     const w = this.w;
     const f = 1.0;
-    w.drawObjectAt(w.character, (w.character.x + w.camera_x * f) | 0, w.character.y | 0);
-    for (const b of w.level.barriers || []) w.drawObjectAt(b, (b.x + w.camera_x * f) | 0, b.y | 0);
-    for (const r of w.level.rocks || []) w.drawObjectAt(r, (r.x + w.camera_x * f) | 0, r.y | 0);
-    for (const e of w.level.enemies || []) w.drawObjectAt(e, (e.x + w.camera_x * f) | 0, e.y | 0);
+    w.drawObjectAt(
+      w.character,
+      (w.character.x + w.camera_x * f) | 0,
+      w.character.y | 0
+    );
+    for (const b of w.level.barriers || [])
+      w.drawObjectAt(b, (b.x + w.camera_x * f) | 0, b.y | 0);
+    for (const r of w.level.rocks || [])
+      w.drawObjectAt(r, (r.x + w.camera_x * f) | 0, r.y | 0);
+    for (const e of w.level.enemies || [])
+      w.drawObjectAt(e, (e.x + w.camera_x * f) | 0, e.y | 0);
   }
   _cons() {
     const w = this.w;
     const f = 1.0;
-    for (const p of w.level.potions || []) w.drawObjectAt(p, (p.x + w.camera_x * f) | 0, p.y | 0);
-    for (const bp of w.level.blockPotions || []) w.drawObjectAt(bp, (bp.x + w.camera_x * f) | 0, bp.y | 0);
+    for (const p of w.level.potions || [])
+      w.drawObjectAt(p, (p.x + w.camera_x * f) | 0, p.y | 0);
+    for (const bp of w.level.blockPotions || [])
+      w.drawObjectAt(bp, (bp.x + w.camera_x * f) | 0, bp.y | 0);
   }
   _fg() {
     const w = this.w;
     const f = 1.0;
-    for (const fo of w.level.foregroundObjects || []) w.drawObjectAt(fo, (fo.x + w.camera_x * f) | 0, fo.y | 0);
+    for (const fo of w.level.foregroundObjects || [])
+      w.drawObjectAt(fo, (fo.x + w.camera_x * f) | 0, fo.y | 0);
   }
   _bossBar() {
     const w = this.w;
     const boss = w.level.enemies.find((e) => e instanceof Endboss);
     if (!boss || boss.dead || !boss.awake) return;
-    if (w.bossSegBar.updateFromBoss(boss) && typeof boss.healthSteps === 'number')
+    if (
+      w.bossSegBar.updateFromBoss(boss) &&
+      typeof boss.healthSteps === 'number'
+    )
       w.bossSegBar.setByStep(boss.healthSteps);
     const f = 1.0;
     const sx = (w.bossSegBar.x + w.camera_x * f) | 0;

@@ -4,7 +4,11 @@ class CharacterPlayerBlockStomp extends CharacterPlayer {
     const now = Date.now();
     const kb = this.world?.keyboard;
     const wantsBlock = !!kb?.D; // only D triggers block (restore original mapping)
-    const canBlock = (this.blockSegments || 0) > 0 && !this.isSpecialAttacking && !this.isAttacking && !this.isHurt();
+    const canBlock =
+      (this.blockSegments || 0) > 0 &&
+      !this.isSpecialAttacking &&
+      !this.isAttacking &&
+      !this.isHurt();
     if (!this.isBlocking && wantsBlock && canBlock) {
       this.isBlocking = true;
       this.blockEndAt = now + this.BLOCK_DURATION_MS;
@@ -15,7 +19,8 @@ class CharacterPlayerBlockStomp extends CharacterPlayer {
     if (this.isBlocking) {
       if (now >= this.blockEndAt) {
         this.blockSegments = Math.max(0, (this.blockSegments || 0) - 1);
-        this.blockEndAt = this.blockSegments > 0 ? now + this.BLOCK_DURATION_MS : now;
+        this.blockEndAt =
+          this.blockSegments > 0 ? now + this.BLOCK_DURATION_MS : now;
       }
       if (!wantsBlock || this.blockSegments <= 0) this.endBlock();
     }
@@ -30,7 +35,11 @@ class CharacterPlayerBlockStomp extends CharacterPlayer {
     const img = this.imageCache[this.BLOCK_SHEET.path];
     const cnt = this.getSheetCount(this.BLOCK_SHEET, img) || 1;
     const holdIdx = Math.max(0, cnt - 1);
-    if (cnt > 1 && now - this.lastBlockFrameTime >= this.BLOCK_FRAME_DELAY && this.blockFrameIndex < holdIdx) {
+    if (
+      cnt > 1 &&
+      now - this.lastBlockFrameTime >= this.BLOCK_FRAME_DELAY &&
+      this.blockFrameIndex < holdIdx
+    ) {
       this.blockFrameIndex = Math.min(this.blockFrameIndex + 1, holdIdx);
       this.lastBlockFrameTime = now;
     }
@@ -58,7 +67,9 @@ class CharacterPlayerBlockStomp extends CharacterPlayer {
   }
 
   canInitiateStomp() {
-    return !this.isStomping && this.onPlatforms.length === 0 && !this.isBlocking;
+    return (
+      !this.isStomping && this.onPlatforms.length === 0 && !this.isBlocking
+    );
   }
 
   updateStompFrame(now) {

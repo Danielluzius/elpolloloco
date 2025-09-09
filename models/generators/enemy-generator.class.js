@@ -14,7 +14,10 @@ class EnemyGenerator {
     const step = (this.endX - this.startX) / this.amount;
     for (let i = 0; i < this.amount; i++) {
       const mid = this.startX + step * i + step / 2;
-      const x = Math.max(this.startX + 20, Math.min(this.endX - 20, mid + this.rng.int(-60, 60)));
+      const x = Math.max(
+        this.startX + 20,
+        Math.min(this.endX - 20, mid + this.rng.int(-60, 60))
+      );
       const t = this.drawTypeFromBag();
       res.push(new Goblin(t, x));
     }
@@ -28,7 +31,10 @@ class EnemyGenerator {
       // simple Fisher-Yates shuffle
       for (let i = this._typeBag.length - 1; i > 0; i--) {
         const j = this.rng.int(0, i);
-        [this._typeBag[i], this._typeBag[j]] = [this._typeBag[j], this._typeBag[i]];
+        [this._typeBag[i], this._typeBag[j]] = [
+          this._typeBag[j],
+          this._typeBag[i],
+        ];
       }
     }
     return this._typeBag.pop();

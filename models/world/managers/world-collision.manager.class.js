@@ -13,7 +13,11 @@ class WorldCollisionManager {
       if (e.shouldDespawn?.()) return false;
       if (e.dead) return true;
       if (!w.character.isColliding(e)) return true;
-      if (e instanceof Goblin && this.isGoblinAttackFrame(e) && w.character.applySegmentHit)
+      if (
+        e instanceof Goblin &&
+        this.isGoblinAttackFrame(e) &&
+        w.character.applySegmentHit
+      )
         this.damageCharacterIfNeeded();
       return true;
     });
@@ -33,7 +37,11 @@ class WorldCollisionManager {
         top: rock.y,
         bottom: rock.y + rock.height,
       };
-      const overlap = a.right > b.left && a.left < b.right && a.bottom > b.top && a.top < b.bottom;
+      const overlap =
+        a.right > b.left &&
+        a.left < b.right &&
+        a.bottom > b.top &&
+        a.top < b.bottom;
       if (!overlap) continue;
       if (a.bottom <= b.top + 4) continue;
       const pushLeft = a.right - b.left,
@@ -65,12 +73,21 @@ class WorldCollisionManager {
       bottom: enemy.y + enemy.height,
     };
     const overlap =
-      eb.right > hitbox.left && eb.left < hitbox.right && eb.bottom > hitbox.top && eb.top < hitbox.bottom;
+      eb.right > hitbox.left &&
+      eb.left < hitbox.right &&
+      eb.bottom > hitbox.top &&
+      eb.top < hitbox.bottom;
     if (!overlap) return;
     const w = this.w;
-    if (typeof enemy.onHitByAttack === 'function') enemy.onHitByAttack(w.character);
+    if (typeof enemy.onHitByAttack === 'function')
+      enemy.onHitByAttack(w.character);
     else if (enemy instanceof Endboss && enemy.applyHit) {
-      const applied = enemy.applyHit(1, Date.now(), 10, w.character.attackId ?? null);
+      const applied = enemy.applyHit(
+        1,
+        Date.now(),
+        10,
+        w.character.attackId ?? null
+      );
       if (applied) w.awardCharge(1);
     } else if (enemy.applyHit) this.damageBossIfNeeded(enemy);
   }

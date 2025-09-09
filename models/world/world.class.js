@@ -89,7 +89,10 @@ class World extends WorldBase {
 
   awardCharge(amount = 1) {
     const maxSeg = this.characterChargeBar?.maxSegments || 5;
-    const cur = Math.max(0, Math.min(maxSeg, this.character.chargeSegments ?? 0));
+    const cur = Math.max(
+      0,
+      Math.min(maxSeg, this.character.chargeSegments ?? 0)
+    );
     const next = Math.min(maxSeg, cur + Math.max(0, amount | 0));
     if (next !== cur) {
       this.character.chargeSegments = next;
@@ -101,7 +104,10 @@ class World extends WorldBase {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss || boss.dead || !boss.awake) return;
     if (this.bossSegBar.updateFromBoss(boss)) {
-      const steps = typeof boss.healthSteps === 'number' ? boss.healthSteps : this.bossSegBar.getMaxSteps();
+      const steps =
+        typeof boss.healthSteps === 'number'
+          ? boss.healthSteps
+          : this.bossSegBar.getMaxSteps();
       this.bossSegBar.setByStep(steps);
     }
   }
@@ -109,7 +115,10 @@ class World extends WorldBase {
   updateGoblinCounter() {
     try {
       if (this.goblinCounter?.mode === 'objective') return;
-      const total = (this._goblinTotal ?? this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length) || 0;
+      const total =
+        (this._goblinTotal ??
+          this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length) ||
+        0;
       this.goblinCounter.setTotals(total, this._goblinsKilled || 0);
     } catch (_) {}
   }
@@ -143,7 +152,9 @@ class World extends WorldBase {
 
   returnCameraToCharacter() {
     const target = -this.character.x + 100;
-    this.animateCamera(this.camera_x || 0, target, 1000, () => this.finishBossIntro());
+    this.animateCamera(this.camera_x || 0, target, 1000, () =>
+      this.finishBossIntro()
+    );
   }
 
   finishBossIntro() {
@@ -189,13 +200,15 @@ class World extends WorldBase {
   _placePotionHuds() {
     const hb = this.characterHealthBar;
     this.potionHud.x = hb.x + hb.width + 12;
-    this.potionHud.y = hb.y + Math.floor((hb.height - this.potionHud.height) / 2);
+    this.potionHud.y =
+      hb.y + Math.floor((hb.height - this.potionHud.height) / 2);
     this.blockPotionHud.x = this.potionHud.x;
     this.blockPotionHud.y = this.potionHud.y + this.potionHud.height + 8;
   }
 
   initGoblinCounter() {
-    const total = this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
+    const total =
+      this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
     this._goblinTotal = total;
     this._goblinsKilled = 0;
     this.goblinCounter.y = 56;
@@ -237,7 +250,11 @@ class World extends WorldBase {
     this._stopped = true;
     super.stopLoops();
     super.clearDraw?.();
-    ['_bossIntroCamTimer', '_bossIntroWalkTimer', '_bossIntroReturnCamTimer'].forEach((t) => this._clearTimer(t));
+    [
+      '_bossIntroCamTimer',
+      '_bossIntroWalkTimer',
+      '_bossIntroReturnCamTimer',
+    ].forEach((t) => this._clearTimer(t));
     this._clearTimer('_bossIntroHudSwitchTimer', true);
   }
 
@@ -259,7 +276,11 @@ class World extends WorldBase {
     const charB = this.character.getBoundsWithOffset?.(this.character);
     this.level.potions = this.level.potions.filter((p) => {
       const pb = p.getBoundsWithOffset?.(p);
-      const ov = pb.right > charB.left && pb.left < charB.right && pb.bottom > charB.top && pb.top < charB.bottom;
+      const ov =
+        pb.right > charB.left &&
+        pb.left < charB.right &&
+        pb.bottom > charB.top &&
+        pb.top < charB.bottom;
       if (!ov) return true;
       this._potionsMgr.pickupPotion(p);
       return false;
@@ -269,7 +290,12 @@ class World extends WorldBase {
   // pickup handled inline
 
   checkPotionUse() {
-    if (this.getPotionCount() <= 0 || !this.keyboard?.ONE || this._usePotionLatch) return;
+    if (
+      this.getPotionCount() <= 0 ||
+      !this.keyboard?.ONE ||
+      this._usePotionLatch
+    )
+      return;
     this._usePotionLatch = true;
     try {
       this.usePotion();
@@ -291,7 +317,11 @@ class World extends WorldBase {
     const charB = this.character.getBoundsWithOffset?.(this.character);
     this.level.blockPotions = this.level.blockPotions.filter((bp) => {
       const bb = bp.getBoundsWithOffset?.(bp);
-      const ov = bb.right > charB.left && bb.left < charB.right && bb.bottom > charB.top && bb.top < charB.bottom;
+      const ov =
+        bb.right > charB.left &&
+        bb.left < charB.right &&
+        bb.bottom > charB.top &&
+        bb.top < charB.bottom;
       if (!ov) return true;
       this._potionsMgr.pickupBlockPotion(bp);
       return false;
@@ -301,7 +331,12 @@ class World extends WorldBase {
   // block potion pickup handled inline
 
   checkBlockPotionUse() {
-    if (this.getBlockPotionCount() <= 0 || !this.keyboard?.TWO || this._useBlockPotionLatch) return;
+    if (
+      this.getBlockPotionCount() <= 0 ||
+      !this.keyboard?.TWO ||
+      this._useBlockPotionLatch
+    )
+      return;
     this._useBlockPotionLatch = true;
     try {
       this.useBlockPotion();

@@ -75,13 +75,17 @@ class GoblinAnim extends GoblinBase {
       this.img = img;
       this.setSheetFrameAuto(this.hurtSheet, this.hurtFrameIdx);
     }
-    if (now >= Math.max(this.knockbackEndAt || 0, this.hurtEndAt || 0)) this.hurtActive = false;
+    if (now >= Math.max(this.knockbackEndAt || 0, this.hurtEndAt || 0))
+      this.hurtActive = false;
     return true;
   }
 
   // Increase hurt frame index
   advanceHurtFrame(now) {
-    this.hurtFrameIdx = Math.min((this.hurtFrameIdx || 0) + 1, (this.hurtSheet.count || 3) - 1);
+    this.hurtFrameIdx = Math.min(
+      (this.hurtFrameIdx || 0) + 1,
+      (this.hurtSheet.count || 3) - 1
+    );
     this.hurtLastAt = now;
   }
 
@@ -108,7 +112,8 @@ class GoblinAnim extends GoblinBase {
   // Walk animation progression
   walkAnim(now) {
     if (now - this.walkLastAt >= this.WALK_DELAY) {
-      this.walkFrameIdx = (this.walkFrameIdx + 1) % (this.walkSheet?.count || 1);
+      this.walkFrameIdx =
+        (this.walkFrameIdx + 1) % (this.walkSheet?.count || 1);
       this.walkLastAt = now;
     }
     const img = this.imageCache[this.walkSheet.path];

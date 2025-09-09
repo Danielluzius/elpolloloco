@@ -1,10 +1,16 @@
 class CharacterBlockBar extends DrawableObject {
-  LEFT_FULL = 'assets/img/7_statusbars/1_statusbar/2_statusbar_block_character/blockbar_full_left.png';
-  MID_FULL = 'assets/img/7_statusbars/1_statusbar/2_statusbar_block_character/blockbar_full_middle.png';
-  RIGHT_FULL = 'assets/img/7_statusbars/1_statusbar/2_statusbar_block_character/blockbar_full_right.png';
-  LEFT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
-  MID_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
-  RIGHT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
+  LEFT_FULL =
+    'assets/img/7_statusbars/1_statusbar/2_statusbar_block_character/blockbar_full_left.png';
+  MID_FULL =
+    'assets/img/7_statusbars/1_statusbar/2_statusbar_block_character/blockbar_full_middle.png';
+  RIGHT_FULL =
+    'assets/img/7_statusbars/1_statusbar/2_statusbar_block_character/blockbar_full_right.png';
+  LEFT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
+  MID_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
+  RIGHT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
   maxSegments = 5;
   segments = 5;
   width = 210;

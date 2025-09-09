@@ -1,7 +1,9 @@
 // Combat (attack + damage) logic for Endboss.
 class EndbossCombat extends EndbossAnim {
   wakeIfNear(character) {
-    const dx = Math.abs(character.x + character.width / 2 - (this.x + this.width / 2));
+    const dx = Math.abs(
+      character.x + character.width / 2 - (this.x + this.width / 2)
+    );
     if (dx > this.detectionRadius) return;
     this.awake = true;
     if (this.healthSteps == null) {
@@ -17,14 +19,20 @@ class EndbossCombat extends EndbossAnim {
 
   checkAndStartAttack(world) {
     if (!this._canAttemptAttack(world) || this._attackWindupTimer) return;
-    this._attackWindupTimer = setTimeout(() => this._executeAttackStart(world), this.attackWindupMs);
+    this._attackWindupTimer = setTimeout(
+      () => this._executeAttackStart(world),
+      this.attackWindupMs
+    );
   }
 
   _canAttemptAttack(world) {
     if (!this.awake || this.dead || world.character.isDead()) return false;
-    const dx = Math.abs(world.character.x + world.character.width / 2 - (this.x + this.width / 2));
+    const dx = Math.abs(
+      world.character.x + world.character.width / 2 - (this.x + this.width / 2)
+    );
     if (dx > this.attackRange) return false;
-    if (Date.now() - (this.lastAttackAt || 0) < this.attackCooldown) return false;
+    if (Date.now() - (this.lastAttackAt || 0) < this.attackCooldown)
+      return false;
     return !['attack', 'hurt'].includes(this.state);
   }
 
@@ -69,15 +77,22 @@ class EndbossCombat extends EndbossAnim {
     const cx = ch.x + ch.width / 2;
     const bx = this.x + this.width / 2;
     if (Math.abs(cx - bx) > this.attackRange + 10) return false;
-    const a = this.getBoundsWithOffset?.(this) || { top: this.y, bottom: this.y + this.height };
-    const b = ch.getBoundsWithOffset?.(ch) || { top: ch.y, bottom: ch.y + ch.height };
+    const a = this.getBoundsWithOffset?.(this) || {
+      top: this.y,
+      bottom: this.y + this.height,
+    };
+    const b = ch.getBoundsWithOffset?.(ch) || {
+      top: ch.y,
+      bottom: ch.y + ch.height,
+    };
     return a.bottom > b.top && a.top < b.bottom;
   }
   _attemptBlockResponse(ch) {
     if (!ch.isBlocking) return false;
     const bossOnRight = this.x > ch.x;
     const facingRight = !ch.otherDirection;
-    const cover = (bossOnRight && facingRight) || (!bossOnRight && ch.otherDirection);
+    const cover =
+      (bossOnRight && facingRight) || (!bossOnRight && ch.otherDirection);
     if (!cover) return false;
     ch.triggerBlock?.();
     this._startBlockKnockback(bossOnRight ? 1 : -1);
@@ -110,11 +125,18 @@ class EndbossCombat extends EndbossAnim {
     this._blockKbLoop = null;
   }
 
-  applyHit(amount = 1, now = Date.now(), defaultMaxSteps = null, attackId = null) {
+  applyHit(
+    amount = 1,
+    now = Date.now(),
+    defaultMaxSteps = null,
+    attackId = null
+  ) {
     if (!this.awake || this.dead) return false;
     if (attackId != null && this._lastAttackIdHit === attackId) return false;
-    if (this.lastHitAt && now - this.lastHitAt < (this.hitCooldownMs ?? 200)) return false;
-    if (this.maxHealthSteps == null) this.maxHealthSteps = defaultMaxSteps ?? 10;
+    if (this.lastHitAt && now - this.lastHitAt < (this.hitCooldownMs ?? 200))
+      return false;
+    if (this.maxHealthSteps == null)
+      this.maxHealthSteps = defaultMaxSteps ?? 10;
     if (this.healthSteps == null) this.healthSteps = this.maxHealthSteps;
     const next = Math.max(0, this.healthSteps - 1);
     this.healthSteps = next;

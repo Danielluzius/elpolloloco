@@ -1,10 +1,16 @@
 class CharacterChargeBar extends DrawableObject {
-  LEFT_FULL = 'assets/img/7_statusbars/1_statusbar/3_statusbar_charge_character/chargebar_full_left.png';
-  MID_FULL = 'assets/img/7_statusbars/1_statusbar/3_statusbar_charge_character/chargebar_full_middle.png';
-  RIGHT_FULL = 'assets/img/7_statusbars/1_statusbar/3_statusbar_charge_character/chargebar_full_right.png';
-  LEFT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
-  MID_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
-  RIGHT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
+  LEFT_FULL =
+    'assets/img/7_statusbars/1_statusbar/3_statusbar_charge_character/chargebar_full_left.png';
+  MID_FULL =
+    'assets/img/7_statusbars/1_statusbar/3_statusbar_charge_character/chargebar_full_middle.png';
+  RIGHT_FULL =
+    'assets/img/7_statusbars/1_statusbar/3_statusbar_charge_character/chargebar_full_right.png';
+  LEFT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
+  MID_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
+  RIGHT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
   maxSegments = 5;
   segments = 0;
   width = 210;
@@ -38,7 +44,12 @@ class CharacterChargeBar extends DrawableObject {
     const baseW = Math.floor(this.width / count);
     const segH = this.height;
     for (let i = 0; i < count; i++) {
-      const emptyPath = i === 0 ? this.LEFT_EMPTY : i === count - 1 ? this.RIGHT_EMPTY : this.MID_EMPTY;
+      const emptyPath =
+        i === 0
+          ? this.LEFT_EMPTY
+          : i === count - 1
+          ? this.RIGHT_EMPTY
+          : this.MID_EMPTY;
       const emptyImg = this.imageCache?.[emptyPath];
       if (!emptyImg) continue;
       const isLast = i === count - 1;
@@ -48,7 +59,12 @@ class CharacterChargeBar extends DrawableObject {
     }
     const fullCount = Math.max(0, Math.min(count, this.segments || 0));
     for (let i = 0; i < fullCount; i++) {
-      const fullPath = i === 0 ? this.LEFT_FULL : i === count - 1 ? this.RIGHT_FULL : this.MID_FULL;
+      const fullPath =
+        i === 0
+          ? this.LEFT_FULL
+          : i === count - 1
+          ? this.RIGHT_FULL
+          : this.MID_FULL;
       const fullImg = this.imageCache?.[fullPath];
       if (!fullImg) continue;
       const isLast = i === count - 1;

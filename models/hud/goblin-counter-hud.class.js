@@ -31,7 +31,11 @@ class GoblinCounterHUD extends DrawableObject {
 
   drawAt(ctx, dx, dy) {
     // Center text horizontally within the canvas; ignore dx for centering
-    const baseCenter = Math.floor(ctx?.canvas?.width ? ctx.canvas.width / 2 : (dx || 0) + (this.width || 0) / 2);
+    const baseCenter = Math.floor(
+      ctx?.canvas?.width
+        ? ctx.canvas.width / 2
+        : (dx || 0) + (this.width || 0) / 2
+    );
     const centerX = baseCenter + (this.xOffset || 0);
     const topY = dy ?? this.y ?? 6;
     const remaining = Math.max(0, (this.total || 0) - (this.kills || 0));

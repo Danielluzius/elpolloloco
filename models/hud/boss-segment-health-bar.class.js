@@ -1,10 +1,16 @@
 class BossSegmentHealthBar extends DrawableObject {
-  LEFT_FULL = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_left.png';
-  MID_FULL = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_middle.png';
-  RIGHT_FULL = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_right.png';
-  LEFT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
-  MID_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
-  RIGHT_EMPTY = 'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
+  LEFT_FULL =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_left.png';
+  MID_FULL =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_middle.png';
+  RIGHT_FULL =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_right.png';
+  LEFT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_left.png';
+  MID_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_middle.png';
+  RIGHT_EMPTY =
+    'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_empty_right.png';
 
   // 10 segments: left cap, 8 middles, right cap
   maxSegments = 10;
@@ -61,7 +67,10 @@ class BossSegmentHealthBar extends DrawableObject {
         const baseSegW = (chBar.width || 210) / 3;
         const segW = Math.max(5, Math.round(baseSegW * this.scaleX)); // narrower than character bar
         this.width = segW * this.maxSegments;
-        this.height = Math.max(6, Math.round((chBar.height || 40) * this.scaleY));
+        this.height = Math.max(
+          6,
+          Math.round((chBar.height || 40) * this.scaleY)
+        );
       }
     } catch (_) {}
     // Anchor directly above the boss (small gap)
