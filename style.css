@@ -94,27 +94,18 @@ h1 {
 /* Center START button inside start overlay */
 #startOverlay .primary-btn,
 #startOverlay .secondary-btn {
-  position: relative;
-  top: 0;
-  left: 0;
+  position: static;
   transform: none;
   z-index: 3;
   opacity: 0; /* fade in after overlay */
-  transform: translateY(8px);
   transition: opacity 2.4s ease, transform 2.4s ease;
   transition-delay: 0.6s; /* start slightly after overlay begins */
   pointer-events: none; /* prevent clicks before visible */
-  /* Larger Start button */
-  padding: 14px 22px;
-  font-size: 18px;
-  border-width: 2px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.5);
 }
 
 #startOverlay:not(.hidden) .primary-btn,
 #startOverlay:not(.hidden) .secondary-btn {
   opacity: 1;
-  transform: translateY(0);
   pointer-events: auto;
 }
 
@@ -169,12 +160,61 @@ h1 {
 }
 
 /* Button unter dem Canvas platzieren, wenn Overlay sichtbar ist */
-.overlay .primary-btn,
-.overlay .secondary-btn {
+/* Entfernt die alte Positionierung unter dem Canvas für Start-Overlay Buttons */
+.overlay .menu-buttons .secondary-btn {
+  position: relative;
+}
+
+/* Start Menü Layout */
+#startOverlay .menu-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+  z-index: 3;
+}
+
+/* Start Button nutzt jetzt denselben Stil wie andere secondary-btn */
+
+#startOverlay .howto-btn {
+  font-size: 14px;
+  padding: 8px 20px;
+  opacity: 0.9;
+}
+
+/* Corner Controls oben rechts */
+.corner-controls {
   position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+.corner-controls .tiny-btn {
+  font-size: 12px;
+  padding: 6px 10px;
+  border-width: 1px;
+}
+
+/* Imprint Button unten rechts */
+.imprint-btn {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-width: 1px;
+  z-index: 5;
+  opacity: 0.85;
+}
+
+/* Hover verfeinern */
+.corner-controls .tiny-btn:hover,
+.imprint-btn:hover {
+  filter: brightness(1.15);
 }
 
 /* Dim only for end screens */

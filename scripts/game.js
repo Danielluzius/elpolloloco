@@ -24,6 +24,9 @@ function cacheUi() {
   ui.howToBtn = document.getElementById('howToBtn');
   ui.howToModal = document.getElementById('howToModal');
   ui.howToCloseBtn = document.getElementById('howToCloseBtn');
+  ui.imprintBtn = document.getElementById('imprintBtn');
+  ui.imprintModal = document.getElementById('imprintModal');
+  ui.imprintCloseBtn = document.getElementById('imprintCloseBtn');
 }
 
 function bindUi() {
@@ -34,6 +37,8 @@ function bindUi() {
   ui.muteBtn?.addEventListener('click', toggleMute);
   ui.howToBtn?.addEventListener('click', openHowTo);
   ui.howToCloseBtn?.addEventListener('click', closeHowTo);
+  ui.imprintBtn?.addEventListener('click', openImprint);
+  ui.imprintCloseBtn?.addEventListener('click', closeImprint);
 }
 
 function startGame() {
@@ -45,6 +50,8 @@ function startGame() {
       hero.style.pointerEvents = 'none';
     } catch (_) {}
   }
+  // Imprint-Button ausblenden sobald das Spiel startet
+  ui.imprintBtn?.classList.add('hidden');
 
   const FADE_OUT_MS = 350;
   setTimeout(() => {
@@ -92,6 +99,8 @@ function backToStart() {
 function showStart() {
   hideAllOverlays();
   ui.startOverlay?.classList.remove('hidden');
+  // Show imprint button again on start screen
+  ui.imprintBtn?.classList.remove('hidden');
 }
 
 function showGameOver() {
@@ -109,6 +118,7 @@ function hideAllOverlays() {
   ui.gameOverOverlay?.classList.add('hidden');
   ui.winOverlay?.classList.add('hidden');
   ui.howToModal?.classList.add('hidden');
+  ui.imprintModal?.classList.add('hidden');
 }
 
 function hookWinLose(world) {
@@ -147,6 +157,14 @@ function openHowTo() {
 
 function closeHowTo() {
   ui.howToModal?.classList.add('hidden');
+}
+
+function openImprint() {
+  ui.imprintModal?.classList.remove('hidden');
+}
+
+function closeImprint() {
+  ui.imprintModal?.classList.add('hidden');
 }
 
 window.addEventListener('load', () => {

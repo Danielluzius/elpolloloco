@@ -39,20 +39,23 @@
       'beforeend',
       `
       <div id="startOverlay" class="overlay hidden">
-        <img src="assets/img/5_background/nature/3_layer.png" alt="Startscreen" />
-        <button id="startBtn" class="secondary-btn">START</button>
+        <img src="assets/img/5_background/nature/3_layer.png" alt="Start Screen" />
+        <div class="menu-buttons" role="toolbar" aria-label="Start Menu">
+          <button id="startBtn" class="secondary-btn start-main-btn">Start Game</button>
+          <button id="howToBtn" class="secondary-btn howto-btn" aria-haspopup="dialog" aria-controls="howToModal">How To Play</button>
+        </div>
       </div>
       <div id="gameOverOverlay" class="overlay hidden">
         <img src="assets/img/9_intro_outro_screens/game_over/game over.png" alt="Game Over" />
         <div class="overlay-actions">
-          <button class="retryBtn primary-btn">Retry</button>
+          <button class="retryBtn secondary-btn">Retry</button>
           <button class="backToStartBtn secondary-btn">Back to Start</button>
         </div>
       </div>
       <div id="winOverlay" class="overlay hidden">
-        <img src="assets/img/You won, you lost/You won A.png" alt="Gewonnen" />
+        <img src="assets/img/You won, you lost/You won A.png" alt="Victory" />
         <div class="overlay-actions">
-          <button class="retryBtn primary-btn">Retry</button>
+          <button class="retryBtn secondary-btn">Retry</button>
           <button class="backToStartBtn secondary-btn">Back to Start</button>
         </div>
       </div>
@@ -70,6 +73,20 @@
           <button id="howToCloseBtn" class="secondary-btn">Close</button>
         </div>
       </div>
+      <div id="imprintModal" class="modal hidden" role="dialog" aria-labelledby="imprintTitle" aria-modal="true">
+        <h3 id="imprintTitle">Imprint</h3>
+  <p><strong>Project:</strong> Goblin Slayer (El Pollo Loco Remake)</p>
+  <p><strong>Author:</strong> Your Name – Educational Project</p>
+  <p>All graphics & sounds are for practice only. Not for commercial use.</p>
+        <div class="modal-actions">
+          <button id="imprintCloseBtn" class="secondary-btn">Close</button>
+        </div>
+      </div>
+      <div class="corner-controls" aria-label="Utility Controls">
+        <button id="fullscreenBtn" class="secondary-btn tiny-btn" title="Fullscreen">Fullscreen</button>
+        <button id="muteBtn" class="secondary-btn tiny-btn" title="Mute/Unmute">Mute</button>
+      </div>
+      <button id="imprintBtn" class="secondary-btn imprint-btn" aria-haspopup="dialog" aria-controls="imprintModal">Imprint</button>
     `
     );
 
