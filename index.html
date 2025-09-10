@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>El Pollo Loco</title>
+    <title>GOBLIN SLAYER</title>
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon/favicon.png" />
+    <link rel="shortcut icon" href="./assets/img/favicon/favicon.png" />
 
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./style/standart.css" />
 
-    <!-- Game classes (safe to load; game won't start until we inject the UI) -->
     <!-- Core base classes -->
     <script src="./models/core/drawable-object.class.js" defer></script>
     <script src="./models/core/movable-object.class.js" defer></script>
@@ -80,16 +83,16 @@
 </head>
 
 <body>
-    <!-- Landing Page with animated nature layers -->
+
     <div id="landing" class="landing">
         <div class="bg-layers">
-            <!-- Base background: 3_layer -->
+
             <div class="layer layer-3"></div>
-            <!-- Birds between 3_layer and cloud_layer -->
+
             <div class="layer layer-bird"></div>
-            <!-- Clouds: move right -> left in loop -->
+
             <div class="layer layer-clouds"></div>
-            <!-- Foreground layers revealed sequentially -->
+
             <div class="layer layer-2"></div>
             <div class="layer layer-1"></div>
         </div>
