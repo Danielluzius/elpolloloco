@@ -260,18 +260,18 @@ h1 {
 .stage-howto-btn {
   position: absolute;
   left: 50%;
-  top: 69%; /* moved a bit higher (was 75%) */
-  transform: translate(-50%, -50%) scale(0.75);
-  z-index: 9; /* below start button visually */
+  top: 73%; /* moved slightly lower */
+  transform: translate(-50%, -50%) scale(0.85);
+  z-index: 9;
   opacity: 0;
   transition: opacity 600ms ease, transform 600ms ease;
 }
 .stage-howto-btn .btn-image {
-  width: clamp(80px, 11vw, 130px); /* a bit smaller than start */
+  width: clamp(100px, 14vw, 180px); /* larger than before */
 }
 .stage-howto-btn.stage-howto-btn--visible {
   opacity: 1 !important;
-  transform: translate(-50%, -50%) scale(1);
+  transform: translate(-50%, -50%) scale(1.05);
 }
 
 /* Imprint button inside stage bottom-right */
@@ -299,19 +299,19 @@ h1 {
 /* Fullscreen toggle button (top-left in stage) */
 .stage-fullscreen-btn {
   position: absolute;
-  left: 12px;
-  top: 12px;
-  transform: scale(0.55); /* slightly smaller initial */
+  right: 82px; /* moved to top-right (same slot restart uses later) */
+  top: 9px;
+  transform: scale(0.45); /* smaller initial */
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 .stage-fullscreen-btn .btn-image {
-  width: clamp(34px, 5.5vw, 62px); /* reduced overall size */
+  width: clamp(28px, 4.5vw, 50px); /* smaller */
 }
 .stage-fullscreen-btn.stage-fullscreen-btn--visible {
   opacity: 0.95;
-  transform: scale(0.9); /* keep smaller instead of full 1 */
+  transform: scale(0.7);
 }
 .stage-fullscreen-btn:hover {
   opacity: 1;
@@ -322,17 +322,17 @@ h1 {
   position: absolute;
   right: 12px;
   top: 12px;
-  transform: scale(0.55);
+  transform: scale(0.48); /* slightly larger than 0.45 */
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 .stage-sound-btn .btn-image {
-  width: clamp(34px, 5.5vw, 62px);
+  width: clamp(30px, 4.9vw, 54px); /* slightly larger */
 }
 .stage-sound-btn.stage-sound-btn--visible {
   opacity: 0.95;
-  transform: scale(0.9);
+  transform: scale(0.75); /* slightly larger final */
 }
 .stage-sound-btn:hover {
   opacity: 1;
@@ -341,8 +341,8 @@ h1 {
 /* Restart button (next to sound button) */
 .stage-restart-btn {
   position: absolute;
-  right: 94px; /* nudged slightly further right */
-  top: 12px;
+  right: 82px; /* moved further right (closer to sound) */
+  top: 9px;
   transform: scale(0.45); /* smaller base */
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
