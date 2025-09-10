@@ -81,6 +81,13 @@ h1 {
   transform: scale(0.95);
 }
 
+/* Remove default focus outline (browser) for image buttons; could add custom if needed */
+.image-btn:focus,
+.image-btn:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
 .landing {
   position: relative;
   width: 100%;
@@ -329,4 +336,47 @@ h1 {
 }
 .stage-sound-btn:hover {
   opacity: 1;
+}
+
+/* Restart button (next to sound button) */
+.stage-restart-btn {
+  position: absolute;
+  right: 94px; /* nudged slightly further right */
+  top: 12px;
+  transform: scale(0.45); /* smaller base */
+  opacity: 0;
+  transition: opacity 500ms ease, transform 500ms ease;
+  z-index: 12;
+}
+.stage-restart-btn .btn-image {
+  width: clamp(26px, 4.4vw, 48px); /* smaller */
+}
+.stage-restart-btn.stage-restart-btn--visible {
+  opacity: 0.95;
+  transform: scale(0.75); /* final visible size */
+}
+.stage-restart-btn:hover {
+  opacity: 1;
+}
+
+/* Death buttons (game over) */
+.death-btns {
+  position: absolute;
+  left: 50%;
+  top: 78%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 60px; /* further increased spacing */
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 500ms ease;
+}
+.death-btns.death-btns--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.death-btns .death-btn .btn-image {
+  /* further reduced by ~20% */
+  width: clamp(58px, 9vw, 109px);
 }

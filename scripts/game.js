@@ -21,12 +21,17 @@ function cacheUi() {
   ui.backToStartBtns = Array.from(document.querySelectorAll('.backToStartBtn'));
   ui.fullscreenBtn = document.getElementById('fullscreenBtn');
   ui.muteBtn = document.getElementById('muteBtn');
+  ui.restartBtn = document.getElementById('restartBtn');
   ui.howToBtn = document.getElementById('howToBtn');
   ui.howToModal = document.getElementById('howToModal');
   ui.howToCloseBtn = document.getElementById('howToCloseBtn');
   ui.imprintBtn = document.getElementById('imprintBtn');
   ui.imprintModal = document.getElementById('imprintModal');
   ui.imprintCloseBtn = document.getElementById('imprintCloseBtn');
+  // Death buttons (in-canvas)
+  ui.deathBtnContainer = document.getElementById('deathButtons');
+  ui.deathRetryBtn = document.getElementById('deathRetryBtn');
+  ui.deathBackBtn = document.getElementById('deathBackBtn');
 }
 
 function bindUi() {
@@ -39,6 +44,17 @@ function bindUi() {
   ui.howToCloseBtn?.addEventListener('click', closeHowTo);
   ui.imprintBtn?.addEventListener('click', openImprint);
   ui.imprintCloseBtn?.addEventListener('click', closeImprint);
+  ui.restartBtn?.addEventListener('click', () => {
+    if (gameState === 'running') restartGame();
+  });
+  ui.deathRetryBtn?.addEventListener('click', () => {
+    hideDeathButtons();
+    restartGame();
+  });
+  ui.deathBackBtn?.addEventListener('click', () => {
+    hideDeathButtons();
+    backToStart();
+  });
 }
 
 function startGame() {
@@ -71,6 +87,7 @@ function startGame() {
     gameState = 'running';
     world = new World(canvas, keyboard);
     hookWinLose(world);
+    showRestartBtn();
   }, FADE_OUT_MS);
 }
 
@@ -97,6 +114,7 @@ function restartGame() {
   gameState = 'running';
   world = new World(canvas, keyboard);
   hookWinLose(world);
+  showRestartBtn();
 }
 
 function backToStart() {
@@ -105,7 +123,90 @@ function backToStart() {
       world.stop();
     } catch (e) {}
   }
-  showStart();
+  // Soft Reset: zurück in einen Zustand wie nach Enter aber vor StartGame
+  hideDeathButtons();
+  gameState = 'idle';
+  // Canvas säubern
+  try {
+    const ctx = canvas?.getContext?.('2d');
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  } catch (_) {}
+  // Hero wieder anzeigen
+  const hero = document.querySelector('#landing .hero');
+  if (hero) {
+    hero.classList.remove('hero--off');
+    hero.classList.add('hero--up');
+    hero.style.opacity = '1';
+    hero.style.pointerEvents = 'auto';
+  }
+  // Stage bleibt sichtbar (wie nach Enter)
+  const startBtn = document.getElementById('startGameBtn');
+  const howToBtn = document.getElementById('howToPlayBtn');
+  const imprintBtn = document.getElementById('imprintBtn');
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const soundBtn = document.getElementById('muteBtn');
+  // Buttons wieder einblenden
+  [
+    [startBtn, 'stage-start-btn--visible'],
+    [howToBtn, 'stage-howto-btn--visible'],
+    [imprintBtn, 'stage-imprint-btn--visible'],
+    [fullscreenBtn, 'stage-fullscreen-btn--visible'],
+    [soundBtn, 'stage-sound-btn--visible'],
+  ].forEach(([el, cls]) => {
+    if (!el) return;
+    el.style.display = 'inline-flex';
+    el.classList.add(cls);
+  });
+  // Restart verstecken im Idle
+  hideRestartBtn();
+  // Imprint Button wieder zeigen
+  imprintBtn?.classList.remove('hidden');
+  // Aktuelle World-Referenz entfernen
+  world = null;
+  _rebindStartBtn();
+}
+
+function _rebindStartBtn() {
+  const startBtn = document.getElementById('startGameBtn');
+  if (!startBtn) return;
+  // Remove existing listeners by cloning (simplest cross-browser way)
+  const clone = startBtn.cloneNode(true);
+  startBtn.parentNode.replaceChild(clone, startBtn);
+  clone.style.display = 'inline-flex';
+  clone.classList.add('stage-start-btn--visible');
+  clone.addEventListener(
+    'click',
+    () => {
+      const howToBtn = document.getElementById('howToPlayBtn');
+      const imprintBtn = document.getElementById('imprintBtn');
+      const fullscreenBtn = document.getElementById('fullscreenBtn');
+      const restartBtn = document.getElementById('restartBtn');
+      // Hide buttons (sound stays)
+      clone.style.display = 'none';
+      howToBtn && (howToBtn.style.display = 'none');
+      imprintBtn && (imprintBtn.style.display = 'none');
+      fullscreenBtn && (fullscreenBtn.style.display = 'none');
+      restartBtn && (restartBtn.style.display = 'none');
+      const hero = document.querySelector('#landing .hero');
+      hero?.classList.add('hero--off');
+      startGame();
+    },
+    { once: true }
+  );
+}
+
+function showRestartBtn() {
+  const b = ui.restartBtn;
+  if (!b) return;
+  b.style.display = 'inline-flex';
+  requestAnimationFrame(() => b.classList.add('stage-restart-btn--visible'));
+}
+
+function hideRestartBtn() {
+  const b = ui.restartBtn;
+  if (!b) return;
+  b.classList.remove('stage-restart-btn--visible');
+  b.style.display = 'none';
 }
 
 function showStart() {
@@ -118,6 +219,8 @@ function showStart() {
 function showGameOver() {
   gameState = 'lose';
   ui.gameOverOverlay?.classList.remove('hidden');
+  hideRestartBtn();
+  showDeathButtons();
 }
 
 function showWin() {
@@ -131,6 +234,7 @@ function hideAllOverlays() {
   ui.winOverlay?.classList.add('hidden');
   ui.howToModal?.classList.add('hidden');
   ui.imprintModal?.classList.add('hidden');
+  hideDeathButtons();
 }
 
 function hookWinLose(world) {
@@ -147,6 +251,34 @@ function hookWinLose(world) {
       showWin();
     }
   }, 200);
+}
+
+function showDeathButtons() {
+  const c = ui.deathBtnContainer;
+  if (!c) return;
+  c.removeAttribute('aria-hidden');
+  c.removeAttribute('inert');
+  c.classList.remove('hidden');
+  requestAnimationFrame(() => {
+    c.classList.add('death-btns--visible');
+    // Fokus auf ersten Button setzen für Accessibility
+    ui.deathBackBtn?.focus?.();
+  });
+}
+
+function hideDeathButtons() {
+  const c = ui.deathBtnContainer;
+  if (!c) return;
+  // Falls Fokus innerhalb liegt, vorher entfernen um aria-hidden Warnung zu vermeiden
+  try {
+    if (c.contains(document.activeElement)) {
+      document.activeElement.blur?.();
+    }
+  } catch (_) {}
+  c.classList.remove('death-btns--visible');
+  c.setAttribute('aria-hidden', 'true');
+  c.setAttribute('inert', '');
+  setTimeout(() => c.classList.add('hidden'), 300);
 }
 
 function toggleFullscreen() {

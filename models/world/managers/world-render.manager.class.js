@@ -1,6 +1,10 @@
 class WorldRenderManager {
   constructor(world) {
     this.w = world;
+    // Preload game over image once
+    this._gameOverImg = new Image();
+    this._gameOverImg.src =
+      'assets/img/9_intro_outro_screens/game_over/lost.png';
   }
 
   draw() {
@@ -10,6 +14,25 @@ class WorldRenderManager {
     this.drawBackground();
     this.drawHud();
     this.drawEntities();
+    // If character dead (lose condition) draw centered game over image (50% canvas)
+    try {
+      if (w.character?.isDead?.() && this._gameOverImg?.complete) {
+        const img = this._gameOverImg;
+        const cw = w.canvas.width;
+        const ch = w.canvas.height;
+        const targetMaxW = cw * 0.5;
+        const targetMaxH = ch * 0.5;
+        const iw = img.naturalWidth || img.width || targetMaxW;
+        const ih = img.naturalHeight || img.height || targetMaxH;
+        // Verhältnis beibehalten
+        const scale = Math.min(targetMaxW / iw, targetMaxH / ih, 1);
+        const dw = Math.round(iw * scale);
+        const dh = Math.round(ih * scale);
+        const dx = Math.round((cw - dw) / 2);
+        const dy = Math.round((ch - dh) / 2);
+        w.ctx.drawImage(img, dx, dy, dw, dh);
+      }
+    } catch (_) {}
     w._drawReqId = requestAnimationFrame(() => this.draw());
   }
 

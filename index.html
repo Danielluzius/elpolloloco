@@ -136,6 +136,22 @@
                 <span class="visually-hidden sound-label">Sound aus</span>
                 <img src="./assets/img/logos/sound_on.png" alt="" class="btn-image" decoding="async" />
             </button>
+            <!-- Restart button (appears during gameplay) -->
+            <button id="restartBtn" class="image-btn stage-restart-btn" aria-label="Neu starten" style="display:none;">
+                <span class="visually-hidden">Neu starten</span>
+                <img src="./assets/img/logos/restart.png" alt="" class="btn-image" decoding="async" />
+            </button>
+            <!-- Death buttons (shown when character dies) -->
+            <div id="deathButtons" class="death-btns hidden">
+                <button id="deathBackBtn" class="image-btn death-btn" aria-label="Zurück zum Start">
+                    <span class="visually-hidden">Zurück zum Start</span>
+                    <img src="./assets/img/logos/back_to_start.png" alt="" class="btn-image" decoding="async" />
+                </button>
+                <button id="deathRetryBtn" class="image-btn death-btn" aria-label="Erneut versuchen">
+                    <span class="visually-hidden">Erneut versuchen</span>
+                    <img src="./assets/img/logos/retry.png" alt="" class="btn-image" decoding="async" />
+                </button>
+            </div>
         </div>
     </div>
 
