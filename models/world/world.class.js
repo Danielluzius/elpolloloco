@@ -210,8 +210,9 @@ class World extends WorldBase {
       this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
     this._goblinTotal = total;
     this._goblinsKilled = 0;
-    this.goblinCounter.y = 56;
-    this.goblinCounter.xOffset = 140;
+    // Adjusted position: moved slightly up (56 -> 48) and further left (140 -> 100)
+    this.goblinCounter.y = 48;
+    this.goblinCounter.xOffset = 100;
     this.updateGoblinCounter();
   }
 
