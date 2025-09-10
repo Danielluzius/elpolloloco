@@ -21,6 +21,7 @@ class World extends WorldBase {
   _renderMgr = null;
   _potionsMgr = null;
   _collisionMgr = null;
+  _won = false; // track victory state without marking character dead
 
   constructor(canvas, keyboard) {
     super(canvas, keyboard);
@@ -53,7 +54,7 @@ class World extends WorldBase {
 
   startGameLoop() {
     const tick = () => {
-      if (this.character.isDead()) return;
+      if (this._won || this.character.isDead()) return; // freeze updates on win or death
       this.checkBossIntroTrigger();
       this.checkCollisions();
       this.checkEndbossWake();

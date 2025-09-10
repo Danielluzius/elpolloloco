@@ -226,6 +226,8 @@ function showGameOver() {
 function showWin() {
   gameState = 'win';
   ui.winOverlay?.classList.remove('hidden');
+  hideRestartBtn();
+  showDeathButtons();
 }
 
 function hideAllOverlays() {
@@ -248,6 +250,7 @@ function hookWinLose(world) {
       showGameOver();
     } else if (bossDead && gameState === 'running') {
       clearInterval(checkInterval);
+      if (world) world._won = true;
       showWin();
     }
   }, 200);

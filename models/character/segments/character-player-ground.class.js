@@ -1,5 +1,6 @@
 class CharacterPlayerGround extends CharacterPlayer {
   setGroundedFrame(now) {
+    if (this.world?._won) return; // keep last frame on win
     this.resetJumpStateIfNeeded();
     const moving = this.world.keyboard.RIGHT || this.world.keyboard.LEFT;
     const inactive = now - this.lastActivityAt;

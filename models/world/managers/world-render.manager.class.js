@@ -5,6 +5,9 @@ class WorldRenderManager {
     this._gameOverImg = new Image();
     this._gameOverImg.src =
       'assets/img/9_intro_outro_screens/game_over/lost.png';
+    // Preload win image (use same folder as lost.png)
+    this._gameWinImg = new Image();
+    this._gameWinImg.src = 'assets/img/9_intro_outro_screens/game_over/won.png';
   }
 
   draw() {
@@ -31,6 +34,26 @@ class WorldRenderManager {
         const dx = Math.round((cw - dw) / 2);
         const dy = Math.round((ch - dh) / 2);
         w.ctx.drawImage(img, dx, dy, dw, dh);
+      } else {
+        // Win overlay if boss defeated
+        const bossDead =
+          w._won ||
+          (w.level?.enemies || []).some((e) => e instanceof Endboss && e.dead);
+        if (bossDead && this._gameWinImg?.complete) {
+          const img = this._gameWinImg;
+          const cw = w.canvas.width;
+          const ch = w.canvas.height;
+          const targetMaxW = cw * 0.5;
+          const targetMaxH = ch * 0.5;
+          const iw = img.naturalWidth || img.width || targetMaxW;
+          const ih = img.naturalHeight || img.height || targetMaxH;
+          const scale = Math.min(targetMaxW / iw, targetMaxH / ih, 1);
+          const dw = Math.round(iw * scale);
+          const dh = Math.round(ih * scale);
+          const dx = Math.round((cw - dw) / 2);
+          const dy = Math.round((ch - dh) / 2);
+          w.ctx.drawImage(img, dx, dy, dw, dh);
+        }
       }
     } catch (_) {}
     w._drawReqId = requestAnimationFrame(() => this.draw());

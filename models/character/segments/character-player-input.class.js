@@ -1,6 +1,6 @@
 class CharacterPlayerInput extends CharacterPlayer {
   processInputTick() {
-    if (this.isDead()) return;
+    if (this.isDead() || this.world?._won) return; // freeze on death or win
     if (this.introActive) return this.tickIntro();
     if (this.canProcessHorizontal()) this.handleHorizontalMove();
     this.updateAllStateTicks();
@@ -32,6 +32,7 @@ class CharacterPlayerInput extends CharacterPlayer {
   }
 
   handleHorizontalMove() {
+    if (this.world?._won) return; // no movement after win
     if (this.world.keyboard.RIGHT && this.x < this.world.level.level_end_x) {
       this.moveRight();
       this.otherDirection = false;
@@ -56,6 +57,7 @@ class CharacterPlayerInput extends CharacterPlayer {
   }
 
   markActivityOnAction() {
+    if (this.world?._won) return;
     const k = this.world.keyboard;
     if (k.S || k.A || k.UP || k.SPACE) this.markActivity();
   }
