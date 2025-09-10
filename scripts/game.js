@@ -42,6 +42,18 @@ function bindUi() {
 }
 
 function startGame() {
+  // Ensure init ran (in case landing flow was disrupted)
+  if (!canvas || !keyboard) {
+    try {
+      init();
+    } catch (e) {
+      console.error('Init failed before startGame:', e);
+    }
+  }
+  if (gameState === 'running' && world) {
+    console.warn('Game already running – ignoring startGame call');
+    return;
+  }
   const hero = document.querySelector('#landing .hero');
   if (hero) {
     hero.classList.add('hero--off');
@@ -50,7 +62,7 @@ function startGame() {
       hero.style.pointerEvents = 'none';
     } catch (_) {}
   }
-  // Imprint-Button ausblenden sobald das Spiel startet
+  // Hide imprint button once the game starts
   ui.imprintBtn?.classList.add('hidden');
 
   const FADE_OUT_MS = 350;
@@ -167,9 +179,7 @@ function closeImprint() {
   ui.imprintModal?.classList.add('hidden');
 }
 
-window.addEventListener('load', () => {
-  init();
-});
+// Initialization is now triggered by landing.js (ensureInit) when the player enters the game
 
 const KEY_MAP = {
   39: 'RIGHT',

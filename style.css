@@ -32,133 +32,16 @@ h1 {
   transform: none;
   border-radius: 0;
   box-shadow: none;
-  background: #000;
+  background: #000000;
 }
 
 #canvas {
   display: block;
-  background: #000;
+  background: #ffffff00;
   border-radius: inherit;
   width: 100%;
   height: 100%;
   image-rendering: pixelated;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-
-.topbar .secondary-btn {
-  opacity: 0.95;
-}
-
-.overlay {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  background: transparent;
-  z-index: 2;
-  border-radius: inherit;
-  opacity: 1;
-  transition: opacity 2s ease;
-}
-
-.overlay .overlay-actions {
-  position: absolute;
-  top: calc(100% + 12px);
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 10px;
-}
-
-.overlay.hidden {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.overlay img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: inherit;
-}
-
-#startOverlay .primary-btn,
-#startOverlay .secondary-btn {
-  position: static;
-  transform: none;
-  z-index: 3;
-  opacity: 0;
-  transition: opacity 2.4s ease, transform 2.4s ease;
-  transition-delay: 0.6s;
-  pointer-events: none;
-}
-
-#startOverlay:not(.hidden) .primary-btn,
-#startOverlay:not(.hidden) .secondary-btn {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-#startOverlay img {
-  object-fit: fill;
-  padding: 0;
-}
-
-#winOverlay img {
-  object-fit: contain; /* baseline, will be overridden by specific shared rule later */
-  padding: 0;
-}
-
-.primary-btn {
-  padding: 14px 26px;
-  border-radius: 8px;
-  border: none;
-  background: #ff9a1f;
-  color: #23180c;
-  font-weight: 700;
-  font-size: 20px;
-  cursor: pointer;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-}
-
-.primary-btn:hover {
-  filter: brightness(1.05);
-}
-.primary-btn:active {
-  transform: translateY(1px);
-}
-
-.secondary-btn {
-  padding: 12px 22px;
-  border-radius: 8px;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  background: rgba(0, 0, 0, 0.35);
-  color: #fff;
-  font-weight: 700;
-  font-size: 18px;
-  cursor: pointer;
-  backdrop-filter: blur(2px);
-}
-
-.secondary-btn:hover {
-  filter: brightness(1.05);
-}
-.secondary-btn:active {
-  transform: translateY(1px);
 }
 
 /* Generic image button (used for Enter) */
@@ -198,100 +81,6 @@ h1 {
   transform: scale(0.95);
 }
 
-.overlay .menu-buttons .secondary-btn {
-  position: relative;
-}
-
-#startOverlay .menu-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  position: relative;
-  z-index: 3;
-  transform: translateY(14%);
-}
-
-#startOverlay .howto-btn {
-  font-size: 16px;
-  padding: 10px 20px;
-  opacity: 0.9;
-}
-
-#startOverlay #startBtn.start-main-btn {
-  font-size: 20px;
-  padding: 14px 26px;
-}
-
-.corner-controls {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  display: flex;
-  gap: 8px;
-  z-index: 5;
-}
-
-.corner-controls .tiny-btn {
-  font-size: 14px;
-  padding: 8px 14px;
-  border-width: 1px;
-}
-
-.imprint-btn {
-  position: absolute;
-  right: 12px;
-  bottom: 10px;
-  font-size: 14px;
-  padding: 8px 14px;
-  border-width: 1px;
-  z-index: 5;
-  opacity: 0.85;
-}
-
-.corner-controls .tiny-btn:hover,
-.imprint-btn:hover {
-  filter: brightness(1.15);
-}
-
-#gameOverOverlay,
-#winOverlay {
-  background: rgba(0, 0, 0, 0.75); /* dunklerer Hintergrund */
-  backdrop-filter: blur(3px);
-  z-index: 3;
-}
-
-.modal {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 300px;
-  max-width: 520px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #fff;
-  border: 2px solid rgba(255, 255, 255, 0.7);
-  border-radius: 10px;
-  padding: 16px;
-  z-index: 4;
-}
-
-.modal.hidden {
-  display: none;
-}
-.modal h3 {
-  margin: 0 0 10px;
-}
-.modal ul {
-  margin: 0 0 10px 18px;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .landing {
   position: relative;
   width: 100%;
@@ -301,7 +90,7 @@ h1 {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #000;
+  background: #00000000;
 }
 
 .landing .topbar {
@@ -441,28 +230,21 @@ h1 {
   pointer-events: none;
 }
 
-/* -----------------------------
-   Gewonnen / Verloren Overlays
-   Verkleinerte Bilder & zentriert
---------------------------------*/
-#gameOverOverlay img,
-#winOverlay img {
-  position: relative; /* überschreibt allgemeine .overlay img Regel */
-  inset: auto;
-  width: 50%;
-  max-width: 420px;
-  height: auto;
-  max-height: 50%;
-  object-fit: contain;
-  padding: 0;
-  border-radius: 0;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.7);
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.9));
+/* Start button inside stage */
+.stage-start-btn {
+  position: absolute;
+  left: 50%;
+  top: 62%; /* moved lower from 50% -> 62% */
+  transform: translate(-50%, -50%) scale(0.85);
+  z-index: 10;
+  opacity: 0;
+  transition: opacity 600ms ease, transform 600ms ease;
 }
-
-#gameOverOverlay .overlay-actions,
-#winOverlay .overlay-actions {
-  top: auto;
-  bottom: 8%;
-  transform: translateX(-50%);
+.stage-start-btn .btn-image {
+  /* match enter button sizing */
+  width: clamp(90px, 13vw, 150px);
+}
+.stage-start-btn--visible {
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) scale(1);
 }
