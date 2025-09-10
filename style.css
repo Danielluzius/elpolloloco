@@ -28,13 +28,6 @@ h1 {
   z-index: 2;
 }
 
-.stage.stage--fullscreen {
-  transform: none;
-  border-radius: 0;
-  box-shadow: none;
-  background: #000000;
-}
-
 #canvas {
   display: block;
   background: #ffffff00;
@@ -44,7 +37,6 @@ h1 {
   image-rendering: pixelated;
 }
 
-/* Generic image button (used for Enter) */
 .image-btn {
   --btn-scale: 1;
   background: none;
@@ -60,17 +52,16 @@ h1 {
 
 .image-btn .btn-image {
   display: block;
-  width: clamp(140px, 20vw, 240px); /* reduced base size */
+  width: clamp(140px, 20vw, 240px);
   height: auto;
   user-select: none;
   -webkit-user-drag: none;
   pointer-events: none;
-  transition: transform 180ms ease; /* for hover zoom */
+  transition: transform 180ms ease;
 }
 
-/* Enter button specific tweak (smaller) */
 #enterBtn.image-btn .btn-image {
-  width: clamp(90px, 13vw, 150px); /* smaller enter button */
+  width: clamp(90px, 13vw, 150px);
 }
 
 .image-btn:hover .btn-image {
@@ -81,7 +72,6 @@ h1 {
   transform: scale(0.95);
 }
 
-/* Remove default focus outline (browser) for image buttons; could add custom if needed */
 .image-btn:focus,
 .image-btn:focus-visible {
   outline: none;
@@ -98,14 +88,6 @@ h1 {
   justify-content: center;
   align-items: center;
   background: #00000000;
-}
-
-.landing .topbar {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  margin: 0;
-  z-index: 6;
 }
 
 .landing .stage--float {
@@ -147,6 +129,7 @@ h1 {
 .layer-2 {
   background-image: url('assets/img/5_background/nature/2_layer.png');
 }
+
 .layer-1 {
   background-image: url('assets/img/5_background/nature/1_layer.png');
 }
@@ -192,28 +175,17 @@ h1 {
   transition: transform 350ms ease, opacity 0.6s ease;
 }
 
-.hero .subtitle {
-  margin: 0 0 8px;
-  font-size: clamp(14px, 2.2vw, 22px);
-  letter-spacing: 2px;
-  opacity: 0.9;
-}
-
 .hero .title {
   margin: 0 0 20px;
   font-size: clamp(34px, 8.2vw, 72px);
   line-height: 1.05;
   letter-spacing: 3px;
-}
-
-/* Title image replacement */
-.hero .title {
   display: flex;
   justify-content: center;
 }
 
 .hero .title .title-logo {
-  width: clamp(198px, 44vw, 572px); /* +~10% */
+  width: clamp(198px, 44vw, 572px);
   height: auto;
   display: block;
   image-rendering: auto;
@@ -237,44 +209,44 @@ h1 {
   pointer-events: none;
 }
 
-/* Start button inside stage */
 .stage-start-btn {
   position: absolute;
   left: 50%;
-  top: 62%; /* moved lower from 50% -> 62% */
+  top: 62%;
   transform: translate(-50%, -50%) scale(0.85);
   z-index: 10;
   opacity: 0;
   transition: opacity 600ms ease, transform 600ms ease;
 }
+
 .stage-start-btn .btn-image {
-  /* match enter button sizing */
   width: clamp(90px, 13vw, 150px);
 }
+
 .stage-start-btn--visible {
   opacity: 1 !important;
   transform: translate(-50%, -50%) scale(1);
 }
 
-/* How To Play button (below start) */
 .stage-howto-btn {
   position: absolute;
   left: 50%;
-  top: 73%; /* moved slightly lower */
+  top: 73%;
   transform: translate(-50%, -50%) scale(0.85);
   z-index: 9;
   opacity: 0;
   transition: opacity 600ms ease, transform 600ms ease;
 }
+
 .stage-howto-btn .btn-image {
-  width: clamp(100px, 14vw, 180px); /* larger than before */
+  width: clamp(100px, 14vw, 180px);
 }
+
 .stage-howto-btn.stage-howto-btn--visible {
   opacity: 1 !important;
   transform: translate(-50%, -50%) scale(1.05);
 }
 
-/* Imprint button inside stage bottom-right */
 .stage-imprint-btn {
   position: absolute;
   right: 14px;
@@ -284,104 +256,111 @@ h1 {
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 11;
 }
+
 .stage-imprint-btn .btn-image {
-  /* smaller overall footprint (reduced max + slightly reduced base) */
   width: clamp(54px, 8vw, 96px);
 }
+
 .stage-imprint-btn.stage-imprint-btn--visible {
   opacity: 0.95;
   transform: scale(1);
 }
+
 .stage-imprint-btn:hover {
   opacity: 1;
 }
 
-/* Fullscreen toggle button (top-left in stage) */
 .stage-fullscreen-btn {
   position: absolute;
-  right: 82px; /* moved to top-right (same slot restart uses later) */
+  right: 82px;
   top: 9px;
-  transform: scale(0.45); /* smaller initial */
+  transform: scale(0.45);
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
+
 .stage-fullscreen-btn .btn-image {
-  width: clamp(28px, 4.5vw, 50px); /* smaller */
+  width: clamp(28px, 4.5vw, 50px);
 }
+
 .stage-fullscreen-btn.stage-fullscreen-btn--visible {
   opacity: 0.95;
   transform: scale(0.7);
 }
+
 .stage-fullscreen-btn:hover {
   opacity: 1;
 }
 
-/* Sound toggle button (top-right, persistent) */
 .stage-sound-btn {
   position: absolute;
   right: 12px;
   top: 12px;
-  transform: scale(0.48); /* slightly larger than 0.45 */
+  transform: scale(0.48);
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
+
 .stage-sound-btn .btn-image {
-  width: clamp(30px, 4.9vw, 54px); /* slightly larger */
+  width: clamp(30px, 4.9vw, 54px);
 }
+
 .stage-sound-btn.stage-sound-btn--visible {
   opacity: 0.95;
-  transform: scale(0.75); /* slightly larger final */
+  transform: scale(0.75);
 }
+
 .stage-sound-btn:hover {
   opacity: 1;
 }
 
-/* Restart button (next to sound button) */
 .stage-restart-btn {
   position: absolute;
-  right: 82px; /* moved further right (closer to sound) */
+  right: 82px;
   top: 9px;
-  transform: scale(0.45); /* smaller base */
+  transform: scale(0.45);
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
+
 .stage-restart-btn .btn-image {
-  width: clamp(26px, 4.4vw, 48px); /* smaller */
+  width: clamp(26px, 4.4vw, 48px);
 }
+
 .stage-restart-btn.stage-restart-btn--visible {
   opacity: 0.95;
-  transform: scale(0.75); /* final visible size */
+  transform: scale(0.75);
 }
+
 .stage-restart-btn:hover {
   opacity: 1;
 }
 
-/* Death buttons (game over) */
 .death-btns {
   position: absolute;
   left: 50%;
   top: 78%;
   transform: translate(-50%, -50%);
   display: flex;
-  gap: 60px; /* further increased spacing */
+  gap: 60px;
   z-index: 20;
   opacity: 0;
   pointer-events: none;
   transition: opacity 500ms ease;
 }
+
 .death-btns.death-btns--visible {
   opacity: 1;
   pointer-events: auto;
 }
+
 .death-btns .death-btn .btn-image {
-  /* further reduced by ~20% */
   width: clamp(58px, 9vw, 109px);
 }
 
-/* How To Play minimal overlay (no dark background) */
 .howto-overlay {
   position: absolute;
   inset: 0;
@@ -389,11 +368,13 @@ h1 {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  z-index: 30; /* above stage buttons */
+  z-index: 30;
 }
+
 .howto-overlay.hidden {
   display: none;
 }
+
 .howto-overlay .howto-image {
   width: min(88%, 680px);
   max-height: 92%;
@@ -403,18 +384,21 @@ h1 {
   border-radius: 0;
   box-shadow: none;
 }
+
 .howto-close-btn {
   position: absolute;
   top: 12px;
-  right: 12px; /* gleiche Ecke wie Sound Toggle */
+  right: 12px;
   transform: scale(0.55);
   z-index: 40;
   opacity: 0.95;
   transition: transform 160ms ease, opacity 160ms ease;
 }
+
 .howto-close-btn .btn-image {
   width: clamp(40px, 5.5vw, 70px);
 }
+
 .howto-close-btn:hover {
   opacity: 1;
   transform: scale(0.75);
