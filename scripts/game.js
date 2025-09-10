@@ -160,7 +160,21 @@ function toggleFullscreen() {
 
 function toggleMute() {
   isMuted = !isMuted;
-  ui.muteBtn && (ui.muteBtn.textContent = isMuted ? 'Unmute' : 'Mute');
+  const btn = ui.muteBtn;
+  if (!btn) return;
+  const img = btn.querySelector('img');
+  const span = btn.querySelector('.sound-label');
+  const isOn = !isMuted; // isOn means sound is active
+  if (img) {
+    img.src = isOn
+      ? './assets/img/logos/sound_on.png'
+      : './assets/img/logos/sound_off.png';
+  }
+  if (span) {
+    span.textContent = isOn ? 'Sound aus' : 'Sound an';
+  }
+  btn.setAttribute('aria-label', isOn ? 'Sound aus' : 'Sound an');
+  btn.setAttribute('data-state', isOn ? 'on' : 'off');
 }
 
 function openHowTo() {

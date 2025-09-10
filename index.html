@@ -114,6 +114,28 @@
             <button id="startGameBtn" class="image-btn stage-start-btn" aria-label="Start Game" style="display:none;">
                 <img src="./assets/img/logos/start.png" alt="" class="btn-image" decoding="async" />
             </button>
+            <!-- How To Play button (initially hidden, shown together with start button) -->
+            <button id="howToPlayBtn" class="image-btn stage-howto-btn" aria-label="How to Play" style="display:none;">
+                <img src="./assets/img/logos/how_to_play.png" alt="" class="btn-image" decoding="async" />
+            </button>
+            <!-- Imprint button (initially hidden, appears with other stage buttons) -->
+            <button id="imprintBtn" class="image-btn stage-imprint-btn" aria-label="Imprint / Impressum"
+                style="display:none;">
+                <span class="visually-hidden">Impressum</span>
+                <img src="./assets/img/logos/imprint.png" alt="" class="btn-image" decoding="async" />
+            </button>
+            <!-- Fullscreen toggle button (initially hidden, appears with stage buttons) -->
+            <button id="fullscreenBtn" class="image-btn stage-fullscreen-btn" aria-label="Fullscreen an"
+                style="display:none;" data-state="off">
+                <span class="visually-hidden fullscreen-label">Fullscreen an</span>
+                <img src="./assets/img/logos/fullscreen.png" alt="" class="btn-image" decoding="async" />
+            </button>
+            <!-- Sound / Music toggle button (persists after start) -->
+            <button id="muteBtn" class="image-btn stage-sound-btn" aria-label="Sound aus" style="display:none;"
+                data-state="on">
+                <span class="visually-hidden sound-label">Sound aus</span>
+                <img src="./assets/img/logos/sound_on.png" alt="" class="btn-image" decoding="async" />
+            </button>
         </div>
     </div>
 
