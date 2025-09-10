@@ -46,14 +46,14 @@
         </div>
       </div>
       <div id="gameOverOverlay" class="overlay hidden">
-        <img src="assets/img/9_intro_outro_screens/game_over/game over.png" alt="Game Over" />
+        <img src="assets/img/9_intro_outro_screens/game_over/lost.png" alt="You Lost" />
         <div class="overlay-actions">
           <button class="retryBtn secondary-btn">Retry</button>
           <button class="backToStartBtn secondary-btn">Back to Start</button>
         </div>
       </div>
       <div id="winOverlay" class="overlay hidden">
-        <img src="assets/img/You won, you lost/You won A.png" alt="Victory" />
+        <img src="assets/img/9_intro_outro_screens/game_over/won.png" alt="Victory" />
         <div class="overlay-actions">
           <button class="retryBtn secondary-btn">Retry</button>
           <button class="backToStartBtn secondary-btn">Back to Start</button>
