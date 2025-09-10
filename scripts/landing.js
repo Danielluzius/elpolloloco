@@ -1,13 +1,5 @@
 (function () {
   let gameInitialized = false;
-  function ensureInit() {
-    if (gameInitialized) return;
-    if (typeof init === 'function') {
-      init();
-      gameInitialized = true;
-    }
-  }
-
   const L = {
     landing: null,
     hero: null,
@@ -18,194 +10,279 @@
     stage: null,
   };
 
-  function qs(sel) {
-    return document.querySelector(sel);
+  const qs = (s) => document.querySelector(s);
+
+  function ensureInit() {
+    if (gameInitialized) return;
+    if (typeof init === 'function') {
+      init();
+      gameInitialized = true;
+    }
   }
+
   function show(el) {
     if (el) el.style.opacity = '1';
   }
 
-  function bind() {
+  function cacheNodes() {
     L.landing = qs('#landing');
     L.hero = qs('#landing .hero');
     L.stage = qs('#stage');
-    const layerClouds = qs('.layer-clouds');
-    const layerBirds = qs('.layer-bird');
     L.layer2 = qs('.layer-2');
     L.layer1 = qs('.layer-1');
     L.layerBird = qs('.layer-bird');
     L.enterBtn = qs('#enterBtn');
-    const imprintBtn = qs('#imprintBtn');
-    const fullscreenBtn = qs('#fullscreenBtn');
-    const soundBtn = qs('#muteBtn');
-    if (imprintBtn) {
-      imprintBtn.addEventListener('click', () => {
-        console.info('Imprint button clicked (placeholder)');
-      });
-    }
-    if (fullscreenBtn) {
-      fullscreenBtn.addEventListener('click', async () => {
-        const current = fullscreenBtn.getAttribute('data-state') || 'off';
+  }
+
+  function setupImprint() {
+    const b = qs('#imprintBtn');
+    if (!b) return;
+    b.addEventListener('click', () => {});
+  }
+
+  function requestFullscreen(el) {
+    if (el.requestFullscreen) return el.requestFullscreen();
+    return Promise.reject('no fs');
+  }
+
+  function exitFullscreen() {
+    if (document.exitFullscreen) return document.exitFullscreen();
+    return Promise.reject('no fs');
+  }
+
+  function updateFsLabel(btn, on) {
+    const span = btn.querySelector('.fullscreen-label');
+    if (span) span.textContent = on ? 'Fullscreen aus' : 'Fullscreen an';
+    btn.setAttribute('aria-label', on ? 'Fullscreen aus' : 'Fullscreen an');
+  }
+
+  function setupFullscreen() {
+    const btn = qs('#fullscreenBtn');
+    if (!btn) return;
+    btn.addEventListener('click', async () => {
+      const s = btn.getAttribute('data-state') || 'off';
+      try {
+        if (s === 'off') {
+          await requestFullscreen(document.documentElement);
+          btn.setAttribute('data-state', 'on');
+          updateFsLabel(btn, true);
+        } else {
+          await exitFullscreen();
+          btn.setAttribute('data-state', 'off');
+          updateFsLabel(btn, false);
+        }
+      } catch (e) {}
+    });
+    document.addEventListener('fullscreenchange', () => {
+      const a = !!document.fullscreenElement;
+      btn.setAttribute('data-state', a ? 'on' : 'off');
+      updateFsLabel(btn, a);
+    });
+  }
+
+  function updateSoundBtn(btn, on) {
+    const img = btn.querySelector('img');
+    const span = btn.querySelector('.sound-label');
+    if (img)
+      img.src = on
+        ? './assets/img/logos/sound_on.png'
+        : './assets/img/logos/sound_off.png';
+    if (span) span.textContent = on ? 'Sound aus' : 'Sound an';
+    btn.setAttribute('aria-label', on ? 'Sound aus' : 'Sound an');
+  }
+
+  function setupSound() {
+    const btn = qs('#muteBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+      const cur = btn.getAttribute('data-state') || 'on';
+      const next = cur === 'on' ? 'off' : 'on';
+      btn.setAttribute('data-state', next);
+      updateSoundBtn(btn, next === 'on');
+      if (typeof window !== 'undefined') {
         try {
-          if (current === 'off') {
-            await requestFullscreen(document.documentElement);
-            fullscreenBtn.setAttribute('data-state', 'on');
-            updateFsLabel(fullscreenBtn, true);
-          } else {
-            await exitFullscreen();
-            fullscreenBtn.setAttribute('data-state', 'off');
-            updateFsLabel(fullscreenBtn, false);
-          }
-        } catch (e) {
-          console.warn('Fullscreen toggle failed', e);
-        }
-      });
-      document.addEventListener('fullscreenchange', () => {
-        const active = !!document.fullscreenElement;
-        fullscreenBtn.setAttribute('data-state', active ? 'on' : 'off');
-        updateFsLabel(fullscreenBtn, active);
-      });
-    }
-    if (soundBtn) {
-      soundBtn.addEventListener('click', () => {
-        const current = soundBtn.getAttribute('data-state') || 'on';
-        const next = current === 'on' ? 'off' : 'on';
-        soundBtn.setAttribute('data-state', next);
-        updateSoundBtn(soundBtn, next === 'on');
-        // propagate to global isMuted without re-toggling UI twice
-        if (typeof window !== 'undefined') {
-          try {
-            window.isMuted = !(next === 'on');
-          } catch (_) {}
-        }
-        if (typeof toggleMute === 'function') {
-          try {
-            // call toggleMute only if its internal state differs from desired state
-            if (
-              (next === 'on' && window.isMuted) ||
-              (next === 'off' && !window.isMuted)
-            ) {
-              toggleMute();
-            }
-          } catch (e) {
-            console.warn('toggleMute failed', e);
-          }
-        }
-      });
-      updateSoundBtn(soundBtn, true); // initial on
-    }
-
-    function updateSoundBtn(btn, isOn) {
-      const img = btn.querySelector('img');
-      const span = btn.querySelector('.sound-label');
-      if (img)
-        img.src = isOn
-          ? './assets/img/logos/sound_on.png'
-          : './assets/img/logos/sound_off.png';
-      if (span) span.textContent = isOn ? 'Sound aus' : 'Sound an';
-      btn.setAttribute('aria-label', isOn ? 'Sound aus' : 'Sound an');
-    }
-
-    function updateFsLabel(btn, isOn) {
-      const span = btn.querySelector('.fullscreen-label');
-      if (span) span.textContent = isOn ? 'Fullscreen aus' : 'Fullscreen an';
-      btn.setAttribute('aria-label', isOn ? 'Fullscreen aus' : 'Fullscreen an');
-    }
-    function requestFullscreen(el) {
-      if (el.requestFullscreen) return el.requestFullscreen();
-      return Promise.reject('Fullscreen API not supported');
-    }
-    function exitFullscreen() {
-      if (document.exitFullscreen) return document.exitFullscreen();
-      return Promise.reject('Fullscreen API not supported');
-    }
-
-    setTimeout(() => show(L.layer1), 600);
-    setTimeout(() => show(L.layer2), 1200);
-    setTimeout(() => show(layerBirds), 1800);
-    setTimeout(() => show(layerClouds), 2400);
-    setTimeout(() => show(L.hero), 2800);
-
-    L.enterBtn?.addEventListener('click', () => {
-      const heroRect = L.hero?.getBoundingClientRect();
-      const landingRect = L.landing?.getBoundingClientRect();
-      let stageTopPct = 50;
-      if (heroRect && landingRect) {
-        const heroCenterY = heroRect.top + heroRect.height / 2;
-        const relativeY = heroCenterY - landingRect.top;
-        stageTopPct = (relativeY / landingRect.height) * 100;
+          window.isMuted = !(next === 'on');
+        } catch (e) {}
       }
-
-      L.enterBtn.style.display = 'none';
-      L.hero?.classList.add('hero--up');
-      L.landing?.classList.add('landing--stage');
-
-      if (L.stage) {
-        L.stage.style.display = '';
-        L.stage.classList.add('stage--float');
-        L.landing?.style.setProperty('--stage-top', `${stageTopPct}%`);
-      }
-
-      const startBtn = qs('#startGameBtn');
-      const howToBtn = qs('#howToPlayBtn');
-      const imprintBtnLocal = qs('#imprintBtn');
-      const fullscreenBtnLocal = qs('#fullscreenBtn');
-      const soundBtnLocal = qs('#muteBtn');
-      if (startBtn) {
-        setTimeout(() => {
-          startBtn.style.display = 'inline-flex';
-          startBtn.classList.add('stage-start-btn--visible');
-          if (howToBtn) {
-            howToBtn.style.display = 'inline-flex';
-            howToBtn.classList.add('stage-howto-btn--visible');
-          }
-          if (imprintBtnLocal) {
-            imprintBtnLocal.style.display = 'inline-flex';
-            imprintBtnLocal.classList.add('stage-imprint-btn--visible');
-          }
-          if (fullscreenBtnLocal) {
-            fullscreenBtnLocal.style.display = 'inline-flex';
-            fullscreenBtnLocal.classList.add('stage-fullscreen-btn--visible');
-          }
-          if (soundBtnLocal) {
-            soundBtnLocal.style.display = 'inline-flex';
-            soundBtnLocal.classList.add('stage-sound-btn--visible');
-          }
-        }, 400);
-
-        startBtn.addEventListener(
-          'click',
-          () => {
-            startBtn.style.display = 'none';
-            if (howToBtn) howToBtn.style.display = 'none';
-            if (imprintBtnLocal) imprintBtnLocal.style.display = 'none';
-            if (fullscreenBtnLocal) fullscreenBtnLocal.style.display = 'none';
-            // sound button stays visible (persistent)
-            L.hero?.classList.add('hero--off');
-            ensureInit();
-            if (typeof startGame === 'function') {
-              try {
-                startGame();
-              } catch (e) {
-                console.error('Error starting game:', e);
-              }
-            } else {
-              console.warn('startGame() not found');
-            }
-          },
-          { once: true }
-        );
-      } else {
-        ensureInit();
-        if (typeof startGame === 'function') {
-          try {
-            startGame();
-          } catch (e) {
-            console.error('Error starting game (no btn):', e);
-          }
-        }
+      if (typeof toggleMute === 'function') {
+        try {
+          if (
+            (next === 'on' && window.isMuted) ||
+            (next === 'off' && !window.isMuted)
+          )
+            toggleMute();
+        } catch (e) {}
       }
     });
+    updateSoundBtn(btn, true);
+  }
+
+  function animateIntro() {
+    setTimeout(() => show(L.layer1), 600);
+    setTimeout(() => show(L.layer2), 1200);
+    setTimeout(() => show(qs('.layer-bird')), 1800);
+    setTimeout(() => show(qs('.layer-clouds')), 2400);
+    setTimeout(() => show(L.hero), 2800);
+  }
+
+  function addEnter() {
+    L.enterBtn?.addEventListener('click', onEnter);
+  }
+
+  function computeStageTop() {
+    const h = L.hero?.getBoundingClientRect();
+    const land = L.landing?.getBoundingClientRect();
+    if (!h || !land) return 50;
+    const c = h.top + h.height / 2;
+    return ((c - land.top) / land.height) * 100;
+  }
+
+  function prepareStage() {
+    const top = computeStageTop();
+    L.enterBtn.style.display = 'none';
+    L.hero?.classList.add('hero--up');
+    L.landing?.classList.add('landing--stage');
+    if (L.stage) {
+      L.stage.style.display = '';
+      L.stage.classList.add('stage--float');
+      L.landing?.style.setProperty('--stage-top', `${top}%`);
+    }
+  }
+
+  function grabStageButtons() {
+    L.startBtn = qs('#startGameBtn');
+    L.howToBtn = qs('#howToPlayBtn');
+    L.imprintBtn = qs('#imprintBtn');
+    L.fullscreenBtn = qs('#fullscreenBtn');
+    L.soundBtn = qs('#muteBtn');
+    L.howToOverlay = qs('#howToOverlay');
+    L.howToClose = qs('#howToCloseBtn');
+  }
+
+  function showStageButtons() {
+    const b = L.startBtn;
+    if (!b) return ensureInitAndMaybeStart();
+    setTimeout(() => {
+      showBtn(b, 'stage-start-btn--visible');
+      showBtn(L.howToBtn, 'stage-howto-btn--visible');
+      showBtn(L.imprintBtn, 'stage-imprint-btn--visible');
+      showBtn(L.fullscreenBtn, 'stage-fullscreen-btn--visible');
+      showBtn(L.soundBtn, 'stage-sound-btn--visible');
+    }, 400);
+  }
+
+  function showBtn(btn, cls) {
+    if (!btn) return;
+    btn.style.display = 'inline-flex';
+    btn.classList.add(cls);
+  }
+
+  function onEnter() {
+    prepareStage();
+    grabStageButtons();
+    showStageButtons();
+    bindStart();
+    bindHowTo();
+  }
+
+  function bindStart() {
+    const b = L.startBtn;
+    if (!b) return;
+    b.addEventListener(
+      'click',
+      () => {
+        b.style.display = 'none';
+        hideIf(L.howToBtn);
+        hideIf(L.imprintBtn);
+        hideIf(L.fullscreenBtn);
+        L.hero?.classList.add('hero--off');
+        ensureInitAndMaybeStart();
+      },
+      { once: true }
+    );
+  }
+
+  function hideIf(btn) {
+    if (btn) btn.style.display = 'none';
+  }
+
+  function ensureInitAndMaybeStart() {
+    ensureInit();
+    if (typeof startGame === 'function') {
+      try {
+        startGame();
+      } catch (e) {}
+    }
+  }
+
+  function bindHowTo() {
+    if (!L.howToBtn || !L.howToOverlay) return;
+    L.howToBtn.addEventListener('click', showHowTo);
+    L.howToClose?.addEventListener('click', hideHowTo);
+  }
+
+  function showHowTo() {
+    hideButtons([
+      L.startBtn,
+      L.howToBtn,
+      L.imprintBtn,
+      L.fullscreenBtn,
+      L.soundBtn,
+    ]);
+    if (L.hero) {
+      L.hero.dataset.prevVisibility = L.hero.style.visibility || '';
+      L.hero.style.visibility = 'hidden';
+    }
+    L.howToOverlay.classList.remove('hidden');
+    document.addEventListener('keydown', escHowTo);
+  }
+
+  function hideHowTo() {
+    L.howToOverlay.classList.add('hidden');
+    restoreButtons([
+      L.startBtn,
+      L.howToBtn,
+      L.imprintBtn,
+      L.fullscreenBtn,
+      L.soundBtn,
+    ]);
+    if (L.hero && !L.hero.classList.contains('hero--off')) {
+      L.hero.style.visibility = L.hero.dataset.prevVisibility || '';
+      delete L.hero.dataset.prevVisibility;
+    }
+    document.removeEventListener('keydown', escHowTo);
+  }
+
+  function escHowTo(e) {
+    if (e.key === 'Escape') hideHowTo();
+  }
+
+  function hideButtons(arr) {
+    arr.forEach((b) => {
+      if (!b) return;
+      if (!b.dataset.prevDisplay) b.dataset.prevDisplay = b.style.display || '';
+      b.style.display = 'none';
+    });
+  }
+
+  function restoreButtons(arr) {
+    arr.forEach((b) => {
+      if (!b) return;
+      const prev = b.dataset.prevDisplay;
+      if (prev !== undefined) {
+        if (prev !== 'none') b.style.display = prev || 'inline-flex';
+        delete b.dataset.prevDisplay;
+      }
+    });
+  }
+
+  function bind() {
+    cacheNodes();
+    setupImprint();
+    setupFullscreen();
+    setupSound();
+    animateIntro();
+    addEnter();
   }
 
   window.addEventListener('DOMContentLoaded', bind);

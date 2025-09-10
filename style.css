@@ -380,3 +380,42 @@ h1 {
   /* further reduced by ~20% */
   width: clamp(58px, 9vw, 109px);
 }
+
+/* How To Play minimal overlay (no dark background) */
+.howto-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 30; /* above stage buttons */
+}
+.howto-overlay.hidden {
+  display: none;
+}
+.howto-overlay .howto-image {
+  width: min(88%, 680px);
+  max-height: 92%;
+  height: auto;
+  object-fit: contain;
+  image-rendering: auto;
+  border-radius: 0;
+  box-shadow: none;
+}
+.howto-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px; /* gleiche Ecke wie Sound Toggle */
+  transform: scale(0.55);
+  z-index: 40;
+  opacity: 0.95;
+  transition: transform 160ms ease, opacity 160ms ease;
+}
+.howto-close-btn .btn-image {
+  width: clamp(40px, 5.5vw, 70px);
+}
+.howto-close-btn:hover {
+  opacity: 1;
+  transform: scale(0.75);
+}
