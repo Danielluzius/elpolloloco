@@ -4,12 +4,15 @@ let keyboard = new Keyboard();
 let gameState = 'idle';
 let ui = {};
 let isMuted = false;
-// Persisted control mode: 'keyboard' or 'touch'
 let controlMode = 'keyboard';
 try {
   controlMode = localStorage.getItem('controlMode') || 'keyboard';
 } catch (_) {}
 
+/**
+ * Initialisiert Canvas und UI, bindet Events und zeigt den Startbildschirm.
+ * @function init
+ */
 function init() {
   canvas = document.getElementById('canvas');
   cacheUi();
@@ -17,219 +20,89 @@ function init() {
   showStart();
 }
 
+/**
+ * Cacht UI-Referenzen über spezialisierte Cache-Funktionen.
+ * @function cacheUi
+ */
 function cacheUi() {
-  ui.startOverlay = document.getElementById('startOverlay');
-  ui.gameOverOverlay = document.getElementById('gameOverOverlay');
-  ui.winOverlay = document.getElementById('winOverlay');
-  ui.startBtn = document.getElementById('startBtn');
-  ui.retryBtns = Array.from(document.querySelectorAll('.retryBtn'));
-  ui.backToStartBtns = Array.from(document.querySelectorAll('.backToStartBtn'));
-  ui.fullscreenBtn = document.getElementById('fullscreenBtn');
-  ui.muteBtn = document.getElementById('muteBtn');
-  ui.restartBtn = document.getElementById('restartBtn');
-  ui.exitBtn = document.getElementById('exitBtn');
-  ui.controlsToggleBtn = document.getElementById('controlsToggleBtn');
-  ui.touchControls = document.getElementById('touchControls');
-  ui.howToBtn = document.getElementById('howToBtn');
-  ui.howToModal = document.getElementById('howToModal');
-  ui.howToCloseBtn = document.getElementById('howToCloseBtn');
-  ui.imprintBtn = document.getElementById('imprintBtn');
-  ui.imprintModal = document.getElementById('imprintModal');
-  ui.imprintCloseBtn = document.getElementById('imprintCloseBtn');
-  // Death buttons (in-canvas)
-  ui.deathBtnContainer = document.getElementById('deathButtons');
-  ui.deathRetryBtn = document.getElementById('deathRetryBtn');
-  ui.deathBackBtn = document.getElementById('deathBackBtn');
+  cacheOverlays();
+  cacheButtons();
+  cacheHowToImprint();
+  cacheDeathButtons();
 }
 
+/**
+ * Bindet alle UI-Events, Death-UI, Context-Menü und Touch-Controls.
+ * @function bindUi
+ */
 function bindUi() {
-  ui.startBtn?.addEventListener('click', startGame);
-  ui.retryBtns?.forEach((b) => b.addEventListener('click', restartGame));
-  ui.backToStartBtns?.forEach((b) => b.addEventListener('click', backToStart));
-  ui.fullscreenBtn?.addEventListener('click', toggleFullscreen);
-  ui.muteBtn?.addEventListener('click', toggleMute);
-  ui.howToBtn?.addEventListener('click', openHowTo);
-  // Only wire close handler if the in-game how-to modal exists.
-  // On the landing screen a different overlay is used and handled by landing.js
-  ui.howToCloseBtn?.addEventListener('click', () => {
-    if (ui.howToModal) closeHowTo();
-  });
-  ui.imprintBtn?.addEventListener('click', openImprint);
-  ui.imprintCloseBtn?.addEventListener('click', closeImprint);
-  ui.restartBtn?.addEventListener('click', () => {
-    if (gameState === 'running') restartGame();
-  });
-  ui.exitBtn?.addEventListener('click', () => {
-    if (gameState === 'running') backToStart();
-  });
-  ui.controlsToggleBtn?.addEventListener('click', toggleControlMode);
+  bindPrimaryUi();
+  bindGameUi();
+  bindDeathUi();
+  bindStageContextMenu();
   bindTouchButtons();
-  ui.deathRetryBtn?.addEventListener('click', () => {
-    hideDeathButtons();
-    restartGame();
-  });
-  ui.deathBackBtn?.addEventListener('click', () => {
-    hideDeathButtons();
-    backToStart();
-  });
-  // Disable context menu across the stage to avoid long-press popups on mobile
-  try {
-    const stage = document.getElementById('stage');
-    stage?.addEventListener('contextmenu', (e) => e.preventDefault(), {
-      passive: false,
-    });
-  } catch (_) {}
 }
 
+/**
+ * Startet das Spiel, blendet Hero aus und initialisiert Welt und UI.
+ * @function startGame
+ */
 function startGame() {
-  // Ensure init ran (in case landing flow was disrupted)
-  if (!canvas || !keyboard) {
-    try {
-      init();
-    } catch (e) {
-      console.error('Init failed before startGame:', e);
-    }
-  }
-  if (gameState === 'running' && world) {
-    console.warn('Game already running – ignoring startGame call');
-    return;
-  }
-  const hero = document.querySelector('#landing .hero');
-  if (hero) {
-    hero.classList.add('hero--off');
-    try {
-      hero.style.opacity = '0';
-      hero.style.pointerEvents = 'none';
-    } catch (_) {}
-  }
-  // Hide imprint button once the game starts
+  ensureInitIfMissing();
+  if (alreadyRunning()) return;
+  fadeOutHero();
   ui.imprintBtn?.classList.add('hidden');
-
-  const FADE_OUT_MS = 350;
-  setTimeout(() => {
-    hideAllOverlays();
-    gameState = 'running';
-    world = new World(canvas, keyboard);
-    hookWinLose(world);
-    showRestartBtn();
-    showExitBtn();
-    showControlsToggleBtn();
-    applyControlModeVisuals();
-  }, FADE_OUT_MS);
+  setTimeout(setupGameAfterStart, 350);
 }
 
+/**
+ * Startet die Welt neu, ersetzt das Canvas und setzt die Spiel-UI.
+ * @function restartGame
+ */
 function restartGame() {
   hideAllOverlays();
+  stopWorldSafe();
   const stage = document.getElementById('stage');
   const oldCanvas = document.getElementById('canvas');
-  if (world && typeof world.stop === 'function') {
-    try {
-      world.stop();
-    } catch (e) {}
-  }
-  if (!stage || !oldCanvas) {
-    world = new World(canvas, keyboard);
-    hookWinLose(world);
-    return;
-  }
-  const newCanvas = document.createElement('canvas');
-  newCanvas.id = 'canvas';
-  newCanvas.width = oldCanvas.width;
-  newCanvas.height = oldCanvas.height;
-  stage.replaceChild(newCanvas, oldCanvas);
-  canvas = newCanvas;
+  if (!stage || !oldCanvas) return quickStartNewWorld();
+  canvas = createAndSwapCanvas(stage, oldCanvas);
   gameState = 'running';
-  world = new World(canvas, keyboard);
-  hookWinLose(world);
-  showRestartBtn();
-  showExitBtn();
-  showControlsToggleBtn();
-  applyControlModeVisuals();
+  startWorld();
+  postStartUi();
 }
 
+/**
+ * Beendet das Spiel und stellt den Startbildschirm und UI-Status wieder her.
+ * @function backToStart
+ */
 function backToStart() {
-  if (world && typeof world.stop === 'function') {
-    try {
-      world.stop();
-    } catch (e) {}
-  }
-  // Soft reset: back to a state like after Enter but before startGame
-  hideDeathButtons();
-  gameState = 'idle';
-  // Clear canvas
-  try {
-    const ctx = canvas?.getContext?.('2d');
-    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-  } catch (_) {}
-  // Show hero again
-  const hero = document.querySelector('#landing .hero');
-  if (hero) {
-    hero.classList.remove('hero--off');
-    hero.classList.add('hero--up');
-    hero.style.opacity = '1';
-    hero.style.pointerEvents = 'auto';
-  }
-  // Stage remains visible (like after Enter)
-  const startBtn = document.getElementById('startGameBtn');
-  const howToBtn = document.getElementById('howToPlayBtn');
-  const imprintBtn = document.getElementById('imprintBtn');
-  const fullscreenBtn = document.getElementById('fullscreenBtn');
-  const soundBtn = document.getElementById('muteBtn');
-  // Show buttons again
-  [
-    [startBtn, 'stage-start-btn--visible'],
-    [howToBtn, 'stage-howto-btn--visible'],
-    [imprintBtn, 'stage-imprint-btn--visible'],
-    [fullscreenBtn, 'stage-fullscreen-btn--visible'],
-    [soundBtn, 'stage-sound-btn--visible'],
-  ].forEach(([el, cls]) => {
-    if (!el) return;
-    el.style.display = 'inline-flex';
-    el.classList.add(cls);
-  });
-  // Hide restart in idle
-  hideRestartBtn();
-  hideExitBtn();
-  hideControlsToggleBtn();
-  hideTouchControls();
-  // Show imprint button again
-  imprintBtn?.classList.remove('hidden');
-  // Remove current world reference
+  stopWorldSafe();
+  softResetToIdle();
+  showHeroIdle();
+  showStageButtonsOnStart();
+  hideUiForIdle();
   world = null;
   _rebindStartBtn();
 }
 
+/**
+ * Ersetzt den Start-Button-Knoten und bindet einen frischen Click-Handler.
+ * @function _rebindStartBtn
+ */
 function _rebindStartBtn() {
   const startBtn = document.getElementById('startGameBtn');
   if (!startBtn) return;
-  // Remove existing listeners by cloning (simplest cross-browser way)
   const clone = startBtn.cloneNode(true);
   startBtn.parentNode.replaceChild(clone, startBtn);
   clone.style.display = 'inline-flex';
   clone.classList.add('stage-start-btn--visible');
-  clone.addEventListener(
-    'click',
-    () => {
-      const howToBtn = document.getElementById('howToPlayBtn');
-      const imprintBtn = document.getElementById('imprintBtn');
-      const fullscreenBtn = document.getElementById('fullscreenBtn');
-      const restartBtn = document.getElementById('restartBtn');
-      const exitBtn = document.getElementById('exitBtn');
-      // Hide buttons (sound stays)
-      clone.style.display = 'none';
-      howToBtn && (howToBtn.style.display = 'none');
-      imprintBtn && (imprintBtn.style.display = 'none');
-      fullscreenBtn && (fullscreenBtn.style.display = 'none');
-      restartBtn && (restartBtn.style.display = 'none');
-      exitBtn && (exitBtn.style.display = 'none');
-      const hero = document.querySelector('#landing .hero');
-      hero?.classList.add('hero--off');
-      startGame();
-    },
-    { once: true }
-  );
+  clone.addEventListener('click', () => onStartBtnClick(clone), { once: true });
 }
 
+/**
+ * Zeigt den Neustart-Button an.
+ * @function showRestartBtn
+ */
 function showRestartBtn() {
   const b = ui.restartBtn;
   if (!b) return;
@@ -237,6 +110,10 @@ function showRestartBtn() {
   requestAnimationFrame(() => b.classList.add('stage-restart-btn--visible'));
 }
 
+/**
+ * Verbirgt den Neustart-Button.
+ * @function hideRestartBtn
+ */
 function hideRestartBtn() {
   const b = ui.restartBtn;
   if (!b) return;
@@ -244,6 +121,10 @@ function hideRestartBtn() {
   b.style.display = 'none';
 }
 
+/**
+ * Zeigt den Exit-Button an.
+ * @function showExitBtn
+ */
 function showExitBtn() {
   const b = ui.exitBtn;
   if (!b) return;
@@ -251,6 +132,10 @@ function showExitBtn() {
   requestAnimationFrame(() => b.classList.add('stage-exit-btn--visible'));
 }
 
+/**
+ * Verbirgt den Exit-Button.
+ * @function hideExitBtn
+ */
 function hideExitBtn() {
   const b = ui.exitBtn;
   if (!b) return;
@@ -258,6 +143,10 @@ function hideExitBtn() {
   b.style.display = 'none';
 }
 
+/**
+ * Zeigt den Steuerungs-Umschalter und aktualisiert dessen Darstellung.
+ * @function showControlsToggleBtn
+ */
 function showControlsToggleBtn() {
   const b = ui.controlsToggleBtn;
   if (!b) return;
@@ -266,6 +155,10 @@ function showControlsToggleBtn() {
   requestAnimationFrame(() => b.classList.add('stage-controls-btn--visible'));
 }
 
+/**
+ * Verbirgt den Steuerungs-Umschalter.
+ * @function hideControlsToggleBtn
+ */
 function hideControlsToggleBtn() {
   const b = ui.controlsToggleBtn;
   if (!b) return;
@@ -273,13 +166,20 @@ function hideControlsToggleBtn() {
   b.style.display = 'none';
 }
 
+/**
+ * Blendet alle Overlays aus und zeigt den Startbildschirm.
+ * @function showStart
+ */
 function showStart() {
   hideAllOverlays();
   ui.startOverlay?.classList.remove('hidden');
-  // Show imprint button again on start screen
   ui.imprintBtn?.classList.remove('hidden');
 }
 
+/**
+ * Zeigt das Game-Over-Overlay und die Todes-Buttons.
+ * @function showGameOver
+ */
 function showGameOver() {
   gameState = 'lose';
   ui.gameOverOverlay?.classList.remove('hidden');
@@ -287,6 +187,10 @@ function showGameOver() {
   showDeathButtons();
 }
 
+/**
+ * Zeigt das Win-Overlay und die Todes-Buttons.
+ * @function showWin
+ */
 function showWin() {
   gameState = 'win';
   ui.winOverlay?.classList.remove('hidden');
@@ -294,6 +198,10 @@ function showWin() {
   showDeathButtons();
 }
 
+/**
+ * Verbirgt alle Overlays und Todes-Buttons.
+ * @function hideAllOverlays
+ */
 function hideAllOverlays() {
   ui.startOverlay?.classList.add('hidden');
   ui.gameOverOverlay?.classList.add('hidden');
@@ -303,23 +211,39 @@ function hideAllOverlays() {
   hideDeathButtons();
 }
 
-function hookWinLose(world) {
-  const checkInterval = setInterval(() => {
-    if (!world) return;
-    const charDead = world.character?.isDead?.();
-    const boss = world.level?.enemies?.find?.((e) => e instanceof Endboss);
-    const bossDead = boss ? boss.dead : false;
-    if (charDead && gameState === 'running') {
-      clearInterval(checkInterval);
-      showGameOver();
-    } else if (bossDead && gameState === 'running') {
-      clearInterval(checkInterval);
-      if (world) world._won = true;
-      showWin();
-    }
-  }, 200);
+/**
+ * Startet die periodische Prüfung auf Sieg oder Niederlage.
+ * @function hookWinLose
+ */
+function hookWinLose() {
+  let id;
+  id = setInterval(() => evalWinLose(id), 200);
 }
 
+/**
+ * Prüft Sieg/Niederlage und zeigt das passende Overlay.
+ * @function evalWinLose
+ */
+function evalWinLose(id) {
+  const w = world;
+  if (!w) return;
+  const charDead = w.character?.isDead?.();
+  const boss = w.level?.enemies?.find?.((e) => e instanceof Endboss);
+  const bossDead = boss ? boss.dead : false;
+  if (charDead && gameState === 'running') {
+    clearInterval(id);
+    showGameOver();
+  } else if (bossDead && gameState === 'running') {
+    clearInterval(id);
+    w && (w._won = true);
+    showWin();
+  }
+}
+
+/**
+ * Blendet die Todes-Buttons ein und fokussiert den Zurück-Button.
+ * @function showDeathButtons
+ */
 function showDeathButtons() {
   const c = ui.deathBtnContainer;
   if (!c) return;
@@ -328,15 +252,17 @@ function showDeathButtons() {
   c.classList.remove('hidden');
   requestAnimationFrame(() => {
     c.classList.add('death-btns--visible');
-    // Set focus to first button for accessibility
     ui.deathBackBtn?.focus?.();
   });
 }
 
+/**
+ * Blendet die Todes-Buttons aus und deaktiviert Interaktionen.
+ * @function hideDeathButtons
+ */
 function hideDeathButtons() {
   const c = ui.deathBtnContainer;
   if (!c) return;
-  // Falls Fokus innerhalb liegt, vorher entfernen um aria-hidden Warnung zu vermeiden
   try {
     if (c.contains(document.activeElement)) {
       document.activeElement.blur?.();
@@ -348,6 +274,10 @@ function hideDeathButtons() {
   setTimeout(() => c.classList.add('hidden'), 300);
 }
 
+/**
+ * Wechselt in bzw. aus dem Vollbildmodus.
+ * @function toggleFullscreen
+ */
 function toggleFullscreen() {
   const el = document.documentElement;
   if (!document.fullscreenElement) {
@@ -357,25 +287,22 @@ function toggleFullscreen() {
   }
 }
 
+/**
+ * Schaltet Ton stumm/aktiv und aktualisiert den Button.
+ * @function toggleMute
+ */
 function toggleMute() {
   isMuted = !isMuted;
   const btn = ui.muteBtn;
   if (!btn) return;
-  const img = btn.querySelector('img');
-  const span = btn.querySelector('.sound-label');
-  const isOn = !isMuted; // isOn means sound is active
-  if (img) {
-    img.src = isOn
-      ? './assets/img/logos/sound_on.png'
-      : './assets/img/logos/sound_off.png';
-  }
-  if (span) {
-    span.textContent = isOn ? 'Mute' : 'Unmute';
-  }
-  btn.setAttribute('aria-label', isOn ? 'Mute' : 'Unmute');
-  btn.setAttribute('data-state', isOn ? 'on' : 'off');
+  const isOn = !isMuted;
+  updateMuteBtn(btn, isOn);
 }
 
+/**
+ * Wechselt zwischen Touch- und Tastaturmodus und aktualisiert UI.
+ * @function toggleControlMode
+ */
 function toggleControlMode() {
   controlMode = controlMode === 'keyboard' ? 'touch' : 'keyboard';
   try {
@@ -385,18 +312,19 @@ function toggleControlMode() {
   applyControlModeVisuals();
 }
 
+/**
+ * Aktualisiert Icons, Label und ARIA des Steuerungs-Umschalters.
+ * @function updateControlsToggleVisuals
+ */
 function updateControlsToggleVisuals() {
   const btn = ui.controlsToggleBtn;
   if (!btn) return;
-  // Only target the main button image, not the small hint image
   const img = btn.querySelector('.btn-image');
   const hint = btn.querySelector('.controls-hint');
   const span = btn.querySelector('.controls-toggle-label');
   const isTouch = controlMode === 'touch';
-  // Keep a unified toggle icon regardless of mode
   if (img)
     img.src = './assets/img/logos/touch_button/button_toggle_controls.png';
-  // Update the small hint icon to show the action that will happen
   if (hint) {
     hint.src = isTouch
       ? './assets/img/logos/touch_button/button_activate_keyboard.png'
@@ -407,11 +335,19 @@ function updateControlsToggleVisuals() {
   btn.setAttribute('aria-label', label);
 }
 
+/**
+ * Zeigt oder versteckt die Touch-Steuerung gemäß aktuellem Modus.
+ * @function applyControlModeVisuals
+ */
 function applyControlModeVisuals() {
   if (controlMode === 'touch') showTouchControls();
   else hideTouchControls();
 }
 
+/**
+ * Zeigt die Touch-Steuerung an.
+ * @function showTouchControls
+ */
 function showTouchControls() {
   const tc = ui.touchControls;
   if (!tc) return;
@@ -419,6 +355,10 @@ function showTouchControls() {
   tc.removeAttribute('aria-hidden');
 }
 
+/**
+ * Verbirgt die Touch-Steuerung und setzt Tasten zurück.
+ * @function hideTouchControls
+ */
 function hideTouchControls() {
   const tc = ui.touchControls;
   if (!tc) return;
@@ -429,6 +369,10 @@ function hideTouchControls() {
   );
 }
 
+/**
+ * Bindet Pointer-Events für die Touch-Buttons.
+ * @function bindTouchButtons
+ */
 function bindTouchButtons() {
   const tc = ui.touchControls;
   if (!tc) return;
@@ -458,11 +402,19 @@ function bindTouchButtons() {
   });
 }
 
+/**
+ * Öffnet das In-Game-HowTo-Overlay und verbirgt Touch-Buttons.
+ * @function openHowTo
+ */
 function openHowTo() {
   ui.howToModal?.classList.remove('hidden');
   hideTouchControls();
 }
 
+/**
+ * Schließt das In-Game-HowTo-Overlay und stellt Controls wieder her.
+ * @function closeHowTo
+ */
 function closeHowTo() {
   ui.howToModal?.classList.add('hidden');
   if (gameState === 'running') {
@@ -472,10 +424,18 @@ function closeHowTo() {
   }
 }
 
+/**
+ * Öffnet das Impressum-Overlay.
+ * @function openImprint
+ */
 function openImprint() {
   ui.imprintModal?.classList.remove('hidden');
 }
 
+/**
+ * Schließt das Impressum-Overlay.
+ * @function closeImprint
+ */
 function closeImprint() {
   ui.imprintModal?.classList.add('hidden');
 }
