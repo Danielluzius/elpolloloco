@@ -19,12 +19,13 @@ h1 {
 
 .stage {
   position: relative;
-  /* Maintain 3:2 aspect ratio, scale responsively */
-  width: min(96vw, 1100px);
+  /* Responsive stage: keep 3:2 aspect, fit by width or height */
   aspect-ratio: 3 / 2;
+  --stage-w: min(96vw, 1100px, calc(90vh * 3 / 2));
+  --stage-h: calc(var(--stage-w) * 2 / 3);
+  width: var(--stage-w);
   height: auto;
-  max-height: min(90vh, 720px);
-  transform: translateY(-30px);
+  max-height: 90vh;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
     inset 0 0 0 2px rgba(255, 255, 255, 0.06);
@@ -59,8 +60,8 @@ h1 {
 .landing .stage--float {
   position: absolute;
   left: 50%;
+  top: 50%;
   transform: translate(-50%, -50%);
-  top: var(--stage-top, 50%);
 }
 
 .bg-layers {
@@ -169,8 +170,12 @@ h1 {
   transition: opacity 600ms ease, transform 600ms ease;
 }
 
+.stage-start-btn {
+  width: clamp(90px, calc(var(--stage-w) * 0.18), 170px);
+}
 .stage-start-btn .btn-image {
-  width: clamp(90px, 13vw, 150px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-start-btn--visible {
@@ -188,8 +193,12 @@ h1 {
   transition: opacity 600ms ease, transform 600ms ease;
 }
 
+.stage-howto-btn {
+  width: clamp(100px, calc(var(--stage-w) * 0.2), 190px);
+}
 .stage-howto-btn .btn-image {
-  width: clamp(100px, 14vw, 180px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-howto-btn.stage-howto-btn--visible {
@@ -199,21 +208,24 @@ h1 {
 
 .stage-imprint-btn {
   position: absolute;
-  right: 14px;
-  bottom: 12px;
-  transform: scale(0.7);
+  right: 2%;
+  bottom: 2.5%;
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 11;
 }
 
+.stage-imprint-btn {
+  width: clamp(54px, calc(var(--stage-w) * 0.08), 96px);
+}
 .stage-imprint-btn .btn-image {
-  width: clamp(54px, 8vw, 96px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-imprint-btn.stage-imprint-btn--visible {
   opacity: 0.95;
-  transform: scale(1);
+  transform: none;
 }
 
 .stage-imprint-btn:hover {
@@ -222,21 +234,24 @@ h1 {
 
 .stage-fullscreen-btn {
   position: absolute;
-  right: 82px;
-  top: 9px;
-  transform: scale(0.45);
+  right: 11.5%;
+  top: 1.9%;
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 
+.stage-fullscreen-btn {
+  width: clamp(28px, calc(var(--stage-w) * 0.045), 50px);
+}
 .stage-fullscreen-btn .btn-image {
-  width: clamp(28px, 4.5vw, 50px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-fullscreen-btn.stage-fullscreen-btn--visible {
   opacity: 0.95;
-  transform: scale(0.7);
+  transform: none;
 }
 
 .stage-fullscreen-btn:hover {
@@ -245,21 +260,24 @@ h1 {
 
 .stage-sound-btn {
   position: absolute;
-  right: 12px;
-  top: 12px;
-  transform: scale(0.48);
+  right: 1.7%;
+  top: 2.5%;
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 
+.stage-sound-btn {
+  width: clamp(30px, calc(var(--stage-w) * 0.048), 54px);
+}
 .stage-sound-btn .btn-image {
-  width: clamp(30px, 4.9vw, 54px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-sound-btn.stage-sound-btn--visible {
   opacity: 0.95;
-  transform: scale(0.75);
+  transform: none;
 }
 
 .stage-sound-btn:hover {
@@ -268,21 +286,24 @@ h1 {
 
 .stage-restart-btn {
   position: absolute;
-  right: 134px;
-  top: 9px;
-  transform: scale(0.45);
+  right: 18.6%;
+  top: 1.9%;
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 
+.stage-restart-btn {
+  width: clamp(26px, calc(var(--stage-w) * 0.042), 48px);
+}
 .stage-restart-btn .btn-image {
-  width: clamp(26px, 4.4vw, 48px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-restart-btn.stage-restart-btn--visible {
   opacity: 0.95;
-  transform: scale(0.68);
+  transform: none;
 }
 
 .stage-restart-btn:hover {
@@ -291,21 +312,24 @@ h1 {
 
 .stage-exit-btn {
   position: absolute;
-  right: 78px;
-  top: 9px;
-  transform: scale(0.45);
+  right: 10.8%;
+  top: 1.9%;
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 
+.stage-exit-btn {
+  width: clamp(26px, calc(var(--stage-w) * 0.042), 48px);
+}
 .stage-exit-btn .btn-image {
-  width: clamp(26px, 4.4vw, 48px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-exit-btn.stage-exit-btn--visible {
   opacity: 0.95;
-  transform: scale(0.75);
+  transform: none;
 }
 
 .stage-exit-btn:hover {
@@ -314,21 +338,24 @@ h1 {
 
 .stage-controls-btn {
   position: absolute;
-  right: 12px;
-  top: 36px;
-  transform: scale(0.48);
+  right: 7.5%;
+  top: 7.5%;
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
   z-index: 12;
 }
 
+.stage-controls-btn {
+  width: clamp(70px, calc(var(--stage-w) * 0.11), 128px);
+}
 .stage-controls-btn .btn-image {
-  width: clamp(69px, 11vw, 122px);
+  width: 100%;
+  height: auto;
 }
 
 .stage-controls-btn.stage-controls-btn--visible {
   opacity: 0.95;
-  transform: scale(0.75);
+  transform: none;
 }
 
 .stage-controls-btn:hover {
@@ -342,7 +369,7 @@ h1 {
 }
 
 .stage-controls-btn .controls-hint {
-  width: clamp(32px, 5.7vw, 45px);
+  width: clamp(32px, calc(var(--stage-w) * 0.045), 48px);
   height: auto;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
   pointer-events: none;
@@ -368,8 +395,12 @@ h1 {
   pointer-events: auto;
 }
 
+.death-btns .death-btn {
+  width: clamp(58px, calc(var(--stage-w) * 0.12), 120px);
+}
 .death-btns .death-btn .btn-image {
-  width: clamp(58px, 9vw, 109px);
+  width: 100%;
+  height: auto;
 }
 
 .howto-overlay {
@@ -415,58 +446,16 @@ h1 {
   transform: scale(0.75);
 }
 
-/* Responsive tweaks for small screens */
-@media (max-width: 1024px) {
-  .stage {
-    width: min(98vw, 960px);
-    max-height: 86vh;
-  }
-  .stage-start-btn {
-    top: 64%;
-  }
-  .stage-howto-btn {
-    top: 75%;
-  }
-}
-
-@media (max-width: 768px) {
-  .stage {
-    width: 100vw;
-    max-height: 70vh;
-    transform: translateY(-10px);
-  }
-}
-
-/* Portrait handling: blur the background/stage and show rotate overlay */
-@media (orientation: portrait) {
-  body:before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    backdrop-filter: blur(8px) brightness(0.7);
-    -webkit-backdrop-filter: blur(8px) brightness(0.7);
-    z-index: 50;
-  }
-  #landing,
-  .stage,
-  .bg-layers,
-  .hero {
-    filter: blur(2px) saturate(0.8);
-  }
-  .rotate-overlay {
-    opacity: 1;
-    pointer-events: auto;
-    visibility: visible;
-  }
-}
+/* Responsive and rotation handling removed by request */
 
 /* Rotate overlay base styles */
+/* rotate overlay (portrait only) */
 .rotate-overlay {
   position: fixed;
   inset: 0;
   display: grid;
   place-items: center;
-  background: rgba(0, 0, 0, 0.45);
+  background: #000;
   z-index: 9999;
   opacity: 0;
   pointer-events: none;
@@ -474,20 +463,11 @@ h1 {
   transition: opacity 200ms ease, visibility 200ms ease;
 }
 
-.rotate-overlay.is-visible {
-  opacity: 1;
-  pointer-events: auto;
-  visibility: visible;
-}
-
 .rotate-card {
-  background: rgba(20, 20, 24, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
-  border-radius: 14px;
-  padding: clamp(16px, 4vw, 28px) clamp(18px, 6vw, 36px);
+  background: transparent;
   color: #fff;
   text-align: center;
+  padding: 16px 24px;
 }
 
 .rotate-icon {
@@ -500,4 +480,12 @@ h1 {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
   font-weight: 600;
   font-size: clamp(16px, 4.6vw, 22px);
+}
+
+@media (orientation: portrait) {
+  .rotate-overlay {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
 }

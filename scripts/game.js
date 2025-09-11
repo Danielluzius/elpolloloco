@@ -49,7 +49,11 @@ function bindUi() {
   ui.fullscreenBtn?.addEventListener('click', toggleFullscreen);
   ui.muteBtn?.addEventListener('click', toggleMute);
   ui.howToBtn?.addEventListener('click', openHowTo);
-  ui.howToCloseBtn?.addEventListener('click', closeHowTo);
+  // Only wire close handler if the in-game how-to modal exists.
+  // On the landing screen a different overlay is used and handled by landing.js
+  ui.howToCloseBtn?.addEventListener('click', () => {
+    if (ui.howToModal) closeHowTo();
+  });
   ui.imprintBtn?.addEventListener('click', openImprint);
   ui.imprintCloseBtn?.addEventListener('click', closeImprint);
   ui.restartBtn?.addEventListener('click', () => {
@@ -68,6 +72,13 @@ function bindUi() {
     hideDeathButtons();
     backToStart();
   });
+  // Disable context menu across the stage to avoid long-press popups on mobile
+  try {
+    const stage = document.getElementById('stage');
+    stage?.addEventListener('contextmenu', (e) => e.preventDefault(), {
+      passive: false,
+    });
+  } catch (_) {}
 }
 
 function startGame() {
@@ -413,7 +424,6 @@ function hideTouchControls() {
   if (!tc) return;
   tc.classList.add('hidden');
   tc.setAttribute('aria-hidden', 'true');
-  // Release any stuck keys when hiding
   ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'D', 'A', 'S', 'ONE', 'TWO'].forEach(
     (k) => (keyboard[k] = false)
   );
@@ -455,7 +465,11 @@ function openHowTo() {
 
 function closeHowTo() {
   ui.howToModal?.classList.add('hidden');
-  applyControlModeVisuals();
+  if (gameState === 'running') {
+    applyControlModeVisuals();
+  } else {
+    hideTouchControls();
+  }
 }
 
 function openImprint() {
@@ -465,8 +479,6 @@ function openImprint() {
 function closeImprint() {
   ui.imprintModal?.classList.add('hidden');
 }
-
-// Initialization is now triggered by landing.js (ensureInit) when the player enters the game
 
 const KEY_MAP = {
   39: 'RIGHT',
