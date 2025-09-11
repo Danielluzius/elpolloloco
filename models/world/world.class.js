@@ -21,7 +21,7 @@ class World extends WorldBase {
   _renderMgr = null;
   _potionsMgr = null;
   _collisionMgr = null;
-  _won = false; // track victory state without marking character dead
+  _won = false;
 
   constructor(canvas, keyboard) {
     super(canvas, keyboard);
@@ -54,7 +54,7 @@ class World extends WorldBase {
 
   startGameLoop() {
     const tick = () => {
-      if (this._won || this.character.isDead()) return; // freeze updates on win or death
+      if (this._won || this.character.isDead()) return;
       this.checkBossIntroTrigger();
       this.checkCollisions();
       this.checkEndbossWake();
@@ -139,6 +139,13 @@ class World extends WorldBase {
   }
 
   startBossIntro(boss) {
+    try {
+      window.sound?.play('endboss_appierce_sound', { channel: 'sfx' });
+      window.sound?.playMusic('endboss_background_music', {
+        loop: true,
+        volume: 0.4,
+      });
+    } catch (_) {}
     this._introMgr?.trigger(boss);
   }
 
@@ -210,7 +217,6 @@ class World extends WorldBase {
       this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
     this._goblinTotal = total;
     this._goblinsKilled = 0;
-    // Adjusted position: moved slightly up (56 -> 48) and further left (140 -> 100)
     this.goblinCounter.y = 48;
     this.goblinCounter.xOffset = 100;
     this.updateGoblinCounter();

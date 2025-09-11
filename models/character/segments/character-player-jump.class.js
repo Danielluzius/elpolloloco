@@ -26,6 +26,9 @@ class CharacterPlayerJump extends CharacterPlayer {
       this.img = img;
       this.setSheetFrame(this.JUMP_SHEET, 0);
     }
+    try {
+      window.sound?.play('jump_sound', { channel: 'sfx' });
+    } catch (_) {}
     this.markActivity();
   }
 

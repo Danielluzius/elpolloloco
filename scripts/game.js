@@ -17,6 +17,12 @@ function init() {
   canvas = document.getElementById('canvas');
   cacheUi();
   bindUi();
+  try {
+    if (window.SoundHub) {
+      isMuted = !!window.SoundHub.get().isMuted();
+      if (ui.muteBtn) updateMuteBtn(ui.muteBtn, !isMuted);
+    }
+  } catch (_) {}
   showStart();
 }
 
@@ -50,6 +56,8 @@ function bindUi() {
 function startGame() {
   ensureInitIfMissing();
   if (alreadyRunning()) return;
+  try {
+  } catch (_) {}
   fadeOutHero();
   ui.imprintBtn?.classList.add('hidden');
   setTimeout(setupGameAfterStart, 350);
@@ -62,6 +70,8 @@ function startGame() {
 function restartGame() {
   hideAllOverlays();
   stopWorldSafe();
+  try {
+  } catch (_) {}
   const stage = document.getElementById('stage');
   const oldCanvas = document.getElementById('canvas');
   if (!stage || !oldCanvas) return quickStartNewWorld();
@@ -77,12 +87,18 @@ function restartGame() {
  */
 function backToStart() {
   stopWorldSafe();
+  try {
+    window.sound?.stopAll?.();
+  } catch (_) {}
   softResetToIdle();
   showHeroIdle();
   showStageButtonsOnStart();
   hideUiForIdle();
   world = null;
   _rebindStartBtn();
+  try {
+    window.sound?.playMusic('intro_music', { loop: true, volume: 0.4 });
+  } catch (_) {}
 }
 
 /**
@@ -185,6 +201,9 @@ function showGameOver() {
   ui.gameOverOverlay?.classList.remove('hidden');
   hideRestartBtn();
   showDeathButtons();
+  try {
+    window.sound?.playMusic('player_lost_music', { loop: false, volume: 0.4 });
+  } catch (_) {}
 }
 
 /**
@@ -196,6 +215,9 @@ function showWin() {
   ui.winOverlay?.classList.remove('hidden');
   hideRestartBtn();
   showDeathButtons();
+  try {
+    window.sound?.playMusic('player_won_music', { loop: false, volume: 0.4 });
+  } catch (_) {}
 }
 
 /**
@@ -293,6 +315,9 @@ function toggleFullscreen() {
  */
 function toggleMute() {
   isMuted = !isMuted;
+  try {
+    window.sound?.setMuted(isMuted);
+  } catch (_) {}
   const btn = ui.muteBtn;
   if (!btn) return;
   const isOn = !isMuted;

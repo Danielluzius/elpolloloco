@@ -42,6 +42,9 @@ class GoblinCombat extends GoblinAnim {
     this.knockbackVX = dir * this.KNOCKBACK_SPEED_X;
     this.speedY = this.KNOCKBACK_SPEED_Y;
     this.knockbackEndAt = now + this.KNOCKBACK_DURATION;
+    try {
+      window.sound?.play('goblin_hurt_sound', { channel: 'sfx' });
+    } catch (_) {}
   }
 
   startDeath(now = Date.now()) {
@@ -55,6 +58,9 @@ class GoblinCombat extends GoblinAnim {
     const frames = this.deathSheet?.count || 5;
     this._despawnAt = now + frames * this.DEATH_DELAY + this.DEAD_LINGER_MS;
     if (!this._countedKill) this.countKill();
+    try {
+      window.sound?.play('goblin_dead_sound', { channel: 'sfx' });
+    } catch (_) {}
   }
 
   countKill() {

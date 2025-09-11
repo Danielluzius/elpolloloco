@@ -191,6 +191,9 @@ function setupGameAfterStart() {
 function startWorld() {
   world = new World(canvas, keyboard);
   hookWinLose(world);
+  try {
+    window.sound?.playMusic('level_start_music', { loop: true, volume: 0.4 });
+  } catch (_) {}
 }
 
 /**

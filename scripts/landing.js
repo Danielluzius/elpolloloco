@@ -99,6 +99,9 @@
       const next = cur === 'on' ? 'off' : 'on';
       btn.setAttribute('data-state', next);
       updateSoundBtn(btn, next === 'on');
+      try {
+        window.sound?.setMuted(!(next === 'on'));
+      } catch (e) {}
       if (typeof window !== 'undefined') {
         try {
           window.isMuted = !(next === 'on');
@@ -114,7 +117,13 @@
         } catch (e) {}
       }
     });
-    updateSoundBtn(btn, true);
+    try {
+      const muted = !!window.SoundHub?.get()?.isMuted();
+      btn.setAttribute('data-state', muted ? 'off' : 'on');
+      updateSoundBtn(btn, !muted);
+    } catch (e) {
+      updateSoundBtn(btn, true);
+    }
   }
 
   function animateIntro() {
@@ -283,6 +292,20 @@
     setupSound();
     animateIntro();
     addEnter();
+    try {
+      window.sound?.playMusic('intro_music', { loop: true, volume: 0.4 });
+    } catch (_) {}
+    const kickIntroMusic = () => {
+      try {
+        if (typeof gameState !== 'undefined' && gameState === 'running') return;
+        const cur = window.sound?.channels?.music?.current;
+        const paused = cur ? !!cur.paused || cur.currentTime === 0 : true;
+        if (paused)
+          window.sound?.playMusic('intro_music', { loop: true, volume: 0.4 });
+      } catch (_) {}
+    };
+    window.addEventListener('pointerdown', kickIntroMusic, { once: true });
+    window.addEventListener('keydown', kickIntroMusic, { once: true });
   }
 
   window.addEventListener('DOMContentLoaded', bind);

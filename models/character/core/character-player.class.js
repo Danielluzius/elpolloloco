@@ -116,6 +116,9 @@ class CharacterPlayer extends Character {
   updateBlockState() {}
   startHurt() {
     this.hurtEndAt = Date.now() + 600;
+    try {
+      window.sound?.play('player_hurt_sound', { channel: 'sfx' });
+    } catch (_) {}
   }
   isHurt() {
     return this.hurtEndAt && Date.now() < this.hurtEndAt;

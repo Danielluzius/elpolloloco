@@ -13,6 +13,9 @@ class CharacterPlayerDamage extends CharacterPlayer {
     this.isBlocking = false;
     this.isSpecialAttacking = false;
     this.knockbackActive = false;
+    try {
+      window.sound?.play('player_dead_sound', { channel: 'sfx' });
+    } catch (_) {}
   }
   applySegmentHit(amount = 1) {
     if (this.healthSegments == null) this.healthSegments = 5;

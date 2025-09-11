@@ -29,12 +29,15 @@ class CharacterPlayerGround extends CharacterPlayer {
   }
 
   setWalkFrame() {
-    if (this.animKey !== 'walk') this.currentImage = 0;
+    if (this.animKey !== 'walk') {
+      this.currentImage = 0;
+    }
     const img = this.imageCache[this.WALK_SHEET.path];
     this.img = img;
     const cnt = this.getSheetCount(this.WALK_SHEET, img) || 1;
     const idx = this.currentImage % cnt;
     this.setSheetFrame(this.WALK_SHEET, idx);
+    const prev = this.currentImage;
     this.currentImage++;
     this.animKey = 'walk';
     this.idleFrameIndex = 0;

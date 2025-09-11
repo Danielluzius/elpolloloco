@@ -146,10 +146,18 @@ class EndbossCombat extends EndbossAnim {
       this.speed = 0;
       this.state = 'dead';
       this.frameIndex = 0;
-    } else if (!['hurt', 'attack'].includes(this.state)) {
-      this.state = 'hurt';
-      this.frameIndex = 0;
-      this.lastFrameTime = now;
+      try {
+        window.sound?.play('endboss_dead_sound', { channel: 'sfx' });
+      } catch (_) {}
+    } else {
+      if (!['hurt', 'attack'].includes(this.state)) {
+        this.state = 'hurt';
+        this.frameIndex = 0;
+        this.lastFrameTime = now;
+      }
+      try {
+        window.sound?.play('endboss_hurt_sound', { channel: 'sfx' });
+      } catch (_) {}
     }
     return true;
   }

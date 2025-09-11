@@ -6,6 +6,9 @@ class CharacterPlayerAttack extends CharacterPlayer {
     this.initAttackState(now);
     this.loadAttackSprite();
     this.animKey = 'attack';
+    try {
+      window.sound?.play('attack_sound', { channel: 'sfx' });
+    } catch (_) {}
     this.markActivity();
   }
 

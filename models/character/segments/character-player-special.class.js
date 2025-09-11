@@ -10,6 +10,9 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     this.prepareSpecialAttackState(now);
     this.consumeChargeSegments();
     this.applyInitialSpecialImage();
+    try {
+      window.sound?.play('special_attack_sound', { channel: 'sfx' });
+    } catch (_) {}
     this.markActivity();
   }
 
