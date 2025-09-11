@@ -377,11 +377,17 @@ function toggleControlMode() {
 function updateControlsToggleVisuals() {
   const btn = ui.controlsToggleBtn;
   if (!btn) return;
-  const img = btn.querySelector('img');
+  // Only target the main button image, not the small hint image
+  const img = btn.querySelector('.btn-image');
+  const hint = btn.querySelector('.controls-hint');
   const span = btn.querySelector('.controls-toggle-label');
   const isTouch = controlMode === 'touch';
-  if (img) {
-    img.src = isTouch
+  // Keep a unified toggle icon regardless of mode
+  if (img)
+    img.src = './assets/img/logos/touch_button/button_toggle_controls.png';
+  // Update the small hint icon to show the action that will happen
+  if (hint) {
+    hint.src = isTouch
       ? './assets/img/logos/touch_button/button_activate_keyboard.png'
       : './assets/img/logos/touch_button/button_activate_touch.png';
   }

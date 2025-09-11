@@ -10,8 +10,9 @@
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon/favicon.png" />
     <link rel="shortcut icon" href="./assets/img/favicon/favicon.png" />
 
-    <link rel="stylesheet" href="./style.css" />
+    <!-- Load base styles first, then page-specific, then touch controls -->
     <link rel="stylesheet" href="./style/standart.css" />
+    <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./style/touch_button.css" />
 
     <!-- Core base classes -->
@@ -150,8 +151,10 @@
             <!-- Controls toggle button (appears during gameplay; below restart/exit) -->
             <button id="controlsToggleBtn" class="image-btn stage-controls-btn" aria-label="Touch-Steuerung aktivieren"
                 style="display:none;">
+                <img class="controls-hint" src="./assets/img/logos/touch_button/button_activate_touch.png" alt=""
+                    aria-hidden="true" decoding="async" />
                 <span class="visually-hidden controls-toggle-label">Touch-Steuerung aktivieren</span>
-                <img src="./assets/img/logos/touch_button/button_activate_touch.png" alt="" class="btn-image"
+                <img src="./assets/img/logos/touch_button/button_toggle_controls.png" alt="" class="btn-image"
                     decoding="async" />
             </button>
             <!-- Death buttons (shown when character dies) -->

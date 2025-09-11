@@ -37,45 +37,8 @@ h1 {
   image-rendering: pixelated;
 }
 
-.image-btn {
-  --btn-scale: 1;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: filter 180ms ease, transform 180ms ease;
-}
-
-.image-btn .btn-image {
-  display: block;
-  width: clamp(140px, 20vw, 240px);
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
-  pointer-events: none;
-  transition: transform 180ms ease;
-}
-
 #enterBtn.image-btn .btn-image {
   width: clamp(90px, 13vw, 150px);
-}
-
-.image-btn:hover .btn-image {
-  transform: scale(1.07);
-}
-
-.image-btn:active .btn-image {
-  transform: scale(0.95);
-}
-
-.image-btn:focus,
-.image-btn:focus-visible {
-  outline: none;
-  box-shadow: none;
 }
 
 .landing {
@@ -110,10 +73,6 @@ h1 {
   background-size: cover;
   opacity: 0;
   transition: opacity 0.8s ease;
-}
-
-.hidden {
-  display: none;
 }
 
 .layer-3 {
@@ -189,18 +148,6 @@ h1 {
   height: auto;
   display: block;
   image-rendering: auto;
-}
-
-.visually-hidden {
-  position: absolute !important;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
 }
 
 .hero.hero--off {
@@ -341,7 +288,7 @@ h1 {
 
 .stage-exit-btn {
   position: absolute;
-  right: 78px; /* now at previous restart position */
+  right: 78px;
   top: 9px;
   transform: scale(0.45);
   opacity: 0;
@@ -365,7 +312,7 @@ h1 {
 .stage-controls-btn {
   position: absolute;
   right: 12px;
-  top: 62px; /* placed below restart/exit row */
+  top: 36px;
   transform: scale(0.48);
   opacity: 0;
   transition: opacity 500ms ease, transform 500ms ease;
@@ -373,7 +320,7 @@ h1 {
 }
 
 .stage-controls-btn .btn-image {
-  width: clamp(30px, 4.9vw, 54px);
+  width: clamp(69px, 11vw, 122px);
 }
 
 .stage-controls-btn.stage-controls-btn--visible {
@@ -383,6 +330,21 @@ h1 {
 
 .stage-controls-btn:hover {
   opacity: 1;
+}
+
+.stage-controls-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stage-controls-btn .controls-hint {
+  width: clamp(32px, 5.7vw, 45px);
+  height: auto;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 
 .death-btns {
@@ -421,10 +383,6 @@ h1 {
   background-repeat: no-repeat;
 }
 
-.howto-overlay.hidden {
-  display: none;
-}
-
 .howto-overlay .howto-image {
   width: min(88%, 680px);
   max-height: 92%;
@@ -452,62 +410,4 @@ h1 {
 .howto-close-btn:hover {
   opacity: 1;
   transform: scale(0.75);
-}
-
-/* Touch controls overlay */
-.touch-controls {
-  position: absolute;
-  inset: 0;
-  pointer-events: none; /* enable only on buttons */
-  z-index: 25;
-}
-
-.touch-controls.hidden {
-  display: none;
-}
-
-.touch-left,
-.touch-right {
-  position: absolute;
-  bottom: 14px;
-  display: flex;
-  gap: 14px;
-}
-
-.touch-left {
-  left: 14px;
-}
-.touch-right {
-  right: 14px;
-  flex-direction: column;
-  gap: 16px;
-}
-.touch-center {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: 22px;
-  display: flex;
-  gap: 18px;
-}
-.touch-row {
-  display: flex;
-  gap: 14px;
-  justify-content: flex-end;
-}
-
-.touch-btn {
-  pointer-events: auto;
-  background: none;
-  border: none;
-  padding: 0;
-  opacity: 0.9;
-}
-
-.touch-btn img {
-  display: block;
-  width: clamp(48px, 9vw, 72px);
-  height: auto;
-  user-select: none;
-  -webkit-user-drag: none;
 }
