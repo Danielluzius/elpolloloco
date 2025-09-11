@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8" />
@@ -121,50 +121,49 @@
                 <img src="./assets/img/logos/how_to_play.png" alt="" class="btn-image" decoding="async" />
             </button>
             <!-- Imprint button (initially hidden, appears with other stage buttons) -->
-            <button id="imprintBtn" class="image-btn stage-imprint-btn" aria-label="Imprint / Impressum"
-                style="display:none;">
-                <span class="visually-hidden">Impressum</span>
+            <button id="imprintBtn" class="image-btn stage-imprint-btn" aria-label="Imprint" style="display:none;">
+                <span class="visually-hidden">Imprint</span>
                 <img src="./assets/img/logos/imprint.png" alt="" class="btn-image" decoding="async" />
             </button>
             <!-- Fullscreen toggle button (initially hidden, appears with stage buttons) -->
-            <button id="fullscreenBtn" class="image-btn stage-fullscreen-btn" aria-label="Fullscreen an"
+            <button id="fullscreenBtn" class="image-btn stage-fullscreen-btn" aria-label="Enter Fullscreen"
                 style="display:none;" data-state="off">
-                <span class="visually-hidden fullscreen-label">Fullscreen an</span>
+                <span class="visually-hidden fullscreen-label">Enter Fullscreen</span>
                 <img src="./assets/img/logos/fullscreen.png" alt="" class="btn-image" decoding="async" />
             </button>
             <!-- Sound / Music toggle button (persists after start) -->
-            <button id="muteBtn" class="image-btn stage-sound-btn" aria-label="Sound aus" style="display:none;"
+            <button id="muteBtn" class="image-btn stage-sound-btn" aria-label="Mute" style="display:none;"
                 data-state="on">
-                <span class="visually-hidden sound-label">Sound aus</span>
+                <span class="visually-hidden sound-label">Mute</span>
                 <img src="./assets/img/logos/sound_on.png" alt="" class="btn-image" decoding="async" />
             </button>
             <!-- Restart button (appears during gameplay) -->
-            <button id="restartBtn" class="image-btn stage-restart-btn" aria-label="Neu starten" style="display:none;">
-                <span class="visually-hidden">Neu starten</span>
+            <button id="restartBtn" class="image-btn stage-restart-btn" aria-label="Restart" style="display:none;">
+                <span class="visually-hidden">Restart</span>
                 <img src="./assets/img/logos/restart.png" alt="" class="btn-image" decoding="async" />
             </button>
             <!-- Exit button (appears during gameplay; left of restart) -->
-            <button id="exitBtn" class="image-btn stage-exit-btn" aria-label="Zurück zum Start" style="display:none;">
-                <span class="visually-hidden">Zurück zum Start</span>
+            <button id="exitBtn" class="image-btn stage-exit-btn" aria-label="Back to Start" style="display:none;">
+                <span class="visually-hidden">Back to Start</span>
                 <img src="./assets/img/logos/exit.png" alt="" class="btn-image" decoding="async" />
             </button>
             <!-- Controls toggle button (appears during gameplay; below restart/exit) -->
-            <button id="controlsToggleBtn" class="image-btn stage-controls-btn" aria-label="Touch-Steuerung aktivieren"
+            <button id="controlsToggleBtn" class="image-btn stage-controls-btn" aria-label="Enable touch controls"
                 style="display:none;">
                 <img class="controls-hint" src="./assets/img/logos/touch_button/button_activate_touch.png" alt=""
                     aria-hidden="true" decoding="async" />
-                <span class="visually-hidden controls-toggle-label">Touch-Steuerung aktivieren</span>
+                <span class="visually-hidden controls-toggle-label">Enable touch controls</span>
                 <img src="./assets/img/logos/touch_button/button_toggle_controls.png" alt="" class="btn-image"
                     decoding="async" />
             </button>
             <!-- Death buttons (shown when character dies) -->
             <div id="deathButtons" class="death-btns hidden">
-                <button id="deathBackBtn" class="image-btn death-btn" aria-label="Zurück zum Start">
-                    <span class="visually-hidden">Zurück zum Start</span>
+                <button id="deathBackBtn" class="image-btn death-btn" aria-label="Back to Start">
+                    <span class="visually-hidden">Back to Start</span>
                     <img src="./assets/img/logos/back_to_start.png" alt="" class="btn-image" decoding="async" />
                 </button>
-                <button id="deathRetryBtn" class="image-btn death-btn" aria-label="Erneut versuchen">
-                    <span class="visually-hidden">Erneut versuchen</span>
+                <button id="deathRetryBtn" class="image-btn death-btn" aria-label="Retry">
+                    <span class="visually-hidden">Retry</span>
                     <img src="./assets/img/logos/retry.png" alt="" class="btn-image" decoding="async" />
                 </button>
             </div>
@@ -172,35 +171,35 @@
             <!-- Touch controls overlay (shown only in touch mode) -->
             <div id="touchControls" class="touch-controls hidden" aria-hidden="true">
                 <div class="touch-left">
-                    <button class="touch-btn" data-key="LEFT" aria-label="Links">
+                    <button class="touch-btn" data-key="LEFT" aria-label="Left">
                         <img src="./assets/img/logos/touch_button/button_left.png" alt="" />
                     </button>
-                    <button class="touch-btn" data-key="RIGHT" aria-label="Rechts">
+                    <button class="touch-btn" data-key="RIGHT" aria-label="Right">
                         <img src="./assets/img/logos/touch_button/button_right.png" alt="" />
                     </button>
                 </div>
                 <div class="touch-center">
-                    <button class="touch-btn" data-key="ONE" aria-label="Heiltrank benutzen">
+                    <button class="touch-btn" data-key="ONE" aria-label="Use health potion">
                         <img src="./assets/img/logos/touch_button/button_heal_potion.png" alt="" />
                     </button>
-                    <button class="touch-btn" data-key="TWO" aria-label="Blocktrank benutzen">
+                    <button class="touch-btn" data-key="TWO" aria-label="Use block potion">
                         <img src="./assets/img/logos/touch_button/button_block_potion.png" alt="" />
                     </button>
                 </div>
                 <div class="touch-right">
                     <div class="touch-row">
-                        <button class="touch-btn" data-key="S" aria-label="Spezial">
+                        <button class="touch-btn" data-key="S" aria-label="Special">
                             <img src="./assets/img/logos/touch_button/button_special.png" alt="" />
                         </button>
-                        <button class="touch-btn" data-key="D" aria-label="Blocken">
+                        <button class="touch-btn" data-key="D" aria-label="Block">
                             <img src="./assets/img/logos/touch_button/button_block.png" alt="" />
                         </button>
                     </div>
                     <div class="touch-row">
-                        <button class="touch-btn" data-key="A" aria-label="Angriff">
+                        <button class="touch-btn" data-key="A" aria-label="Attack">
                             <img src="./assets/img/logos/touch_button/button_attack.png" alt="" />
                         </button>
-                        <button class="touch-btn" data-key="SPACE" aria-label="Springen">
+                        <button class="touch-btn" data-key="SPACE" aria-label="Jump">
                             <img src="./assets/img/logos/touch_button/button_jump.png" alt="" />
                         </button>
                     </div>
@@ -209,13 +208,20 @@
 
             <!-- How To Play Overlay (controls) -->
             <div id="howToOverlay" class="howto-overlay hidden" aria-hidden="true">
-                <img src="./assets/img/logos/controls.png" alt="Steuerung / Controls" class="howto-image"
-                    decoding="async" />
-                <button id="howToCloseBtn" class="image-btn howto-close-btn" aria-label="Schließen (Esc)">
-                    <span class="visually-hidden">Schließen</span>
+                <img src="./assets/img/logos/controls.png" alt="Controls" class="howto-image" decoding="async" />
+                <button id="howToCloseBtn" class="image-btn howto-close-btn" aria-label="Close (Esc)">
+                    <span class="visually-hidden">Close</span>
                     <img src="./assets/img/logos/exit.png" alt="" class="btn-image" decoding="async" />
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- Rotate device overlay for phones/tablets in portrait -->
+    <div id="rotateOverlay" class="rotate-overlay" aria-live="polite" aria-hidden="true">
+        <div class="rotate-card" role="dialog" aria-modal="true">
+            <div class="rotate-icon" aria-hidden="true">🔄</div>
+            <div class="rotate-text">Please rotate your device<br />90° to landscape</div>
         </div>
     </div>
 

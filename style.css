@@ -19,8 +19,11 @@ h1 {
 
 .stage {
   position: relative;
-  width: 810px;
-  height: 540px;
+  /* Maintain 3:2 aspect ratio, scale responsively */
+  width: min(96vw, 1100px);
+  aspect-ratio: 3 / 2;
+  height: auto;
+  max-height: min(90vh, 720px);
   transform: translateY(-30px);
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6),
@@ -44,7 +47,7 @@ h1 {
 .landing {
   position: relative;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -410,4 +413,91 @@ h1 {
 .howto-close-btn:hover {
   opacity: 1;
   transform: scale(0.75);
+}
+
+/* Responsive tweaks for small screens */
+@media (max-width: 1024px) {
+  .stage {
+    width: min(98vw, 960px);
+    max-height: 86vh;
+  }
+  .stage-start-btn {
+    top: 64%;
+  }
+  .stage-howto-btn {
+    top: 75%;
+  }
+}
+
+@media (max-width: 768px) {
+  .stage {
+    width: 100vw;
+    max-height: 70vh;
+    transform: translateY(-10px);
+  }
+}
+
+/* Portrait handling: blur the background/stage and show rotate overlay */
+@media (orientation: portrait) {
+  body:before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    backdrop-filter: blur(8px) brightness(0.7);
+    -webkit-backdrop-filter: blur(8px) brightness(0.7);
+    z-index: 50;
+  }
+  #landing,
+  .stage,
+  .bg-layers,
+  .hero {
+    filter: blur(2px) saturate(0.8);
+  }
+  .rotate-overlay {
+    opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
+  }
+}
+
+/* Rotate overlay base styles */
+.rotate-overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 200ms ease, visibility 200ms ease;
+}
+
+.rotate-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.rotate-card {
+  background: rgba(20, 20, 24, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border-radius: 14px;
+  padding: clamp(16px, 4vw, 28px) clamp(18px, 6vw, 36px);
+  color: #fff;
+  text-align: center;
+}
+
+.rotate-icon {
+  font-size: clamp(28px, 8vw, 52px);
+  line-height: 1;
+  margin-bottom: clamp(8px, 2vw, 14px);
+}
+
+.rotate-text {
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  font-weight: 600;
+  font-size: clamp(16px, 4.6vw, 22px);
 }

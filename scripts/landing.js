@@ -8,6 +8,7 @@
     layerBird: null,
     enterBtn: null,
     stage: null,
+    rotateOverlay: null,
   };
 
   const qs = (s) => document.querySelector(s);
@@ -32,6 +33,19 @@
     L.layer1 = qs('.layer-1');
     L.layerBird = qs('.layer-bird');
     L.enterBtn = qs('#enterBtn');
+    L.rotateOverlay = qs('#rotateOverlay');
+  }
+
+  function isPortrait() {
+    const mql = window.matchMedia('(orientation: portrait)');
+    return mql?.matches ?? window.innerHeight > window.innerWidth;
+  }
+
+  function updateRotateOverlay() {
+    if (!L.rotateOverlay) return;
+    const show = isPortrait();
+    L.rotateOverlay.classList.toggle('is-visible', !!show);
+    L.rotateOverlay.setAttribute('aria-hidden', show ? 'false' : 'true');
   }
 
   function setupImprint() {
@@ -52,8 +66,8 @@
 
   function updateFsLabel(btn, on) {
     const span = btn.querySelector('.fullscreen-label');
-    if (span) span.textContent = on ? 'Fullscreen aus' : 'Fullscreen an';
-    btn.setAttribute('aria-label', on ? 'Fullscreen aus' : 'Fullscreen an');
+    if (span) span.textContent = on ? 'Exit Fullscreen' : 'Enter Fullscreen';
+    btn.setAttribute('aria-label', on ? 'Exit Fullscreen' : 'Enter Fullscreen');
   }
 
   function setupFullscreen() {
@@ -87,8 +101,8 @@
       img.src = on
         ? './assets/img/logos/sound_on.png'
         : './assets/img/logos/sound_off.png';
-    if (span) span.textContent = on ? 'Sound aus' : 'Sound an';
-    btn.setAttribute('aria-label', on ? 'Sound aus' : 'Sound an');
+    if (span) span.textContent = on ? 'Mute' : 'Unmute';
+    btn.setAttribute('aria-label', on ? 'Mute' : 'Unmute');
   }
 
   function setupSound() {
@@ -283,6 +297,10 @@
     setupSound();
     animateIntro();
     addEnter();
+    // Ensure rotate overlay shows when in portrait across all devices
+    updateRotateOverlay();
+    window.addEventListener('orientationchange', updateRotateOverlay);
+    window.addEventListener('resize', updateRotateOverlay);
   }
 
   window.addEventListener('DOMContentLoaded', bind);

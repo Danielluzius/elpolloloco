@@ -142,15 +142,15 @@ function backToStart() {
       world.stop();
     } catch (e) {}
   }
-  // Soft Reset: zurück in einen Zustand wie nach Enter aber vor StartGame
+  // Soft reset: back to a state like after Enter but before startGame
   hideDeathButtons();
   gameState = 'idle';
-  // Canvas säubern
+  // Clear canvas
   try {
     const ctx = canvas?.getContext?.('2d');
     if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
   } catch (_) {}
-  // Hero wieder anzeigen
+  // Show hero again
   const hero = document.querySelector('#landing .hero');
   if (hero) {
     hero.classList.remove('hero--off');
@@ -158,13 +158,13 @@ function backToStart() {
     hero.style.opacity = '1';
     hero.style.pointerEvents = 'auto';
   }
-  // Stage bleibt sichtbar (wie nach Enter)
+  // Stage remains visible (like after Enter)
   const startBtn = document.getElementById('startGameBtn');
   const howToBtn = document.getElementById('howToPlayBtn');
   const imprintBtn = document.getElementById('imprintBtn');
   const fullscreenBtn = document.getElementById('fullscreenBtn');
   const soundBtn = document.getElementById('muteBtn');
-  // Buttons wieder einblenden
+  // Show buttons again
   [
     [startBtn, 'stage-start-btn--visible'],
     [howToBtn, 'stage-howto-btn--visible'],
@@ -176,14 +176,14 @@ function backToStart() {
     el.style.display = 'inline-flex';
     el.classList.add(cls);
   });
-  // Restart verstecken im Idle
+  // Hide restart in idle
   hideRestartBtn();
   hideExitBtn();
   hideControlsToggleBtn();
   hideTouchControls();
-  // Imprint Button wieder zeigen
+  // Show imprint button again
   imprintBtn?.classList.remove('hidden');
-  // Aktuelle World-Referenz entfernen
+  // Remove current world reference
   world = null;
   _rebindStartBtn();
 }
@@ -317,7 +317,7 @@ function showDeathButtons() {
   c.classList.remove('hidden');
   requestAnimationFrame(() => {
     c.classList.add('death-btns--visible');
-    // Fokus auf ersten Button setzen für Accessibility
+    // Set focus to first button for accessibility
     ui.deathBackBtn?.focus?.();
   });
 }
@@ -359,9 +359,9 @@ function toggleMute() {
       : './assets/img/logos/sound_off.png';
   }
   if (span) {
-    span.textContent = isOn ? 'Sound aus' : 'Sound an';
+    span.textContent = isOn ? 'Mute' : 'Unmute';
   }
-  btn.setAttribute('aria-label', isOn ? 'Sound aus' : 'Sound an');
+  btn.setAttribute('aria-label', isOn ? 'Mute' : 'Unmute');
   btn.setAttribute('data-state', isOn ? 'on' : 'off');
 }
 
@@ -391,9 +391,7 @@ function updateControlsToggleVisuals() {
       ? './assets/img/logos/touch_button/button_activate_keyboard.png'
       : './assets/img/logos/touch_button/button_activate_touch.png';
   }
-  const label = isTouch
-    ? 'Keyboard-Steuerung aktivieren'
-    : 'Touch-Steuerung aktivieren';
+  const label = isTouch ? 'Enable keyboard controls' : 'Enable touch controls';
   if (span) span.textContent = label;
   btn.setAttribute('aria-label', label);
 }
