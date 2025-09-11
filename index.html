@@ -12,6 +12,7 @@
 
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./style/standart.css" />
+    <link rel="stylesheet" href="./style/touch_button.css" />
 
     <!-- Core base classes -->
     <script src="./models/core/drawable-object.class.js" defer></script>
@@ -146,6 +147,13 @@
                 <span class="visually-hidden">Zurück zum Start</span>
                 <img src="./assets/img/logos/exit.png" alt="" class="btn-image" decoding="async" />
             </button>
+            <!-- Controls toggle button (appears during gameplay; below restart/exit) -->
+            <button id="controlsToggleBtn" class="image-btn stage-controls-btn" aria-label="Touch-Steuerung aktivieren"
+                style="display:none;">
+                <span class="visually-hidden controls-toggle-label">Touch-Steuerung aktivieren</span>
+                <img src="./assets/img/logos/touch_button/button_activate_touch.png" alt="" class="btn-image"
+                    decoding="async" />
+            </button>
             <!-- Death buttons (shown when character dies) -->
             <div id="deathButtons" class="death-btns hidden">
                 <button id="deathBackBtn" class="image-btn death-btn" aria-label="Zurück zum Start">
@@ -156,6 +164,44 @@
                     <span class="visually-hidden">Erneut versuchen</span>
                     <img src="./assets/img/logos/retry.png" alt="" class="btn-image" decoding="async" />
                 </button>
+            </div>
+
+            <!-- Touch controls overlay (shown only in touch mode) -->
+            <div id="touchControls" class="touch-controls hidden" aria-hidden="true">
+                <div class="touch-left">
+                    <button class="touch-btn" data-key="LEFT" aria-label="Links">
+                        <img src="./assets/img/logos/touch_button/button_left.png" alt="" />
+                    </button>
+                    <button class="touch-btn" data-key="RIGHT" aria-label="Rechts">
+                        <img src="./assets/img/logos/touch_button/button_right.png" alt="" />
+                    </button>
+                </div>
+                <div class="touch-center">
+                    <button class="touch-btn" data-key="ONE" aria-label="Heiltrank benutzen">
+                        <img src="./assets/img/logos/touch_button/button_heal_potion.png" alt="" />
+                    </button>
+                    <button class="touch-btn" data-key="TWO" aria-label="Blocktrank benutzen">
+                        <img src="./assets/img/logos/touch_button/button_block_potion.png" alt="" />
+                    </button>
+                </div>
+                <div class="touch-right">
+                    <div class="touch-row">
+                        <button class="touch-btn" data-key="SPACE" aria-label="Springen">
+                            <img src="./assets/img/logos/touch_button/button_jump.png" alt="" />
+                        </button>
+                        <button class="touch-btn" data-key="A" aria-label="Angriff">
+                            <img src="./assets/img/logos/touch_button/button_attack.png" alt="" />
+                        </button>
+                    </div>
+                    <div class="touch-row">
+                        <button class="touch-btn" data-key="D" aria-label="Blocken">
+                            <img src="./assets/img/logos/touch_button/button_block.png" alt="" />
+                        </button>
+                        <button class="touch-btn" data-key="S" aria-label="Spezial">
+                            <img src="./assets/img/logos/touch_button/button_special.png" alt="" />
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <!-- How To Play Overlay (controls) -->

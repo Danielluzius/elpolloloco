@@ -4,6 +4,11 @@ let keyboard = new Keyboard();
 let gameState = 'idle';
 let ui = {};
 let isMuted = false;
+// Persisted control mode: 'keyboard' or 'touch'
+let controlMode = 'keyboard';
+try {
+  controlMode = localStorage.getItem('controlMode') || 'keyboard';
+} catch (_) {}
 
 function init() {
   canvas = document.getElementById('canvas');
@@ -23,6 +28,8 @@ function cacheUi() {
   ui.muteBtn = document.getElementById('muteBtn');
   ui.restartBtn = document.getElementById('restartBtn');
   ui.exitBtn = document.getElementById('exitBtn');
+  ui.controlsToggleBtn = document.getElementById('controlsToggleBtn');
+  ui.touchControls = document.getElementById('touchControls');
   ui.howToBtn = document.getElementById('howToBtn');
   ui.howToModal = document.getElementById('howToModal');
   ui.howToCloseBtn = document.getElementById('howToCloseBtn');
@@ -51,6 +58,8 @@ function bindUi() {
   ui.exitBtn?.addEventListener('click', () => {
     if (gameState === 'running') backToStart();
   });
+  ui.controlsToggleBtn?.addEventListener('click', toggleControlMode);
+  bindTouchButtons();
   ui.deathRetryBtn?.addEventListener('click', () => {
     hideDeathButtons();
     restartGame();
@@ -93,6 +102,8 @@ function startGame() {
     hookWinLose(world);
     showRestartBtn();
     showExitBtn();
+    showControlsToggleBtn();
+    applyControlModeVisuals();
   }, FADE_OUT_MS);
 }
 
@@ -121,6 +132,8 @@ function restartGame() {
   hookWinLose(world);
   showRestartBtn();
   showExitBtn();
+  showControlsToggleBtn();
+  applyControlModeVisuals();
 }
 
 function backToStart() {
@@ -166,6 +179,8 @@ function backToStart() {
   // Restart verstecken im Idle
   hideRestartBtn();
   hideExitBtn();
+  hideControlsToggleBtn();
+  hideTouchControls();
   // Imprint Button wieder zeigen
   imprintBtn?.classList.remove('hidden');
   // Aktuelle World-Referenz entfernen
@@ -229,6 +244,21 @@ function hideExitBtn() {
   const b = ui.exitBtn;
   if (!b) return;
   b.classList.remove('stage-exit-btn--visible');
+  b.style.display = 'none';
+}
+
+function showControlsToggleBtn() {
+  const b = ui.controlsToggleBtn;
+  if (!b) return;
+  updateControlsToggleVisuals();
+  b.style.display = 'inline-flex';
+  requestAnimationFrame(() => b.classList.add('stage-controls-btn--visible'));
+}
+
+function hideControlsToggleBtn() {
+  const b = ui.controlsToggleBtn;
+  if (!b) return;
+  b.classList.remove('stage-controls-btn--visible');
   b.style.display = 'none';
 }
 
@@ -335,12 +365,93 @@ function toggleMute() {
   btn.setAttribute('data-state', isOn ? 'on' : 'off');
 }
 
+function toggleControlMode() {
+  controlMode = controlMode === 'keyboard' ? 'touch' : 'keyboard';
+  try {
+    localStorage.setItem('controlMode', controlMode);
+  } catch (_) {}
+  updateControlsToggleVisuals();
+  applyControlModeVisuals();
+}
+
+function updateControlsToggleVisuals() {
+  const btn = ui.controlsToggleBtn;
+  if (!btn) return;
+  const img = btn.querySelector('img');
+  const span = btn.querySelector('.controls-toggle-label');
+  const isTouch = controlMode === 'touch';
+  if (img) {
+    img.src = isTouch
+      ? './assets/img/logos/touch_button/button_activate_keyboard.png'
+      : './assets/img/logos/touch_button/button_activate_touch.png';
+  }
+  const label = isTouch
+    ? 'Keyboard-Steuerung aktivieren'
+    : 'Touch-Steuerung aktivieren';
+  if (span) span.textContent = label;
+  btn.setAttribute('aria-label', label);
+}
+
+function applyControlModeVisuals() {
+  if (controlMode === 'touch') showTouchControls();
+  else hideTouchControls();
+}
+
+function showTouchControls() {
+  const tc = ui.touchControls;
+  if (!tc) return;
+  tc.classList.remove('hidden');
+  tc.removeAttribute('aria-hidden');
+}
+
+function hideTouchControls() {
+  const tc = ui.touchControls;
+  if (!tc) return;
+  tc.classList.add('hidden');
+  tc.setAttribute('aria-hidden', 'true');
+  // Release any stuck keys when hiding
+  ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'D', 'A', 'S', 'ONE', 'TWO'].forEach(
+    (k) => (keyboard[k] = false)
+  );
+}
+
+function bindTouchButtons() {
+  const tc = ui.touchControls;
+  if (!tc) return;
+  const setKey = (k, v) => {
+    keyboard[k] = v;
+  };
+  const onPress = (e) => {
+    const k = e.currentTarget?.dataset?.key;
+    if (!k) return;
+    setKey(k, true);
+    e.preventDefault?.();
+    e.stopPropagation?.();
+  };
+  const onRelease = (e) => {
+    const k = e.currentTarget?.dataset?.key;
+    if (!k) return;
+    setKey(k, false);
+    e.preventDefault?.();
+    e.stopPropagation?.();
+  };
+  tc.querySelectorAll('.touch-btn').forEach((btn) => {
+    btn.addEventListener('pointerdown', onPress);
+    btn.addEventListener('pointerup', onRelease);
+    btn.addEventListener('pointercancel', onRelease);
+    btn.addEventListener('pointerleave', onRelease);
+    btn.addEventListener('contextmenu', (e) => e.preventDefault());
+  });
+}
+
 function openHowTo() {
   ui.howToModal?.classList.remove('hidden');
+  hideTouchControls();
 }
 
 function closeHowTo() {
   ui.howToModal?.classList.add('hidden');
+  applyControlModeVisuals();
 }
 
 function openImprint() {
