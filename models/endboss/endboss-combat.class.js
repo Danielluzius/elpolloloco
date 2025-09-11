@@ -1,4 +1,11 @@
+/**
+ * Handles the combat logic for the end boss, including attacks, damage, and interactions with the player.
+ */
 class EndbossCombat extends EndbossAnim {
+  /**
+   * Wakes the end boss if the player is within the detection radius.
+   * @param {Object} character - The player character.
+   */
   wakeIfNear(character) {
     const dx = Math.abs(
       character.x + character.width / 2 - (this.x + this.width / 2)
@@ -16,6 +23,10 @@ class EndbossCombat extends EndbossAnim {
     }
   }
 
+  /**
+   * Checks if the end boss can attack and starts the attack windup if possible.
+   * @param {Object} world - The game world.
+   */
   checkAndStartAttack(world) {
     if (!this._canAttemptAttack(world) || this._attackWindupTimer) return;
     this._attackWindupTimer = setTimeout(
@@ -24,6 +35,11 @@ class EndbossCombat extends EndbossAnim {
     );
   }
 
+  /**
+   * Determines if the end boss can attempt an attack.
+   * @param {Object} world - The game world.
+   * @returns {boolean} True if the end boss can attack, otherwise false.
+   */
   _canAttemptAttack(world) {
     if (!this.awake || this.dead || world.character.isDead()) return false;
     const dx = Math.abs(
@@ -35,6 +51,10 @@ class EndbossCombat extends EndbossAnim {
     return !['attack', 'hurt'].includes(this.state);
   }
 
+  /**
+   * Executes the start of an attack.
+   * @param {Object} world - The game world.
+   */
   _executeAttackStart(world) {
     this._attackWindupTimer = null;
     if (this.dead || !this._stillCanAttack(world)) return;
@@ -46,6 +66,11 @@ class EndbossCombat extends EndbossAnim {
     this.scheduleAttackHitCheck(world);
   }
 
+  /**
+   * Checks if the end boss can still attack.
+   * @param {Object} world - The game world.
+   * @returns {boolean} True if the end boss can still attack, otherwise false.
+   */
   _stillCanAttack(world) {
     const cx = world.character.x + world.character.width / 2;
     const bx = this.x + this.width / 2;
@@ -54,15 +79,27 @@ class EndbossCombat extends EndbossAnim {
     return inRange && cooled && !this.dead;
   }
 
+  /**
+   * Schedules a hit check for the attack.
+   * @param {Object} world - The game world.
+   */
   scheduleAttackHitCheck(world) {
     setTimeout(() => this._attackHitWindow(world), 3 * this.ATTACK_DELAY);
   }
 
+  /**
+   * Checks if the attack hits the player.
+   * @param {Object} world - The game world.
+   */
   _attackHitWindow(world) {
     if (this.state !== 'attack' || this.dead) return;
     this.tryApplyBossAttackDamage(world);
   }
 
+  /**
+   * Applies damage to the player if the attack hits.
+   * @param {Object} world - The game world.
+   */
   tryApplyBossAttackDamage(world) {
     const ch = world?.character;
     if (!ch || ch.isDead?.()) return;
@@ -72,6 +109,11 @@ class EndbossCombat extends EndbossAnim {
     ch.applyKnockbackFrom?.(this);
   }
 
+  /**
+   * Checks if the player is within the vertical range of the attack.
+   * @param {Object} ch - The player character.
+   * @returns {boolean} True if the player is in range, otherwise false.
+   */
   _isPlayerVerticallyInRange(ch) {
     const cx = ch.x + ch.width / 2;
     const bx = this.x + this.width / 2;
@@ -86,6 +128,12 @@ class EndbossCombat extends EndbossAnim {
     };
     return a.bottom > b.top && a.top < b.bottom;
   }
+
+  /**
+   * Attempts to block the attack if the player is blocking.
+   * @param {Object} ch - The player character.
+   * @returns {boolean} True if the attack was blocked, otherwise false.
+   */
   _attemptBlockResponse(ch) {
     if (!ch.isBlocking) return false;
     const bossOnRight = this.x > ch.x;
@@ -99,6 +147,10 @@ class EndbossCombat extends EndbossAnim {
     return true;
   }
 
+  /**
+   * Starts the knockback effect when the attack is blocked.
+   * @param {number} dir - The direction of the knockback.
+   */
   _startBlockKnockback(dir) {
     this.speedY = 0;
     this._blockKnockbackEndAt = Date.now() + 220;
@@ -106,10 +158,16 @@ class EndbossCombat extends EndbossAnim {
     if (!this._blockKbLoop) this._startBlockKbLoop();
   }
 
+  /**
+   * Starts the loop for the block knockback effect.
+   */
   _startBlockKbLoop() {
     this._blockKbLoop = setInterval(() => this._blockKbTick(), 1000 / 60);
   }
 
+  /**
+   * Updates the block knockback effect.
+   */
   _blockKbTick() {
     const t = Date.now();
     if (t >= (this._blockKnockbackEndAt || 0)) return this._endBlockKb();
@@ -118,12 +176,23 @@ class EndbossCombat extends EndbossAnim {
     this._blockKnockbackVX *= 0.9;
   }
 
+  /**
+   * Ends the block knockback effect.
+   */
   _endBlockKb() {
     this._blockKnockbackVX = 0;
     clearInterval(this._blockKbLoop);
     this._blockKbLoop = null;
   }
 
+  /**
+   * Applies damage to the end boss.
+   * @param {number} [amount=1] - The amount of damage to apply.
+   * @param {number} [now=Date.now()] - The current timestamp.
+   * @param {number|null} [defaultMaxSteps=null] - The default maximum health steps.
+   * @param {string|null} [attackId=null] - The ID of the attack.
+   * @returns {boolean} True if the damage was applied, otherwise false.
+   */
   applyHit(
     amount = 1,
     now = Date.now(),

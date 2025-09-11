@@ -1,3 +1,7 @@
+/**
+ * Represents the health bar for a boss character.
+ * @extends DrawableObject
+ */
 class BossSegmentHealthBar extends DrawableObject {
   LEFT_FULL =
     'assets/img/7_statusbars/1_statusbar/1_statusbar_health_character/healthbar_full_left.png';
@@ -29,6 +33,9 @@ class BossSegmentHealthBar extends DrawableObject {
     'boss_hp_right',
   ];
 
+  /**
+   * Creates an instance of BossSegmentHealthBar.
+   */
   constructor() {
     super();
     this.loadImages([
@@ -45,15 +52,28 @@ class BossSegmentHealthBar extends DrawableObject {
     this.y = 0;
   }
 
+  /**
+   * Gets the maximum number of health bar segments.
+   * @returns {number} The maximum number of segments.
+   */
   getMaxSteps() {
     return this.maxSegments;
   }
 
+  /**
+   * Sets the health bar by the given step index.
+   * @param {number} stepIndex - The step index to set.
+   */
   setByStep(stepIndex) {
     const max = this.maxSegments;
     this.segmentsFull = Math.max(0, Math.min(max, Math.floor(stepIndex)));
   }
 
+  /**
+   * Updates the health bar position and size based on the boss.
+   * @param {object} boss - The boss entity.
+   * @returns {boolean} True if the update was successful, false otherwise.
+   */
   updateFromBoss(boss) {
     if (!boss || boss.dead || !boss.awake) return false;
     try {
@@ -73,6 +93,12 @@ class BossSegmentHealthBar extends DrawableObject {
     return true;
   }
 
+  /**
+   * Draws the health bar at the specified position.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {number} dx - The x-coordinate to draw at.
+   * @param {number} dy - The y-coordinate to draw at.
+   */
   drawAt(ctx, dx, dy) {
     const baseX = Math.round(dx);
     const baseY = Math.round(dy);

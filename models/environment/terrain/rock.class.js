@@ -1,4 +1,17 @@
+/**
+ * Represents a rock in the game, extending the MoveableObject class.
+ */
 class Rock extends MoveableObject {
+  /**
+   * Creates a new rock.
+   * @param {number} x - The x-coordinate of the rock.
+   * @param {Object} [options={}] - Additional options for the rock.
+   * @param {string} [options.path='assets/img/5_background/rocks/rock_5.png'] - The path to the rock image.
+   * @param {number} [options.width] - The width of the rock.
+   * @param {number} [options.height] - The height of the rock.
+   * @param {number} [options.y] - The y-coordinate of the rock.
+   * @param {Object} [options.offset={ top: 6, right: 6, bottom: 0, left: 6 }] - The collision offset for the rock.
+   */
   constructor(x, options = {}) {
     super();
 

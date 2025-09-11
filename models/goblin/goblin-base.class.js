@@ -1,3 +1,7 @@
+/**
+ * Represents the base class for goblins, providing common properties and methods.
+ * Extends the MoveableObject class.
+ */
 class GoblinBase extends MoveableObject {
   height = 260;
   width = 210;
@@ -81,6 +85,11 @@ class GoblinBase extends MoveableObject {
   KNOCKBACK_SPEED_Y = 12;
   recentlyHitAt = 0;
 
+  /**
+   * Creates an instance of GoblinBase.
+   * @param {number} [type=1] - The type of goblin (1, 2, or 3).
+   * @param {number} [x=800] - The initial x-coordinate of the goblin.
+   */
   constructor(type = 1, x = 800) {
     super();
     this.initBaseState(x);
@@ -90,6 +99,10 @@ class GoblinBase extends MoveableObject {
     this.preloadHearts();
   }
 
+  /**
+   * Initializes the base state of the goblin.
+   * @param {number} x - The initial x-coordinate of the goblin.
+   */
   initBaseState(x) {
     this.x = typeof x === 'number' ? x : 800;
     this.spawnX = this.x;
@@ -98,6 +111,10 @@ class GoblinBase extends MoveableObject {
     this.offset = { top: 150, right: 80, bottom: 0, left: 80 };
   }
 
+  /**
+   * Initializes the sprite sheets for the goblin based on its type.
+   * @param {number} type - The type of goblin (1, 2, or 3).
+   */
   initSheets(type) {
     const t = Math.max(1, Math.min(3, Math.floor(type)));
     this.setupIdleSheet(t);
@@ -106,6 +123,10 @@ class GoblinBase extends MoveableObject {
     this.setupAttackSheet(t);
   }
 
+  /**
+   * Sets up the idle sprite sheet for the goblin.
+   * @param {number} t - The type of goblin.
+   */
   setupIdleSheet(t) {
     const p = `assets/img/3_enemies_goblins/goblin_${t}/3_idle/1_idle_6_sprites.png`;
     const c = this.getSpriteCountFromFilename(p) || 6;
@@ -118,6 +139,10 @@ class GoblinBase extends MoveableObject {
     this.setSheetFrameAuto(this.idleSheet, this.idleOrder[0] || 0);
   }
 
+  /**
+   * Sets up the hurt and death sprite sheets for the goblin.
+   * @param {number} t - The type of goblin.
+   */
   setupHurtDeathSheets(t) {
     this.hurtSheet = {
       path: `assets/img/3_enemies_goblins/goblin_${t}/4_hurt/1_hurt_3_sprites.png`,
@@ -136,6 +161,10 @@ class GoblinBase extends MoveableObject {
     this.bindReadyFlag(dp, '_deathReady');
   }
 
+  /**
+   * Sets up the walk and run sprite sheets for the goblin.
+   * @param {number} t - The type of goblin.
+   */
   setupWalkRunSheets(t) {
     const wMap = { 1: 8, 2: 9, 3: 9 };
     const wc = wMap[t] || 8;
@@ -158,6 +187,10 @@ class GoblinBase extends MoveableObject {
     this.bindReadyFlag(this.runSheet.path, '_runReady');
   }
 
+  /**
+   * Sets up the attack sprite sheet for the goblin.
+   * @param {number} t - The type of goblin.
+   */
   setupAttackSheet(t) {
     const aMap = { 1: 5, 2: 5, 3: 6 };
     const ac = aMap[t] || 5;
@@ -171,6 +204,11 @@ class GoblinBase extends MoveableObject {
     this.bindReadyFlag(this.attackSheet.path, '_attackReady');
   }
 
+  /**
+   * Binds a ready flag to the sprite sheet's image load event.
+   * @param {string} path - The path to the sprite sheet image.
+   * @param {string} flag - The flag to set when the image is loaded.
+   */
   bindReadyFlag(path, flag) {
     const img = this.imageCache[path];
     if (!img) return;
@@ -180,6 +218,9 @@ class GoblinBase extends MoveableObject {
     } catch (_) {}
   }
 
+  /**
+   * Randomizes the goblin's movement properties.
+   */
   randomizeMovement() {
     this.patrolSpeed = this.PATROL_SPEED * this.randBetween(0.8, 1.1);
     this.chaseSpeed = Math.max(2.2, this.patrolSpeed * this.CHASE_SPEED_FACTOR);
@@ -189,12 +230,21 @@ class GoblinBase extends MoveableObject {
       Date.now() + this.randBetween(this.PAUSE_MIN_MS, this.PAUSE_MAX_MS);
   }
 
+  /**
+   * Preloads the heart images for the goblin.
+   */
   preloadHearts() {
     try {
       this.loadImages(Object.values(this.heartPaths));
     } catch (_) {}
   }
 
+  /**
+   * Generates a random number between the specified range.
+   * @param {number} min - The minimum value.
+   * @param {number} max - The maximum value.
+   * @returns {number} A random number between min and max.
+   */
   randBetween(min, max) {
     return min + Math.random() * (max - min);
   }

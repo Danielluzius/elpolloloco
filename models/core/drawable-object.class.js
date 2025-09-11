@@ -1,3 +1,6 @@
+/**
+ * Represents a drawable object in the game, capable of rendering images and animations.
+ */
 class DrawableObject {
   x = 120;
   y = 120;
@@ -8,12 +11,20 @@ class DrawableObject {
   currentImage = 0;
   currentFrameRect = null;
 
+  /**
+   * Loads an image and caches it.
+   * @param {string} path - The path to the image file.
+   */
   loadImage(path) {
     this.img = new Image();
     this.img.src = path;
     this.imageCache[path] = this.img;
   }
 
+  /**
+   * Draws the object on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   draw(ctx) {
     if (!this.img) return;
     const r = this.currentFrameRect;
@@ -36,6 +47,12 @@ class DrawableObject {
     ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
   }
 
+  /**
+   * Draws the object at a specific position on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {number} dx - The x-coordinate to draw the object.
+   * @param {number} dy - The y-coordinate to draw the object.
+   */
   drawAt(ctx, dx, dy) {
     if (!this.img) return;
     const r = this.currentFrameRect;
@@ -58,8 +75,16 @@ class DrawableObject {
     ctx.drawImage(this.img, dx, dy, this.width, this.height);
   }
 
+  /**
+   * Draws the current animation frame of the object.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   drawFrame(ctx) {}
 
+  /**
+   * Loads multiple images and caches them.
+   * @param {string[]} arr - An array of image paths to load.
+   */
   loadImages(arr) {
     arr.forEach((path) => {
       const img = new Image();
@@ -68,6 +93,10 @@ class DrawableObject {
     });
   }
 
+  /**
+   * Draws the object with directional adjustments (e.g., flipping).
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   drawWithDirection(ctx) {
     if (!this.otherDirection) {
       this.draw(ctx);
@@ -85,6 +114,11 @@ class DrawableObject {
     ctx.restore();
   }
 
+  /**
+   * Automatically sets the frame of a sprite sheet.
+   * @param {Object} sheet - The sprite sheet configuration.
+   * @param {number} index - The frame index to set.
+   */
   setSheetFrameAuto(sheet, index) {
     const img = this.imageCache?.[sheet.path] || this.img;
     if (!img) return;
@@ -95,19 +129,8 @@ class DrawableObject {
     const fullW = img.naturalWidth || img.width || 0;
     const fullH = img.naturalHeight || img.height || 0;
 
-    const pickSpacing = (full, n) => {
-      if (typeof n !== 'number' || n < 1 || !full) return 0;
-
-      for (let s = 0; s <= 3; s++) {
-        const size = (full - s * (n - 1)) / n;
-        if (Math.abs(size - Math.round(size)) < 1e-6) return s;
-      }
-
-      return 0;
-    };
-
-    const spacingX = pickSpacing(fullW, cols);
-    const spacingY = pickSpacing(fullH, rows);
+    const spacingX = this.calculateSpacing(fullW, cols);
+    const spacingY = this.calculateSpacing(fullH, rows);
 
     const fw =
       sheet.frameW ||
@@ -116,10 +139,8 @@ class DrawableObject {
       sheet.frameH ||
       (fullH ? Math.round((fullH - spacingY * (rows - 1)) / rows) : 128);
 
-    const usedW = cols * fw + (cols - 1) * spacingX;
-    const usedH = rows * fh + (rows - 1) * spacingY;
-    const marginX = Math.max(0, Math.floor((fullW - usedW) / 2));
-    const marginY = Math.max(0, Math.floor((fullH - usedH) / 2));
+    const marginX = this.calculateMargin(fullW, cols, fw, spacingX);
+    const marginY = this.calculateMargin(fullH, rows, fh, spacingY);
 
     const col = index % cols;
     const row = Math.floor(index / cols) % rows;
@@ -130,6 +151,41 @@ class DrawableObject {
     this.currentFrameRect = { sx, sy, sw: fw, sh: fh };
   }
 
+  /**
+   * Calculates the spacing between frames in a sprite sheet.
+   * @param {number} full - The full dimension (width or height) of the sprite sheet.
+   * @param {number} n - The number of frames in the dimension.
+   * @returns {number} The calculated spacing.
+   */
+  calculateSpacing(full, n) {
+    if (typeof n !== 'number' || n < 1 || !full) return 0;
+
+    for (let s = 0; s <= 3; s++) {
+      const size = (full - s * (n - 1)) / n;
+      if (Math.abs(size - Math.round(size)) < 1e-6) return s;
+    }
+
+    return 0;
+  }
+
+  /**
+   * Calculates the margin around frames in a sprite sheet.
+   * @param {number} full - The full dimension (width or height) of the sprite sheet.
+   * @param {number} n - The number of frames in the dimension.
+   * @param {number} frameSize - The size of a single frame.
+   * @param {number} spacing - The spacing between frames.
+   * @returns {number} The calculated margin.
+   */
+  calculateMargin(full, n, frameSize, spacing) {
+    const used = n * frameSize + (n - 1) * spacing;
+    return Math.max(0, Math.floor((full - used) / 2));
+  }
+
+  /**
+   * Gets the total number of frames in a sprite sheet.
+   * @param {Object} sheet - The sprite sheet configuration.
+   * @returns {number} The total number of frames.
+   */
   getSheetCountAuto(sheet) {
     if (sheet.count) return sheet.count;
     const cols = Math.max(1, sheet.cols || 1);
@@ -137,6 +193,11 @@ class DrawableObject {
     return cols * rows;
   }
 
+  /**
+   * Extracts the sprite count from a filename.
+   * @param {string} path - The path to the sprite sheet file.
+   * @returns {number|null} The sprite count, or null if not found.
+   */
   getSpriteCountFromFilename(path) {
     if (!path) return null;
     const m = String(path).match(/_(\d+)_sprites\.png$/i);
@@ -144,6 +205,9 @@ class DrawableObject {
     return null;
   }
 
+  /**
+   * Draws debug hitboxes for the object.
+   */
   drawDebugHitboxes() {
     return;
   }

@@ -1,4 +1,11 @@
+/**
+ * Represents the HUD for displaying block potion count.
+ * @extends DrawableObject
+ */
 class BlockPotionHUD extends DrawableObject {
+  /**
+   * Creates a new BlockPotionHUD instance.
+   */
   constructor() {
     super();
     this.iconPath = 'assets/img/6_potions/block_potion.png';
@@ -10,12 +17,32 @@ class BlockPotionHUD extends DrawableObject {
     this.count = 0;
   }
 
+  /**
+   * Sets the count of block potions.
+   * @param {number} n - The count to set.
+   */
   setCount(n) {
     this.count = Math.max(0, Math.min(3, Math.floor(n)));
   }
 
+  /**
+   * Draws the block potion HUD on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {number} dx - The x-coordinate offset.
+   * @param {number} dy - The y-coordinate offset.
+   */
   drawAt(ctx, dx, dy) {
     super.drawAt(ctx, dx, dy);
+    this.drawPotionCount(ctx, dx, dy);
+  }
+
+  /**
+   * Draws the potion count text on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   * @param {number} dx - The x-coordinate offset.
+   * @param {number} dy - The y-coordinate offset.
+   */
+  drawPotionCount(ctx, dx, dy) {
     ctx.save();
     ctx.font = '16px Arial';
     ctx.fillStyle = '#fff';

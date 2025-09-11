@@ -1,4 +1,10 @@
+/**
+ * Extends the CharacterPlayer class to handle death animations and states.
+ */
 class CharacterPlayerDeath extends CharacterPlayer {
+  /**
+   * Sets the frame for the dead state of the character.
+   */
   setDeadFrame() {
     this.updateDeadFrameIndex();
     this.applyDeathSprite();
@@ -6,6 +12,9 @@ class CharacterPlayerDeath extends CharacterPlayer {
     this.y = this.groundY;
   }
 
+  /**
+   * Updates the frame index for the death animation based on elapsed time.
+   */
   updateDeadFrameIndex() {
     if (!this.deadStartedAt) this.deadStartedAt = Date.now();
     let idx = Math.floor(
@@ -21,6 +30,9 @@ class CharacterPlayerDeath extends CharacterPlayer {
     this._deadFrameIdx = idx;
   }
 
+  /**
+   * Applies the death sprite to the character based on the current frame index.
+   */
   applyDeathSprite() {
     const img = this.imageCache[this.DEAD_SHEET.path];
     if (!img) return;

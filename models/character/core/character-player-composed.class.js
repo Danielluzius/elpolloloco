@@ -1,7 +1,11 @@
+/**
+ * Represents a composed character player with extended functionality.
+ * Inherits from CharacterPlayer.
+ */
 class CharacterPlayerComposed extends CharacterPlayer {
-  constructor() {
-    super();
-  }
+  /**
+   * Handles animation ticks based on the character's current state.
+   */
   animTick() {
     const now = Date.now();
     if (this.isDead()) return this.setDeadFrame?.();
@@ -14,6 +18,9 @@ class CharacterPlayerComposed extends CharacterPlayer {
     this.setGroundedFrame?.(now);
   }
 
+  /**
+   * Processes input ticks to handle character actions and state updates.
+   */
   processInputTick() {
     if (this.isDead()) return;
     if (this.introActive) return this.tickIntro?.();
@@ -24,6 +31,10 @@ class CharacterPlayerComposed extends CharacterPlayer {
   }
 }
 
+/**
+ * List of character player segments to be composed into the main class.
+ * @type {Array<Function>}
+ */
 const __PLAYER_SEGMENTS = [
   CharacterPlayerInput,
   CharacterPlayerJump,
@@ -37,6 +48,9 @@ const __PLAYER_SEGMENTS = [
   CharacterPlayerDamage,
 ];
 
+/**
+ * Composes the CharacterPlayerComposed class by merging methods from segments.
+ */
 (function composePlayer() {
   const targetProto = CharacterPlayerComposed.prototype;
   const skip = new Set(Object.getOwnPropertyNames(targetProto));
@@ -44,7 +58,7 @@ const __PLAYER_SEGMENTS = [
     const src = cls.prototype;
     for (const name of Object.getOwnPropertyNames(src)) {
       if (name === 'constructor') continue;
-      if (skip.has(name)) continue; // don't override base / previously set explicit methods
+      if (skip.has(name)) continue; // Avoid overriding base or explicitly set methods
       const desc = Object.getOwnPropertyDescriptor(src, name);
       if (desc) Object.defineProperty(targetProto, name, desc);
     }

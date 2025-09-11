@@ -1,4 +1,10 @@
+/**
+ * Extends the CharacterPlayer class to handle special attack functionality.
+ */
 class CharacterPlayerSpecial extends CharacterPlayer {
+  /**
+   * Starts the special attack sequence if conditions are met.
+   */
   startSpecialAttack() {
     const maxSeg = this.world?.characterChargeBar?.maxSegments || 5;
     const cur = Math.max(
@@ -10,12 +16,14 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     this.prepareSpecialAttackState(now);
     this.consumeChargeSegments();
     this.applyInitialSpecialImage();
-    try {
-      window.sound?.play('special_attack_sound', { channel: 'sfx' });
-    } catch (_) {}
+    this.playSpecialAttackSound();
     this.markActivity();
   }
 
+  /**
+   * Prepares the state for the special attack.
+   * @param {number} now - The current timestamp.
+   */
   prepareSpecialAttackState(now) {
     this.isSpecialAttacking = true;
     this.specialFrameIndex = 0;
@@ -24,12 +32,18 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     this.lastEffectFrameTime = now;
   }
 
+  /**
+   * Consumes all charge segments for the special attack.
+   */
   consumeChargeSegments() {
     if (!this.world) return;
     this.world.character.chargeSegments = 0;
     this.world.characterChargeBar?.setSegments(0);
   }
 
+  /**
+   * Applies the initial image for the special attack.
+   */
   applyInitialSpecialImage() {
     const img = this.imageCache[this.SPECIAL_SHEET.path];
     if (!img) return;
@@ -38,6 +52,18 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     this.animKey = 'special';
   }
 
+  /**
+   * Plays the sound effect for the special attack.
+   */
+  playSpecialAttackSound() {
+    try {
+      window.sound?.play('special_attack_sound', { channel: 'sfx' });
+    } catch (_) {}
+  }
+
+  /**
+   * Updates the special attack state, including frames and wind push effects.
+   */
   updateSpecialAttack() {
     if (!this.isSpecialAttacking) return;
     this.advanceSpecialFrames();
@@ -45,8 +71,20 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     this.finishSpecialIfDone();
   }
 
+  /**
+   * Advances the animation frames for the special attack and its effects.
+   */
   advanceSpecialFrames() {
     const now = Date.now();
+    this.advanceSpecialFrame(now);
+    this.advanceEffectFrame(now);
+  }
+
+  /**
+   * Advances the special attack animation frame.
+   * @param {number} now - The current timestamp.
+   */
+  advanceSpecialFrame(now) {
     const specCnt =
       this.getSheetCount(
         this.SPECIAL_SHEET,
@@ -59,6 +97,13 @@ class CharacterPlayerSpecial extends CharacterPlayer {
       this.specialFrameIndex++;
       this.lastSpecialFrameTime = now;
     }
+  }
+
+  /**
+   * Advances the effect animation frame for the special attack.
+   * @param {number} now - The current timestamp.
+   */
+  advanceEffectFrame(now) {
     const effCnt = this.SPECIAL_EFFECT_PATHS.length;
     if (
       now - this.lastEffectFrameTime >= this.EFFECT_FRAME_DELAY &&
@@ -69,6 +114,9 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     }
   }
 
+  /**
+   * Applies the wind push effect of the special attack to nearby enemies.
+   */
   applySpecialWindPush() {
     const enemies = this.world?.level?.enemies;
     if (!enemies) return;
@@ -76,6 +124,10 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     enemies.forEach((e) => this.tryWindPushEnemy(e, ctx));
   }
 
+  /**
+   * Builds the context for the wind push effect.
+   * @returns {Object} The wind context.
+   */
   buildWindContext() {
     return {
       dir: this.otherDirection ? -1 : 1,
@@ -85,15 +137,28 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     };
   }
 
+  /**
+   * Attempts to apply the wind push effect to an enemy.
+   * @param {Object} enemy - The enemy to push.
+   * @param {Object} ctx - The wind context.
+   */
   tryWindPushEnemy(enemy, ctx) {
     if (!enemy || enemy.dead || enemy.dying) return;
     if (!this.enemyInWindCone(enemy, ctx)) return;
     const push = ctx.dir * this.WIND_PUSH_SPEED;
-    if (typeof enemy.knockbackVX === 'number')
+    if (typeof enemy.knockbackVX === 'number') {
       this.applyWindKnockback(enemy, push);
-    else enemy.x += push;
+    } else {
+      enemy.x += push;
+    }
   }
 
+  /**
+   * Checks if an enemy is within the wind cone of the special attack.
+   * @param {Object} enemy - The enemy to check.
+   * @param {Object} ctx - The wind context.
+   * @returns {boolean} True if the enemy is within the wind cone, otherwise false.
+   */
   enemyInWindCone(enemy, ctx) {
     const ex = enemy.x + (enemy.width || 0) / 2;
     const dx = ex - ctx.centerX;
@@ -104,11 +169,19 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     return Math.abs(ey - ctx.centerY) <= 200;
   }
 
+  /**
+   * Applies a knockback effect to an enemy from the wind push.
+   * @param {Object} enemy - The enemy to knock back.
+   * @param {number} push - The knockback force.
+   */
   applyWindKnockback(enemy, push) {
     enemy.knockbackVX = push;
     enemy.knockbackEndAt = Date.now() + 360;
   }
 
+  /**
+   * Finishes the special attack if all frames are completed.
+   */
   finishSpecialIfDone() {
     const cnt =
       this.getSheetCount(
@@ -125,6 +198,10 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     }
   }
 
+  /**
+   * Sets the current frame for the special attack animation.
+   * @param {number} now - The current timestamp.
+   */
   setSpecialFrame(now) {
     const img = this.imageCache[this.SPECIAL_SHEET.path];
     const cnt = this.getSheetCount(this.SPECIAL_SHEET, img) || 5;
@@ -143,6 +220,10 @@ class CharacterPlayerSpecial extends CharacterPlayer {
     this.animKey = 'special';
   }
 
+  /**
+   * Draws the special attack effect frame on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   drawFrame(ctx) {
     if (!this.isSpecialAttacking) return;
     const idx = Math.max(

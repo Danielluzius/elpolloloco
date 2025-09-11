@@ -1,4 +1,10 @@
+/**
+ * Extends the CharacterPlayer class to handle hurt animations and knockback effects.
+ */
 class CharacterPlayerHurt extends CharacterPlayer {
+  /**
+   * Sets the frame for the hurt state of the character.
+   */
   setHurtFrame() {
     const now = Date.now();
     this.initHurtAnimIfNeeded(now);
@@ -7,6 +13,10 @@ class CharacterPlayerHurt extends CharacterPlayer {
     this.animKey = 'hurt';
   }
 
+  /**
+   * Initializes the hurt animation if it hasn't started yet.
+   * @param {number} now - The current timestamp.
+   */
   initHurtAnimIfNeeded(now) {
     if (this.animKey === 'hurt') return;
     this.hurtFrameIndex = 0;
@@ -14,6 +24,11 @@ class CharacterPlayerHurt extends CharacterPlayer {
     this._hurtAnimStartAt = now;
   }
 
+  /**
+   * Updates the hurt animation frame based on elapsed time.
+   * @param {HTMLImageElement} img - The image for the hurt animation.
+   * @param {number} now - The current timestamp.
+   */
   updateHurtAnimation(img, now) {
     const cnt = this.getSheetCount(this.HURT_SHEET, img) || 1;
     const start = this._hurtAnimStartAt || now;
@@ -26,6 +41,9 @@ class CharacterPlayerHurt extends CharacterPlayer {
     this.setSheetFrame(this.HURT_SHEET, this.hurtFrameIndex);
   }
 
+  /**
+   * Updates the knockback effect on the character.
+   */
   updateKnockback() {
     if (!this.knockbackActive) return;
     this.x += this.knockbackVX;
@@ -36,6 +54,10 @@ class CharacterPlayerHurt extends CharacterPlayer {
     }
   }
 
+  /**
+   * Applies a knockback effect to the character from an enemy.
+   * @param {Object} enemy - The enemy causing the knockback.
+   */
   applyKnockbackFrom(enemy) {
     if (this.isSpecialAttacking) return;
     const now = Date.now();
@@ -47,6 +69,10 @@ class CharacterPlayerHurt extends CharacterPlayer {
     this.hurtEndAt = this.knockbackEndAt;
   }
 
+  /**
+   * Checks if the character is currently in the hurt state.
+   * @returns {boolean} True if the character is hurt, otherwise false.
+   */
   isHurt() {
     if (this.hurtEndAt) return Date.now() < this.hurtEndAt;
     return super.isHurt();

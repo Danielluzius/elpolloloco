@@ -12,6 +12,9 @@
 
   const qs = (s) => document.querySelector(s);
 
+  /**
+   * Ensures the game is initialized by calling the init function if available.
+   */
   function ensureInit() {
     if (gameInitialized) return;
     if (typeof init === 'function') {
@@ -20,10 +23,17 @@
     }
   }
 
+  /**
+   * Sets the opacity of an element to 1, making it visible.
+   * @param {HTMLElement} el - The element to show.
+   */
   function show(el) {
     if (el) el.style.opacity = '1';
   }
 
+  /**
+   * Caches DOM nodes for later use.
+   */
   function cacheNodes() {
     L.landing = qs('#landing');
     L.hero = qs('#landing .hero');
@@ -34,28 +44,48 @@
     L.enterBtn = qs('#enterBtn');
   }
 
+  /**
+   * Sets up the imprint button functionality.
+   */
   function setupImprint() {
     const b = qs('#imprintBtn');
     if (!b) return;
     b.addEventListener('click', () => {});
   }
 
+  /**
+   * Requests fullscreen mode for a given element.
+   * @param {HTMLElement} el - The element to request fullscreen for.
+   * @returns {Promise} - Resolves if fullscreen is successful, rejects otherwise.
+   */
   function requestFullscreen(el) {
     if (el.requestFullscreen) return el.requestFullscreen();
     return Promise.reject('no fs');
   }
 
+  /**
+   * Exits fullscreen mode.
+   * @returns {Promise} - Resolves if exiting fullscreen is successful, rejects otherwise.
+   */
   function exitFullscreen() {
     if (document.exitFullscreen) return document.exitFullscreen();
     return Promise.reject('no fs');
   }
 
+  /**
+   * Updates the fullscreen button label and ARIA attributes.
+   * @param {HTMLElement} btn - The fullscreen button.
+   * @param {boolean} on - Whether fullscreen is active.
+   */
   function updateFsLabel(btn, on) {
     const span = btn.querySelector('.fullscreen-label');
     if (span) span.textContent = on ? 'Exit Fullscreen' : 'Enter Fullscreen';
     btn.setAttribute('aria-label', on ? 'Exit Fullscreen' : 'Enter Fullscreen');
   }
 
+  /**
+   * Sets up the fullscreen button functionality.
+   */
   function setupFullscreen() {
     const btn = qs('#fullscreenBtn');
     if (!btn) return;
@@ -80,6 +110,11 @@
     });
   }
 
+  /**
+   * Updates the sound button label and ARIA attributes.
+   * @param {HTMLElement} btn - The sound button.
+   * @param {boolean} on - Whether sound is enabled.
+   */
   function updateSoundBtn(btn, on) {
     const img = btn.querySelector('img');
     const span = btn.querySelector('.sound-label');
@@ -91,6 +126,9 @@
     btn.setAttribute('aria-label', on ? 'Mute' : 'Unmute');
   }
 
+  /**
+   * Sets up the sound button functionality.
+   */
   function setupSound() {
     const btn = qs('#muteBtn');
     if (!btn) return;
@@ -285,6 +323,9 @@
     });
   }
 
+  /**
+   * Binds all necessary functionalities on DOMContentLoaded.
+   */
   function bind() {
     cacheNodes();
     setupImprint();

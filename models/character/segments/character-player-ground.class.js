@@ -1,4 +1,11 @@
+/**
+ * Extends the CharacterPlayer class to handle grounded states and animations.
+ */
 class CharacterPlayerGround extends CharacterPlayer {
+  /**
+   * Sets the appropriate frame for the grounded state of the character.
+   * @param {number} now - The current timestamp.
+   */
   setGroundedFrame(now) {
     if (this.world?._won) return; // keep last frame on win
     this.resetJumpStateIfNeeded();
@@ -10,6 +17,9 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.setDefaultStandFrame();
   }
 
+  /**
+   * Resets the jump state if the character is no longer jumping.
+   */
   resetJumpStateIfNeeded() {
     if (!this.isJumping) return;
     this.currentImage = 0;
@@ -17,6 +27,9 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.isJumping = false;
   }
 
+  /**
+   * Sets the default standing frame for the character.
+   */
   setDefaultStandFrame() {
     const img = this.imageCache[this.IDLE_SHEET.path];
     if (img) {
@@ -28,6 +41,9 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.longIdleFrameIndex = 0;
   }
 
+  /**
+   * Sets the walking frame for the character.
+   */
   setWalkFrame() {
     if (this.animKey !== 'walk') {
       this.currentImage = 0;
@@ -44,6 +60,10 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.longIdleFrameIndex = 0;
   }
 
+  /**
+   * Sets the long idle frame for the character.
+   * @param {number} now - The current timestamp.
+   */
   setLongIdleFrame(now) {
     this.ensureLongIdleState(now);
     this.advanceLongIdleFrame(now);
@@ -56,6 +76,10 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.idleFrameIndex = 0;
   }
 
+  /**
+   * Ensures the character is in the long idle state.
+   * @param {number} now - The current timestamp.
+   */
   ensureLongIdleState(now) {
     if (this.animKey === 'long_idle') return;
     this.currentImage = 0;
@@ -63,6 +87,10 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.lastLongIdleFrameTime = now;
   }
 
+  /**
+   * Advances the long idle animation frame based on timing.
+   * @param {number} now - The current timestamp.
+   */
   advanceLongIdleFrame(now) {
     if (now - this.lastLongIdleFrameTime < this.LONG_IDLE_FRAME_DELAY) return;
     const img = this.imageCache?.[this.LONG_IDLE_SHEET.path];
@@ -71,6 +99,10 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.lastLongIdleFrameTime = now;
   }
 
+  /**
+   * Sets the idle frame for the character.
+   * @param {number} now - The current timestamp.
+   */
   setIdleFrame(now) {
     this.ensureIdleState(now);
     this.advanceIdleFrame(now);
@@ -83,6 +115,10 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.longIdleFrameIndex = 0;
   }
 
+  /**
+   * Ensures the character is in the idle state.
+   * @param {number} now - The current timestamp.
+   */
   ensureIdleState(now) {
     if (this.animKey === 'idle') return;
     this.currentImage = 0;
@@ -90,6 +126,10 @@ class CharacterPlayerGround extends CharacterPlayer {
     this.lastIdleFrameTime = now;
   }
 
+  /**
+   * Advances the idle animation frame based on timing.
+   * @param {number} now - The current timestamp.
+   */
   advanceIdleFrame(now) {
     if (now - this.lastIdleFrameTime < this.IDLE_FRAME_DELAY) return;
     const order = this.IDLE_FRAME_ORDER?.length ? this.IDLE_FRAME_ORDER : [0];

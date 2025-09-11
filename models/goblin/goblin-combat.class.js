@@ -1,4 +1,8 @@
 class GoblinCombat extends GoblinAnim {
+  /**
+   * Updates the knockback effect on the goblin.
+   * @param {number} now - The current timestamp.
+   */
   updateKnockback(now) {
     if (this.dying || this.dead) {
       this.knockbackVX = 0;
@@ -11,6 +15,10 @@ class GoblinCombat extends GoblinAnim {
     } else if (!active) this.knockbackVX = 0;
   }
 
+  /**
+   * Handles the goblin being hit by an attack.
+   * @param {object} attacker - The attacking entity.
+   */
   onHitByAttack(attacker) {
     if (this.dying || this.dead) return;
     const now = Date.now();
@@ -22,6 +30,11 @@ class GoblinCombat extends GoblinAnim {
     this.enterHurtState(now, attacker);
   }
 
+  /**
+   * Awards charge to the attacker if applicable.
+   * @param {object} attacker - The attacking entity.
+   * @param {number} now - The current timestamp.
+   */
   tryAwardCharge(attacker, now) {
     try {
       const id = attacker?.attackId ?? null;
@@ -33,6 +46,11 @@ class GoblinCombat extends GoblinAnim {
     } catch (_) {}
   }
 
+  /**
+   * Puts the goblin into a hurt state.
+   * @param {number} now - The current timestamp.
+   * @param {object} attacker - The attacking entity.
+   */
   enterHurtState(now, attacker) {
     this.hurtActive = true;
     this.hurtFrameIdx = 0;
@@ -47,6 +65,10 @@ class GoblinCombat extends GoblinAnim {
     } catch (_) {}
   }
 
+  /**
+   * Initiates the death sequence for the goblin.
+   * @param {number} [now=Date.now()] - The current timestamp.
+   */
   startDeath(now = Date.now()) {
     this.dying = true;
     this.dead = true;
@@ -63,6 +85,9 @@ class GoblinCombat extends GoblinAnim {
     } catch (_) {}
   }
 
+  /**
+   * Increments the kill count for the goblin.
+   */
   countKill() {
     try {
       this.world &&
@@ -74,10 +99,19 @@ class GoblinCombat extends GoblinAnim {
     } catch (_) {}
   }
 
+  /**
+   * Determines if the goblin should despawn.
+   * @returns {boolean} True if the goblin should despawn, false otherwise.
+   */
   shouldDespawn() {
     return !!(this._despawnAt && Date.now() >= this._despawnAt);
   }
 
+  /**
+   * Begins the attack sequence for the goblin.
+   * @param {number} now - The current timestamp.
+   * @param {object} target - The target of the attack.
+   */
   beginAttack(now, target) {
     this.isPaused = false;
     this.segmentTargetX = undefined;
@@ -89,6 +123,10 @@ class GoblinCombat extends GoblinAnim {
     this._moving = false;
   }
 
+  /**
+   * Animates the attack sequence for the goblin.
+   * @param {number} now - The current timestamp.
+   */
   animateAttack(now) {
     const s = this.attackSheet;
     const img = this.imageCache[s.path];
@@ -110,12 +148,19 @@ class GoblinCombat extends GoblinAnim {
     if (this.attackFrameIdx >= (s.count || 1) - 1) this.finishAttack(now);
   }
 
+  /**
+   * Finishes the attack sequence for the goblin.
+   * @param {number} now - The current timestamp.
+   */
   finishAttack(now) {
     this.isAttacking = false;
     this.attackCooldownEndAt = now + 380;
     this.attackFrameIdx = 0;
   }
 
+  /**
+   * Attempts to apply attack damage to the target.
+   */
   tryApplyAttackDamage() {
     const w = this.world;
     const ch = w?.character;
@@ -133,6 +178,11 @@ class GoblinCombat extends GoblinAnim {
     ch.applyKnockbackFrom?.(this);
   }
 
+  /**
+   * Handles interaction with a blocking character.
+   * @param {object} ch - The character being interacted with.
+   * @returns {boolean} True if the interaction was successful, false otherwise.
+   */
   tryBlockInteraction(ch) {
     if (!ch.isBlocking) return false;
     const right = this.x > ch.x;

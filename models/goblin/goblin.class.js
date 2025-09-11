@@ -1,9 +1,22 @@
+/**
+ * Represents a goblin entity.
+ * @extends GoblinAggro
+ */
 class Goblin extends GoblinAggro {
+  /**
+   * Creates a new Goblin instance.
+   * @param {number} [type=1] - The type of the goblin.
+   * @param {number} [x=800] - The initial x-coordinate of the goblin.
+   */
   constructor(type = 1, x = 800) {
     super(type, x);
     this.animate();
   }
 
+  /**
+   * Draws the goblin's frame on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   drawFrame(ctx) {
     try {
       if (!((this.aware && !this.dead) || this.dying)) return;

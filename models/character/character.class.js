@@ -1,3 +1,6 @@
+/**
+ * Represents the main character in the game, extending the MoveableObject class.
+ */
 class Character extends MoveableObject {
   height = 200;
   width = 210;
@@ -85,6 +88,9 @@ class Character extends MoveableObject {
   ATTACK_RANGE_X = 80;
   ATTACK_ACTIVE_START_FRAME = 1;
 
+  /**
+   * Initializes the character with default properties and preloads core images.
+   */
   constructor() {
     super();
     this.offset = { top: 120, right: 80, bottom: 0, left: 80 };
@@ -94,8 +100,11 @@ class Character extends MoveableObject {
     this.preloadCoreImages();
   }
 
+  /**
+   * Preloads core images required for the character's animations.
+   */
   preloadCoreImages() {
-    [
+    const imagePaths = [
       this.IDLE_SHEET.path,
       this.LONG_IDLE_SHEET.path,
       this.WALK_SHEET.path,
@@ -106,7 +115,15 @@ class Character extends MoveableObject {
       this.SPECIAL_SHEET.path,
       this.DEAD_SHEET.path,
       this.BLOCK_SHEET.path,
-    ].forEach((p) => this.loadImage(p));
+    ];
+    imagePaths.forEach((path) => this.loadImage(path));
+    this.setInitialImage();
+  }
+
+  /**
+   * Sets the initial image and frame for the character.
+   */
+  setInitialImage() {
     const idleImg = this.imageCache[this.IDLE_SHEET.path];
     if (idleImg) {
       this.img = idleImg;
@@ -114,6 +131,11 @@ class Character extends MoveableObject {
     }
   }
 
+  /**
+   * Sets the current frame of the character's sprite sheet.
+   * @param {Object} sheet - The sprite sheet configuration.
+   * @param {number} index - The frame index to set.
+   */
   setSheetFrame(sheet, index) {
     const img = this.imageCache?.[sheet.path] || this.img;
     const frameW = sheet.frameW || 128;
@@ -121,15 +143,7 @@ class Character extends MoveableObject {
     let cols = sheet.cols;
     let rows = sheet.rows;
     if (!cols || !rows) {
-      const w = img?.naturalWidth || 0;
-      const h = img?.naturalHeight || 0;
-      if (w && frameW) cols = Math.max(1, Math.floor(w / frameW));
-      if (h && frameH) rows = Math.max(1, Math.floor(h / frameH));
-      cols = cols || sheet.count || 1;
-      rows = rows || 1;
-      sheet.cols ||= cols;
-      sheet.rows ||= rows;
-      sheet.count ||= cols * rows;
+      this.inferSheetDimensions(sheet, img, frameW, frameH);
     }
     const safeCols = Math.max(1, cols || 1);
     const col = index % safeCols;
@@ -142,6 +156,29 @@ class Character extends MoveableObject {
     };
   }
 
+  /**
+   * Infers the dimensions of a sprite sheet if not explicitly provided.
+   * @param {Object} sheet - The sprite sheet configuration.
+   * @param {HTMLImageElement} img - The image element of the sprite sheet.
+   * @param {number} frameW - The width of a single frame.
+   * @param {number} frameH - The height of a single frame.
+   */
+  inferSheetDimensions(sheet, img, frameW, frameH) {
+    const w = img?.naturalWidth || 0;
+    const h = img?.naturalHeight || 0;
+    if (w && frameW) sheet.cols = Math.max(1, Math.floor(w / frameW));
+    if (h && frameH) sheet.rows = Math.max(1, Math.floor(h / frameH));
+    sheet.cols ||= sheet.count || 1;
+    sheet.rows ||= 1;
+    sheet.count ||= sheet.cols * sheet.rows;
+  }
+
+  /**
+   * Gets the total number of frames in a sprite sheet.
+   * @param {Object} sheet - The sprite sheet configuration.
+   * @param {HTMLImageElement} img - The image element of the sprite sheet.
+   * @returns {number} The total number of frames.
+   */
   getSheetCount(sheet, img) {
     if (sheet.count && sheet.cols && sheet.rows) return sheet.count;
     const frameW = sheet.frameW || img?.naturalHeight || 128;
@@ -161,5 +198,9 @@ class Character extends MoveableObject {
     return sheet.count;
   }
 
+  /**
+   * Draws the current frame of the character on the canvas.
+   * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+   */
   drawFrame(ctx) {}
 }

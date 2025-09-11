@@ -23,6 +23,11 @@ class World extends WorldBase {
   _collisionMgr = null;
   _won = false;
 
+  /**
+   * Initializes the World instance.
+   * @param {HTMLCanvasElement} canvas - The canvas element for rendering.
+   * @param {object} keyboard - The keyboard input handler.
+   */
   constructor(canvas, keyboard) {
     super(canvas, keyboard);
     this._introMgr = new WorldIntroManager(this);
@@ -39,6 +44,10 @@ class World extends WorldBase {
     this._tryStartIntroWalk();
   }
 
+  /**
+   * Attempts to start the character's intro walk.
+   * @private
+   */
   _tryStartIntroWalk() {
     try {
       const targetX = this.character.defaultStartX || 0;
@@ -47,11 +56,17 @@ class World extends WorldBase {
     } catch (_) {}
   }
 
+  /**
+   * Sets the world reference for the character and enemies.
+   */
   setWorld() {
     this.character.world = this;
     (this.level.enemies || []).forEach((e) => (e.world = this));
   }
 
+  /**
+   * Starts the game loop.
+   */
   startGameLoop() {
     const tick = () => {
       if (this._won || this.character.isDead()) return;
@@ -67,6 +82,9 @@ class World extends WorldBase {
     super.startGameLoop(tick);
   }
 
+  /**
+   * Starts the HUD update loop.
+   */
   startHudLoop() {
     super.startHudLoop(() => {
       this.updateHudBars();
@@ -75,6 +93,9 @@ class World extends WorldBase {
     });
   }
 
+  /**
+   * Updates the HUD bars for health, block, and charge.
+   */
   updateHudBars() {
     this._maybeSetSeg(this.characterHealthBar, this.character.healthSegments);
     this._maybeSetSeg(this.characterBlockBar, this.character.blockSegments);
@@ -83,10 +104,20 @@ class World extends WorldBase {
     this.blockPotionHud.setCount(this.getBlockPotionCount());
   }
 
+  /**
+   * Sets the segments for a HUD bar if the value is a number.
+   * @private
+   * @param {object} bar - The HUD bar to update.
+   * @param {number} val - The number of segments to set.
+   */
   _maybeSetSeg(bar, val) {
     if (typeof val === 'number') bar.setSegments(val);
   }
 
+  /**
+   * Awards charge to the character.
+   * @param {number} [amount=1] - The amount of charge to award.
+   */
   awardCharge(amount = 1) {
     const maxSeg = this.characterChargeBar?.maxSegments || 5;
     const cur = Math.max(
@@ -100,6 +131,9 @@ class World extends WorldBase {
     }
   }
 
+  /**
+   * Updates the boss HUD.
+   */
   updateBossHud() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss || boss.dead || !boss.awake) return;
@@ -112,6 +146,9 @@ class World extends WorldBase {
     }
   }
 
+  /**
+   * Updates the goblin counter HUD.
+   */
   updateGoblinCounter() {
     try {
       if (this.goblinCounter?.mode === 'objective') return;
@@ -123,6 +160,10 @@ class World extends WorldBase {
     } catch (_) {}
   }
 
+  /**
+   * Checks if all goblins are cleared.
+   * @returns {boolean} True if all goblins are cleared, false otherwise.
+   */
   areAllGoblinsCleared() {
     const total = this._goblinTotal ?? 0;
     const killed = this._goblinsKilled ?? 0;
@@ -130,6 +171,9 @@ class World extends WorldBase {
     return killed >= total;
   }
 
+  /**
+   * Checks if the boss intro should be triggered.
+   */
   checkBossIntroTrigger() {
     if (this.bossIntroDone || this.bossIntroActive) return;
     if (!this.areAllGoblinsCleared()) return;
@@ -138,6 +182,10 @@ class World extends WorldBase {
     this.startBossIntro(boss);
   }
 
+  /**
+   * Starts the boss intro sequence.
+   * @param {object} boss - The boss entity.
+   */
   startBossIntro(boss) {
     try {
       window.sound?.play('endboss_appierce_sound', { channel: 'sfx' });
