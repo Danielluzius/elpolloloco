@@ -392,6 +392,10 @@ h1 {
   justify-content: center;
   flex-direction: column;
   z-index: 30;
+  background-image: url('assets/img/5_background/nature/3_layer.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .howto-overlay.hidden {
