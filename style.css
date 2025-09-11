@@ -19,9 +19,8 @@ h1 {
 
 .stage {
   position: relative;
-  /* Responsive stage: keep 3:2 aspect, fit by width or height */
   aspect-ratio: 3 / 2;
-  --stage-w: min(96vw, 1100px, calc(90vh * 3 / 2));
+  --stage-w: min(96vw, 880px, calc(90vh * 3 / 2));
   --stage-h: calc(var(--stage-w) * 2 / 3);
   width: var(--stage-w);
   height: auto;
@@ -444,6 +443,50 @@ h1 {
 .howto-close-btn:hover {
   opacity: 1;
   transform: scale(0.75);
+}
+
+/* Imprint overlay */
+.imprint-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  background-image: url('assets/img/5_background/nature/3_layer.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.imprint-card {
+  width: min(88%, 680px);
+  max-height: 92%;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  padding: clamp(16px, 3.2vw, 28px);
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+}
+
+.imprint-card h2 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 4.8vw, 28px);
+}
+
+.imprint-text {
+  font-size: clamp(14px, 3.8vw, 18px);
+  line-height: 1.5;
+}
+
+.imprint-text a {
+  color: #ffda6b;
+  text-decoration: none;
+}
+
+.imprint-text a:hover {
+  text-decoration: underline;
 }
 
 /* Responsive and rotation handling removed by request */

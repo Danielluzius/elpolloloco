@@ -49,8 +49,44 @@
    */
   function setupImprint() {
     const b = qs('#imprintBtn');
-    if (!b) return;
-    b.addEventListener('click', () => {});
+    const overlay = qs('#imprintModal');
+    const closeBtn = qs('#imprintCloseBtn');
+    if (!b || !overlay) return;
+    const esc = (e) => {
+      if (e.key === 'Escape') hideImprint();
+    };
+    function showImprint() {
+      hideButtons([
+        L.startBtn,
+        L.howToBtn,
+        L.imprintBtn,
+        L.fullscreenBtn,
+        L.soundBtn,
+      ]);
+      if (L.hero) {
+        L.hero.dataset.prevVisibility = L.hero.style.visibility || '';
+        L.hero.style.visibility = 'hidden';
+      }
+      overlay.classList.remove('hidden');
+      document.addEventListener('keydown', esc);
+    }
+    function hideImprint() {
+      overlay.classList.add('hidden');
+      restoreButtons([
+        L.startBtn,
+        L.howToBtn,
+        L.imprintBtn,
+        L.fullscreenBtn,
+        L.soundBtn,
+      ]);
+      if (L.hero && !L.hero.classList.contains('hero--off')) {
+        L.hero.style.visibility = L.hero.dataset.prevVisibility || '';
+        delete L.hero.dataset.prevVisibility;
+      }
+      document.removeEventListener('keydown', esc);
+    }
+    b.addEventListener('click', showImprint);
+    closeBtn?.addEventListener('click', hideImprint);
   }
 
   /**

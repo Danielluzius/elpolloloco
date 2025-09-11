@@ -6,25 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GOBLIN SLAYER</title>
 
-    <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="./assets/img/favicon/favicon.png" />
     <link rel="shortcut icon" href="./assets/img/favicon/favicon.png" />
 
-    <!-- Load base styles first, then page-specific, then touch controls -->
     <link rel="stylesheet" href="./style/standart.css" />
     <link rel="stylesheet" href="./style.css" />
     <link rel="stylesheet" href="./style/touch_button.css" />
 
-    <!-- SoundHub (must load early) -->
     <script src="./scripts/soundhub.js" defer></script>
-
-    <!-- Core base classes -->
     <script src="./models/core/drawable-object.class.js" defer></script>
     <script src="./models/core/movable-object.class.js" defer></script>
     <script src="./models/character/character.class.js" defer></script>
-    <!-- Character core -->
     <script src="./models/character/core/character-player.class.js" defer></script>
-    <!-- Character segments -->
     <script src="./models/character/segments/character-player-input.class.js" defer></script>
     <script src="./models/character/segments/character-player-jump.class.js" defer></script>
     <script src="./models/character/segments/character-player-special.class.js" defer></script>
@@ -36,34 +29,27 @@
     <script src="./models/character/segments/character-player-block-stomp.class.js" defer></script>
     <script src="./models/character/segments/character-player-damage.class.js" defer></script>
     <script src="./models/character/core/character-player-composed.class.js" defer></script>
-    <!-- Goblins only; chickens removed -->
     <script src="./models/goblin/goblin-base.class.js" defer></script>
     <script src="./models/goblin/goblin-anim.class.js" defer></script>
     <script src="./models/goblin/goblin-combat.class.js" defer></script>
     <script src="./models/goblin/goblin-patrol.class.js" defer></script>
     <script src="./models/goblin/goblin-aggro.class.js" defer></script>
     <script src="./models/goblin/goblin.class.js" defer></script>
-    <!-- Environment & terrain -->
     <script src="./models/environment/background/background-object.class.js" defer></script>
     <script src="./models/environment/background/background-sprite.class.js" defer></script>
     <script src="./models/environment/terrain/rock.class.js" defer></script>
     <script src="./models/environment/terrain/foreground-rock.class.js" defer></script>
-    <!-- Character HUD -->
     <script src="./models/character/hud/character-health-bar.class.js" defer></script>
     <script src="./models/character/hud/character-block-bar.class.js" defer></script>
     <script src="./models/character/hud/character-charge-bar.class.js" defer></script>
-    <!-- HUD elements -->
     <script src="./models/hud/boss-segment-health-bar.class.js" defer></script>
     <script src="./models/hud/goblin-counter-hud.class.js" defer></script>
-    <!-- Items & item HUD -->
     <script src="./models/items/potion.class.js" defer></script>
     <script src="./models/items/block-potion.class.js" defer></script>
     <script src="./models/items/hud/potion-hud.class.js" defer></script>
     <script src="./models/items/hud/block-potion-hud.class.js" defer></script>
-    <!-- Generators -->
     <script src="./models/generators/rock-generator.class.js" defer></script>
     <script src="./models/generators/background-rock-generator.class.js" defer></script>
-    <!-- World architecture (restructured) -->
     <script src="./models/world/world-base.class.js" defer></script>
     <script src="./models/world/managers/world-render.manager.class.js" defer></script>
     <script src="./models/world/managers/world-potions.manager.class.js" defer></script>
@@ -72,7 +58,6 @@
     <script src="./models/world/world.class.js" defer></script>
     <script src="./models/core/keyboard.class.js" defer></script>
     <script src="./models/core/level.class.js" defer></script>
-    <!-- Endboss segmented classes -->
     <script src="./models/endboss/endboss-base.class.js" defer></script>
     <script src="./models/endboss/endboss-anim.class.js" defer></script>
     <script src="./models/endboss/endboss-combat.class.js" defer></script>
@@ -85,20 +70,15 @@
     <script src="./scripts/game.js" defer></script>
     <script src="./scripts/landing.js" defer></script>
 
-
 </head>
 
 <body>
 
     <div id="landing" class="landing">
         <div class="bg-layers">
-
             <div class="layer layer-3"></div>
-
             <div class="layer layer-bird"></div>
-
             <div class="layer layer-clouds"></div>
-
             <div class="layer layer-2"></div>
             <div class="layer layer-1"></div>
         </div>
@@ -114,44 +94,43 @@
             </button>
         </div>
 
-        <!-- Static game stage (simplified) -->
         <div id="stage" class="stage" style="display:none;">
             <canvas id="canvas" width="720" height="480"></canvas>
             <button id="startGameBtn" class="image-btn stage-start-btn" aria-label="Start Game" style="display:none;">
                 <img src="./assets/img/logos/start.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- How To Play button (initially hidden, shown together with start button) -->
+
             <button id="howToPlayBtn" class="image-btn stage-howto-btn" aria-label="How to Play" style="display:none;">
                 <img src="./assets/img/logos/how_to_play.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- Imprint button (initially hidden, appears with other stage buttons) -->
+
             <button id="imprintBtn" class="image-btn stage-imprint-btn" aria-label="Imprint" style="display:none;">
                 <span class="visually-hidden">Imprint</span>
                 <img src="./assets/img/logos/imprint.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- Fullscreen toggle button (initially hidden, appears with stage buttons) -->
+
             <button id="fullscreenBtn" class="image-btn stage-fullscreen-btn" aria-label="Enter Fullscreen"
                 style="display:none;" data-state="off">
                 <span class="visually-hidden fullscreen-label">Enter Fullscreen</span>
                 <img src="./assets/img/logos/fullscreen.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- Sound / Music toggle button (persists after start) -->
+
             <button id="muteBtn" class="image-btn stage-sound-btn" aria-label="Mute" style="display:none;"
                 data-state="on">
                 <span class="visually-hidden sound-label">Mute</span>
                 <img src="./assets/img/logos/sound_on.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- Restart button (appears during gameplay) -->
+
             <button id="restartBtn" class="image-btn stage-restart-btn" aria-label="Restart" style="display:none;">
                 <span class="visually-hidden">Restart</span>
                 <img src="./assets/img/logos/restart.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- Exit button (appears during gameplay; left of restart) -->
+
             <button id="exitBtn" class="image-btn stage-exit-btn" aria-label="Back to Start" style="display:none;">
                 <span class="visually-hidden">Back to Start</span>
                 <img src="./assets/img/logos/exit.png" alt="" class="btn-image" decoding="async" />
             </button>
-            <!-- Controls toggle button (appears during gameplay; below restart/exit) -->
+
             <button id="controlsToggleBtn" class="image-btn stage-controls-btn" aria-label="Enable touch controls"
                 style="display:none;">
                 <img class="controls-hint" src="./assets/img/logos/touch_button/button_activate_touch.png" alt=""
@@ -160,7 +139,7 @@
                 <img src="./assets/img/logos/touch_button/button_toggle_controls.png" alt="" class="btn-image"
                     decoding="async" />
             </button>
-            <!-- Death buttons (shown when character dies) -->
+
             <div id="deathButtons" class="death-btns hidden">
                 <button id="deathBackBtn" class="image-btn death-btn" aria-label="Back to Start">
                     <span class="visually-hidden">Back to Start</span>
@@ -172,7 +151,6 @@
                 </button>
             </div>
 
-            <!-- Touch controls overlay (shown only in touch mode) -->
             <div id="touchControls" class="touch-controls hidden" aria-hidden="true">
                 <div class="touch-left">
                     <button class="touch-btn" data-key="LEFT" aria-label="Left">
@@ -210,10 +188,33 @@
                 </div>
             </div>
 
-            <!-- How To Play Overlay (controls) -->
             <div id="howToOverlay" class="howto-overlay hidden" aria-hidden="true">
                 <img src="./assets/img/logos/controls.png" alt="Controls" class="howto-image" decoding="async" />
                 <button id="howToCloseBtn" class="image-btn howto-close-btn" aria-label="Close (Esc)">
+                    <span class="visually-hidden">Close</span>
+                    <img src="./assets/img/logos/exit.png" alt="" class="btn-image" decoding="async" />
+                </button>
+            </div>
+
+            <div id="imprintModal" class="imprint-overlay hidden" aria-hidden="true" role="dialog" aria-modal="true"
+                aria-labelledby="imprintTitle">
+                <div class="imprint-card">
+                    <h2 id="imprintTitle">Imprint</h2>
+                    <div class="imprint-text">
+                        <p><strong>Information according to § 5 TMG:</strong></p>
+                        <p>
+                            Daniel Luzius<br />
+                            Hauptstraße 125<br />
+                            63500 Seligenstadt<br />
+                            Germany
+                        </p>
+                        <p>
+                            <strong>Contact:</strong><br />
+                            E-Mail: <a href="mailto:danielluzius@mail.de">danielluzius@mail.de</a>
+                        </p>
+                    </div>
+                </div>
+                <button id="imprintCloseBtn" class="image-btn howto-close-btn" aria-label="Close (Esc)">
                     <span class="visually-hidden">Close</span>
                     <img src="./assets/img/logos/exit.png" alt="" class="btn-image" decoding="async" />
                 </button>
