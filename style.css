@@ -318,7 +318,7 @@ h1 {
 
 .stage-restart-btn {
   position: absolute;
-  right: 82px;
+  right: 134px;
   top: 9px;
   transform: scale(0.45);
   opacity: 0;
@@ -332,10 +332,33 @@ h1 {
 
 .stage-restart-btn.stage-restart-btn--visible {
   opacity: 0.95;
-  transform: scale(0.75);
+  transform: scale(0.68);
 }
 
 .stage-restart-btn:hover {
+  opacity: 1;
+}
+
+.stage-exit-btn {
+  position: absolute;
+  right: 78px; /* now at previous restart position */
+  top: 9px;
+  transform: scale(0.45);
+  opacity: 0;
+  transition: opacity 500ms ease, transform 500ms ease;
+  z-index: 12;
+}
+
+.stage-exit-btn .btn-image {
+  width: clamp(26px, 4.4vw, 48px);
+}
+
+.stage-exit-btn.stage-exit-btn--visible {
+  opacity: 0.95;
+  transform: scale(0.75);
+}
+
+.stage-exit-btn:hover {
   opacity: 1;
 }
 

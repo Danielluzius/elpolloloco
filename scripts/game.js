@@ -22,6 +22,7 @@ function cacheUi() {
   ui.fullscreenBtn = document.getElementById('fullscreenBtn');
   ui.muteBtn = document.getElementById('muteBtn');
   ui.restartBtn = document.getElementById('restartBtn');
+  ui.exitBtn = document.getElementById('exitBtn');
   ui.howToBtn = document.getElementById('howToBtn');
   ui.howToModal = document.getElementById('howToModal');
   ui.howToCloseBtn = document.getElementById('howToCloseBtn');
@@ -46,6 +47,9 @@ function bindUi() {
   ui.imprintCloseBtn?.addEventListener('click', closeImprint);
   ui.restartBtn?.addEventListener('click', () => {
     if (gameState === 'running') restartGame();
+  });
+  ui.exitBtn?.addEventListener('click', () => {
+    if (gameState === 'running') backToStart();
   });
   ui.deathRetryBtn?.addEventListener('click', () => {
     hideDeathButtons();
@@ -88,6 +92,7 @@ function startGame() {
     world = new World(canvas, keyboard);
     hookWinLose(world);
     showRestartBtn();
+    showExitBtn();
   }, FADE_OUT_MS);
 }
 
@@ -115,6 +120,7 @@ function restartGame() {
   world = new World(canvas, keyboard);
   hookWinLose(world);
   showRestartBtn();
+  showExitBtn();
 }
 
 function backToStart() {
@@ -159,6 +165,7 @@ function backToStart() {
   });
   // Restart verstecken im Idle
   hideRestartBtn();
+  hideExitBtn();
   // Imprint Button wieder zeigen
   imprintBtn?.classList.remove('hidden');
   // Aktuelle World-Referenz entfernen
@@ -181,12 +188,14 @@ function _rebindStartBtn() {
       const imprintBtn = document.getElementById('imprintBtn');
       const fullscreenBtn = document.getElementById('fullscreenBtn');
       const restartBtn = document.getElementById('restartBtn');
+      const exitBtn = document.getElementById('exitBtn');
       // Hide buttons (sound stays)
       clone.style.display = 'none';
       howToBtn && (howToBtn.style.display = 'none');
       imprintBtn && (imprintBtn.style.display = 'none');
       fullscreenBtn && (fullscreenBtn.style.display = 'none');
       restartBtn && (restartBtn.style.display = 'none');
+      exitBtn && (exitBtn.style.display = 'none');
       const hero = document.querySelector('#landing .hero');
       hero?.classList.add('hero--off');
       startGame();
@@ -206,6 +215,20 @@ function hideRestartBtn() {
   const b = ui.restartBtn;
   if (!b) return;
   b.classList.remove('stage-restart-btn--visible');
+  b.style.display = 'none';
+}
+
+function showExitBtn() {
+  const b = ui.exitBtn;
+  if (!b) return;
+  b.style.display = 'inline-flex';
+  requestAnimationFrame(() => b.classList.add('stage-exit-btn--visible'));
+}
+
+function hideExitBtn() {
+  const b = ui.exitBtn;
+  if (!b) return;
+  b.classList.remove('stage-exit-btn--visible');
   b.style.display = 'none';
 }
 
