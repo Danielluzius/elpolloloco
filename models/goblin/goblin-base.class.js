@@ -144,14 +144,37 @@ class GoblinBase extends MoveableObject {
    * @param {number} t - The type of goblin.
    */
   setupHurtDeathSheets(t) {
-    this.hurtSheet = {
-      path: `assets/img/3_enemies_goblins/goblin_${t}/4_hurt/1_hurt_3_sprites.png`,
-      cols: 3,
-      rows: 1,
-      count: 3,
-    };
-    this.loadImage(this.hurtSheet.path);
-    this.bindReadyFlag(this.hurtSheet.path, '_hurtReady');
+    this._setupHurtSheet(t);
+    this._setupDeathSheet(t);
+  }
+
+  /**
+   * Sets up the walk and run sprite sheets for the goblin.
+   * @param {number} t - The type of goblin.
+   */
+  setupWalkRunSheets(t) {
+    this._setupWalkSheet(t);
+    this._setupRunSheet(t);
+  }
+
+  /**
+   * Configures the hurt sprite sheet and readiness for the given type.
+   * @param {number} t - Goblin type.
+   * @private
+   */
+  _setupHurtSheet(t) {
+    const path = `assets/img/3_enemies_goblins/goblin_${t}/4_hurt/1_hurt_3_sprites.png`;
+    this.hurtSheet = { path, cols: 3, rows: 1, count: 3 };
+    this.loadImage(path);
+    this.bindReadyFlag(path, '_hurtReady');
+  }
+
+  /**
+   * Configures the death sprite sheet and readiness for the given type.
+   * @param {number} t - Goblin type.
+   * @private
+   */
+  _setupDeathSheet(t) {
     const map = { 1: 5, 2: 6, 3: 4 };
     const dc = map[t] || 5;
     const dp = `assets/img/3_enemies_goblins/goblin_${t}/5_dead/1_dead_${dc}_sprites.png`;
@@ -162,29 +185,30 @@ class GoblinBase extends MoveableObject {
   }
 
   /**
-   * Sets up the walk and run sprite sheets for the goblin.
-   * @param {number} t - The type of goblin.
+   * Configures the walk sprite sheet for the given type.
+   * @param {number} t - Goblin type.
+   * @private
    */
-  setupWalkRunSheets(t) {
+  _setupWalkSheet(t) {
     const wMap = { 1: 8, 2: 9, 3: 9 };
     const wc = wMap[t] || 8;
-    this.walkSheet = {
-      path: `assets/img/3_enemies_goblins/goblin_${t}/1_walk/1_walk_${wc}_sprites.png`,
-      cols: wc,
-      rows: 1,
-      count: wc,
-    };
-    this.loadImage(this.walkSheet.path);
+    const path = `assets/img/3_enemies_goblins/goblin_${t}/1_walk/1_walk_${wc}_sprites.png`;
+    this.walkSheet = { path, cols: wc, rows: 1, count: wc };
+    this.loadImage(path);
+  }
+
+  /**
+   * Configures the run sprite sheet and ready flag for the given type.
+   * @param {number} t - Goblin type.
+   * @private
+   */
+  _setupRunSheet(t) {
     const rMap = { 1: 8, 2: 8, 3: 7 };
     const rc = rMap[t] || 8;
-    this.runSheet = {
-      path: `assets/img/3_enemies_goblins/goblin_${t}/6_run/1_run_${rc}_sprites.png`,
-      cols: rc,
-      rows: 1,
-      count: rc,
-    };
-    this.loadImage(this.runSheet.path);
-    this.bindReadyFlag(this.runSheet.path, '_runReady');
+    const path = `assets/img/3_enemies_goblins/goblin_${t}/6_run/1_run_${rc}_sprites.png`;
+    this.runSheet = { path, cols: rc, rows: 1, count: rc };
+    this.loadImage(path);
+    this.bindReadyFlag(path, '_runReady');
   }
 
   /**

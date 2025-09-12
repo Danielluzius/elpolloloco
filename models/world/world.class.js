@@ -197,6 +197,13 @@ class World extends WorldBase {
     this._introMgr?.trigger(boss);
   }
 
+  /**
+   * Animates the camera and updates intro camera x.
+   * @param {number} from - Start x.
+   * @param {number} to - End x.
+   * @param {number} durationMs - Duration in ms.
+   * @param {Function} onDone - Callback when finished.
+   */
   animateCamera(from, to, durationMs, onDone) {
     super.animateCamera(from, to, durationMs, onDone, (x) => {
       this.introCamX = x;
@@ -204,6 +211,7 @@ class World extends WorldBase {
     });
   }
 
+  /** Returns the camera to follow the character. */
   returnCameraToCharacter() {
     const target = -this.character.x + 100;
     this.animateCamera(this.camera_x || 0, target, 1000, () =>
@@ -211,14 +219,17 @@ class World extends WorldBase {
     );
   }
 
+  /** Finishes the boss intro sequence. */
   finishBossIntro() {
     this._introMgr?.finish();
   }
 
+  /** Initializes boss health if present. */
   initBossHealth() {
     this.level.enemies.find((e) => e instanceof Endboss)?.initHealth(10);
   }
 
+  /** Initializes player health, block and charge bars. */
   initCharacterHealth() {
     this.character.healthSegments = 5;
     this.character.energy = 100;
@@ -229,6 +240,7 @@ class World extends WorldBase {
     this._placePotionHuds();
   }
 
+  /** Aligns block bar under health bar. */
   _alignBlockBar() {
     const hb = this.characterHealthBar,
       bb = this.characterBlockBar;
@@ -239,6 +251,7 @@ class World extends WorldBase {
     bb.setSegments(this.character.blockSegments);
   }
 
+  /** Initializes the charge bar position and value. */
   _initChargeBar() {
     const hb = this.characterHealthBar,
       cb = this.characterChargeBar,
@@ -251,6 +264,7 @@ class World extends WorldBase {
     cb.setSegments(0);
   }
 
+  /** Places potion HUDs next to the health bar. */
   _placePotionHuds() {
     const hb = this.characterHealthBar;
     this.potionHud.x = hb.x + hb.width + 12;
@@ -260,6 +274,7 @@ class World extends WorldBase {
     this.blockPotionHud.y = this.potionHud.y + this.potionHud.height + 8;
   }
 
+  /** Initializes the goblin counter HUD. */
   initGoblinCounter() {
     const total =
       this.level?.enemies?.filter?.((e) => e instanceof Goblin)?.length || 0;
@@ -270,20 +285,27 @@ class World extends WorldBase {
     this.updateGoblinCounter();
   }
 
+  /**
+   * Damages the boss by one segment if applicable.
+   * @param {object} boss - The boss entity.
+   */
   damageBossIfNeeded(boss) {
     boss.applyHit(1, Date.now(), this.bossSegBar.getMaxSteps());
   }
 
+  /** Runs collision manager tick. */
   checkCollisions() {
     this._collisionMgr.tick();
   }
 
+  /** Applies damage to the character if not in hurt state. */
   damageCharacterIfNeeded() {
     if (this.character.isHurt?.()) return;
     this.character.applySegmentHit?.();
     this.characterHealthBar.setSegments(this.character.healthSegments || 0);
   }
 
+  /** Wakes the endboss if conditions are met. */
   checkEndbossWake() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
@@ -291,6 +313,7 @@ class World extends WorldBase {
     boss.wakeIfNear(this.character);
   }
 
+  /** Alerts and triggers endboss attack if possible. */
   checkEndbossAlertAndAttack() {
     const boss = this.level.enemies.find((e) => e instanceof Endboss);
     if (!boss) return;
@@ -310,6 +333,12 @@ class World extends WorldBase {
     this._clearTimer('_bossIntroHudSwitchTimer', true);
   }
 
+  /**
+   * Clears a timer stored on the instance.
+   * @param {string} name - Property name holding timer id.
+   * @param {boolean} [timeout=false] - True for setTimeout, false for setInterval.
+   * @private
+   */
   _clearTimer(name, timeout = false) {
     try {
       const id = this[name];
@@ -319,26 +348,25 @@ class World extends WorldBase {
     } catch (_) {}
   }
 
+  /** @returns {number} Count of normal potions. */
   getPotionCount() {
     return this._potionsMgr.getPotionCount();
   }
 
+  /** Checks for potion pickups and updates the inventory. */
   checkPotionPickup() {
     if (!this.level?.potions?.length) return;
     const charB = this.character.getBoundsWithOffset?.(this.character);
     this.level.potions = this.level.potions.filter((p) => {
       const pb = p.getBoundsWithOffset?.(p);
-      const ov =
-        pb.right > charB.left &&
-        pb.left < charB.right &&
-        pb.bottom > charB.top &&
-        pb.top < charB.bottom;
+      const ov = this._aabbOverlap(pb, charB);
       if (!ov) return true;
       this._potionsMgr.pickupPotion(p);
       return false;
     });
   }
 
+  /** Uses a potion if available and key is pressed. */
   checkPotionUse() {
     if (
       this.getPotionCount() <= 0 ||
@@ -354,30 +382,30 @@ class World extends WorldBase {
     }
   }
 
+  /** Consumes a potion via manager. */
   usePotion() {
     this._potionsMgr.usePotion();
   }
 
+  /** @returns {number} Count of block potions. */
   getBlockPotionCount() {
     return this._potionsMgr.getBlockPotionCount();
   }
 
+  /** Checks for block potion pickups and updates the inventory. */
   checkBlockPotionPickup() {
     if (!this.level?.blockPotions?.length) return;
     const charB = this.character.getBoundsWithOffset?.(this.character);
     this.level.blockPotions = this.level.blockPotions.filter((bp) => {
       const bb = bp.getBoundsWithOffset?.(bp);
-      const ov =
-        bb.right > charB.left &&
-        bb.left < charB.right &&
-        bb.bottom > charB.top &&
-        bb.top < charB.bottom;
+      const ov = this._aabbOverlap(bb, charB);
       if (!ov) return true;
       this._potionsMgr.pickupBlockPotion(bp);
       return false;
     });
   }
 
+  /** Uses a block potion if available and key is pressed. */
   checkBlockPotionUse() {
     if (
       this.getBlockPotionCount() <= 0 ||
@@ -393,11 +421,29 @@ class World extends WorldBase {
     }
   }
 
+  /** Consumes a block potion via manager. */
   useBlockPotion() {
     this._potionsMgr.useBlockPotion();
   }
+
+  /**
+   * Checks AABB overlap between two bounds objects.
+   * @param {{left:number,right:number,top:number,bottom:number}} a
+   * @param {{left:number,right:number,top:number,bottom:number}} b
+   * @returns {boolean}
+   * @private
+   */
+  _aabbOverlap(a, b) {
+    return (
+      a.right > b.left &&
+      a.left < b.right &&
+      a.bottom > b.top &&
+      a.top < b.bottom
+    );
+  }
 }
 
+/** Draws one render frame. */
 World.prototype.draw = function () {
   this._renderMgr.draw();
 };

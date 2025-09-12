@@ -10,16 +10,12 @@ class GoblinAggro extends GoblinPatrol {
     if (this._shouldSkipAggro()) return;
     const ch = this.world?.character;
     if (!ch || ch.isDead?.()) return;
-
     const dx = ch.x - this.x;
     const dist = Math.abs(dx);
     this._updateAwareness(dist);
-
     if (this._shouldSkipChase(now, dist)) return;
-
     const dir = this._calculateDirection(dx);
     if (dist <= this.ATTACK_RANGE_X) return this.beginAttack(now, ch);
-
     this._moveTowardsTarget(dir);
   }
 

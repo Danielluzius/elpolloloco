@@ -53,22 +53,9 @@ class GoblinCounterHUD extends DrawableObject {
   drawAt(ctx, dx, dy) {
     const centerX = this.calculateCenterX(ctx, dx);
     const topY = dy ?? this.y ?? 6;
-
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.lineJoin = 'round';
-
-    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
-    ctx.fillStyle = '#fff';
-    ctx.lineWidth = 4;
-
-    if (this.mode === 'objective') {
-      this.drawObjectiveMode(ctx, centerX, topY);
-    } else {
-      this.drawCounterMode(ctx, centerX, topY);
-    }
-
-    ctx.restore();
+    this._beginHudContext(ctx);
+    this._drawByMode(ctx, centerX, topY);
+    this._endHudContext(ctx);
   }
 
   /**
@@ -112,17 +99,75 @@ class GoblinCounterHUD extends DrawableObject {
    * @param {number} topY - The top Y position.
    */
   drawCounterMode(ctx, centerX, topY) {
+    const bigY = this._drawCounterHeader(ctx, centerX, topY);
+    this._drawCounterNumbers(ctx, centerX, bigY + 22);
+  }
+
+  /**
+   * Begins HUD drawing context with common styles.
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @private
+   */
+  _beginHudContext(ctx) {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(0,0,0,0.85)';
+    ctx.fillStyle = '#fff';
+    ctx.lineWidth = 4;
+  }
+
+  /**
+   * Ends HUD drawing context.
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @private
+   */
+  _endHudContext(ctx) {
+    ctx.restore();
+  }
+
+  /**
+   * Dispatches drawing by current HUD mode.
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @param {number} centerX - Center x coordinate.
+   * @param {number} topY - Top y coordinate.
+   * @private
+   */
+  _drawByMode(ctx, centerX, topY) {
+    if (this.mode === 'objective') this.drawObjectiveMode(ctx, centerX, topY);
+    else this.drawCounterMode(ctx, centerX, topY);
+  }
+
+  /**
+   * Draws the counter header lines and returns the y for the next line.
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @param {number} centerX - Center x coordinate.
+   * @param {number} topY - Top y coordinate.
+   * @returns {number} The y position after the header.
+   * @private
+   */
+  _drawCounterHeader(ctx, centerX, topY) {
     const small = 'DEFEAT THE';
     ctx.font = 'bold 14px Arial';
     ctx.strokeText(small, centerX, topY);
     ctx.fillText(small, centerX, topY);
-    const bigY = topY + 24;
     const bigTitle = (this.title || 'Goblins').toUpperCase();
+    const bigY = topY + 24;
     ctx.font = 'bold 24px Arial';
     ctx.lineWidth = 4;
     ctx.strokeText(bigTitle, centerX, bigY);
     ctx.fillText(bigTitle, centerX, bigY);
-    const countY = bigY + 22;
+    return bigY;
+  }
+
+  /**
+   * Draws the counter numbers line (kills and remaining).
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @param {number} centerX - Center x coordinate.
+   * @param {number} countY - Y coordinate for the numbers line.
+   * @private
+   */
+  _drawCounterNumbers(ctx, centerX, countY) {
     const remaining = Math.max(0, (this.total || 0) - (this.kills || 0));
     const line2 = `${this.kills || 0} • ${remaining} left`;
     ctx.font = '16px Arial';

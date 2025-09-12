@@ -72,7 +72,6 @@ class MoveableObject extends DrawableObject {
    */
   getBoundsWithOffset(obj) {
     const o = obj.offset || { top: 0, right: 0, bottom: 0, left: 0 };
-
     return {
       left: obj.x + o.left,
       right: obj.x + obj.width - o.right,

@@ -42,14 +42,12 @@ class BackgroundRockGenerator {
   generate() {
     const items = [];
     let x = this.startX + this.rng.int(100, 240);
-
     for (let i = 0; i < this.amount; i++) {
       const sprite = this._createRockSprite(x);
       if (!sprite) break;
       items.push(sprite);
       x += this._calculateGap();
     }
-
     return items;
   }
 
@@ -59,30 +57,83 @@ class BackgroundRockGenerator {
    * @returns {BackgroundSprite|null} The created rock sprite or null if out of bounds.
    */
   _createRockSprite(x) {
-    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
-    const px = clamp(
-      x + this.rng.int(-this.jitter, this.jitter),
-      this.startX + 40,
-      this.endX - 40
-    );
+    const px = this._computeRockX(x);
+    const { useThree, path } = this._pickRockVariant();
+    const { width, height } = this._calculateDimensions(useThree);
+    const py = this._computeRockY(height);
+    const sprite = this._makeSprite(path, px, py, width, height);
+    this._maybeMirror(sprite);
+    return px > this.endX - 80 ? null : sprite;
+  }
+
+  /**
+   * Computes the horizontal position for a rock with jitter and clamping.
+   * @param {number} x - Base x position.
+   * @returns {number} Clamped x position.
+   */
+  _computeRockX(x) {
+    const j = this.rng.int(-this.jitter, this.jitter);
+    return this._clamp(x + j, this.startX + 40, this.endX - 40);
+  }
+
+  /**
+   * Chooses rock variant and image path.
+   * @returns {{useThree:boolean, path:string}}
+   */
+  _pickRockVariant() {
     const useThree = this.rng.next() < 0.5;
     const path = useThree
       ? 'assets/img/5_background/rocks/rock_3.png'
       : 'assets/img/5_background/rocks/rock_2.png';
-    const { width, height } = this._calculateDimensions(useThree);
+    return { useThree, path };
+  }
+
+  /**
+   * Computes the vertical position based on height and random bury.
+   * @param {number} height - Sprite height.
+   * @returns {number} Y coordinate for the rock.
+   */
+  _computeRockY(height) {
     const bury = this.rng.int(0, this.yJitter);
-    const py = this.yBase - height + bury;
-    const sprite = new BackgroundSprite(path, px, py, {
+    return this.yBase - height + bury;
+  }
+
+  /**
+   * Creates a configured BackgroundSprite instance.
+   * @param {string} path - Image path.
+   * @param {number} px - X position.
+   * @param {number} py - Y position.
+   * @param {number} width - Width of sprite.
+   * @param {number} height - Height of sprite.
+   * @returns {BackgroundSprite}
+   */
+  _makeSprite(path, px, py, width, height) {
+    return new BackgroundSprite(path, px, py, {
       width,
       height,
       parallaxFactor: this.parallaxFactor,
       single: true,
       useAbsoluteY: true,
     });
+  }
 
+  /**
+   * Randomly mirrors the sprite based on mirrorChance.
+   * @param {BackgroundSprite} sprite - The sprite to potentially mirror.
+   */
+  _maybeMirror(sprite) {
     if (this.rng.next() < this.mirrorChance) sprite.otherDirection = true;
+  }
 
-    return px > this.endX - 80 ? null : sprite;
+  /**
+   * Clamps a number into a range.
+   * @param {number} v - Value to clamp.
+   * @param {number} lo - Minimum value.
+   * @param {number} hi - Maximum value.
+   * @returns {number}
+   */
+  _clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
   }
 
   /**

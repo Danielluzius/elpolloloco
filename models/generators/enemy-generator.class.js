@@ -26,13 +26,11 @@ class EnemyGenerator {
   generate() {
     const res = [];
     const step = this._calculateStep();
-
     for (let i = 0; i < this.amount; i++) {
       const x = this._calculateXCoordinate(i, step);
       const t = this.drawTypeFromBag();
       res.push(new Goblin(t, x));
     }
-
     return res;
   }
 
@@ -73,7 +71,6 @@ class EnemyGenerator {
         ];
       }
     }
-
     return this._typeBag.pop();
   }
 }

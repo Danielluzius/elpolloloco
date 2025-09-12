@@ -199,35 +199,88 @@ class EndbossCombat extends EndbossAnim {
     defaultMaxSteps = null,
     attackId = null
   ) {
+    if (!this._canApplyHit(now, attackId)) return false;
+    this._ensureHealthInit(defaultMaxSteps);
+    this._applyHealthDecrease(amount);
+    this._markHitTimestamp(now, attackId);
+    if (this.healthSteps === 0) this._handleDeath();
+    else this._handleHurt(now);
+    return true;
+  }
+
+  /**
+   * Validates whether a hit can be applied at the current time.
+   * @param {number} now - Current timestamp.
+   * @param {string|null} attackId - Attack id to de-duplicate hits.
+   * @returns {boolean}
+   */
+  _canApplyHit(now, attackId) {
     if (!this.awake || this.dead) return false;
     if (attackId != null && this._lastAttackIdHit === attackId) return false;
-    if (this.lastHitAt && now - this.lastHitAt < (this.hitCooldownMs ?? 200))
-      return false;
+    const cooldown = this.hitCooldownMs ?? 200;
+    return !(this.lastHitAt && now - this.lastHitAt < cooldown);
+  }
+
+  /**
+   * Ensures health-related fields are initialized.
+   * @param {number|null} defaultMaxSteps - Default max health steps.
+   */
+  _ensureHealthInit(defaultMaxSteps) {
     if (this.maxHealthSteps == null)
       this.maxHealthSteps = defaultMaxSteps ?? 10;
     if (this.healthSteps == null) this.healthSteps = this.maxHealthSteps;
-    const next = Math.max(0, this.healthSteps - 1);
+  }
+
+  /**
+   * Applies a decrease to the boss's health.
+   * @param {number} amount - Damage amount (steps).
+   */
+  _applyHealthDecrease(amount) {
+    const next = Math.max(0, (this.healthSteps ?? 0) - (amount ?? 1));
     this.healthSteps = next;
+  }
+
+  /**
+   * Stores the last-hit timestamp and last attack id.
+   * @param {number} now - Current timestamp.
+   * @param {string|null} attackId - Attack id reference.
+   */
+  _markHitTimestamp(now, attackId) {
     this.lastHitAt = now;
     if (attackId != null) this._lastAttackIdHit = attackId;
-    if (this.healthSteps === 0) {
-      this.dead = true;
-      this.speed = 0;
-      this.state = 'dead';
+  }
+
+  /**
+   * Handles boss death state and SFX.
+   */
+  _handleDeath() {
+    this.dead = true;
+    this.speed = 0;
+    this.state = 'dead';
+    this.frameIndex = 0;
+    this._playSoundSafe('endboss_dead_sound');
+  }
+
+  /**
+   * Handles hurt state transition and SFX.
+   * @param {number} now - Current timestamp for animation timing.
+   */
+  _handleHurt(now) {
+    if (!['hurt', 'attack'].includes(this.state)) {
+      this.state = 'hurt';
       this.frameIndex = 0;
-      try {
-        window.sound?.play('endboss_dead_sound', { channel: 'sfx' });
-      } catch (_) {}
-    } else {
-      if (!['hurt', 'attack'].includes(this.state)) {
-        this.state = 'hurt';
-        this.frameIndex = 0;
-        this.lastFrameTime = now;
-      }
-      try {
-        window.sound?.play('endboss_hurt_sound', { channel: 'sfx' });
-      } catch (_) {}
+      this.lastFrameTime = now;
     }
-    return true;
+    this._playSoundSafe('endboss_hurt_sound');
+  }
+
+  /**
+   * Plays a sound by id, swallowing errors if audio is unavailable.
+   * @param {string} soundId - Key of the sound to play.
+   */
+  _playSoundSafe(soundId) {
+    try {
+      window.sound?.play(soundId, { channel: 'sfx' });
+    } catch (_) {}
   }
 }

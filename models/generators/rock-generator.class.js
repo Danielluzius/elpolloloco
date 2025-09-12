@@ -41,19 +41,15 @@ class RockGenerator {
   generate() {
     const rocks = [];
     let x = this._initializeStartX();
-
     for (let i = 0; i < this.amount; i++) {
       const gap = this._calculateGap();
       const rx = this._calculateRockX(x);
       const rock = this._createRock(rx);
-
       if (this.rng.next() < this.mirrorChance) rock.otherDirection = true;
-
       rocks.push(rock);
       x += gap;
       if (x > this.endX - 80) break;
     }
-
     return rocks;
   }
 

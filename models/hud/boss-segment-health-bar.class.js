@@ -77,19 +77,9 @@ class BossSegmentHealthBar extends DrawableObject {
   updateFromBoss(boss) {
     if (!boss || boss.dead || !boss.awake) return false;
     try {
-      const chBar = boss.world?.characterHealthBar;
-      if (chBar) {
-        const baseSegW = (chBar.width || 210) / 3;
-        const segW = Math.max(5, Math.round(baseSegW * this.scaleX));
-        this.width = segW * this.maxSegments;
-        this.height = Math.max(
-          6,
-          Math.round((chBar.height || 40) * this.scaleY)
-        );
-      }
+      this._deriveSizeFromCharacterBar(boss.world?.characterHealthBar);
     } catch (_) {}
-    this.x = boss.x + boss.width / 2 - this.width / 2;
-    this.y = boss.y - (this.height + 8);
+    this._positionToBoss(boss);
     return true;
   }
 
@@ -102,27 +92,91 @@ class BossSegmentHealthBar extends DrawableObject {
   drawAt(ctx, dx, dy) {
     const baseX = Math.round(dx);
     const baseY = Math.round(dy);
-    const segW = Math.floor(this.width / this.maxSegments);
-    const segH = this.height;
-    for (let i = 0; i < this.maxSegments; i++) {
-      const isFull = i < this.segmentsFull;
-      const isLeft = i === 0;
-      const isRight = i === this.maxSegments - 1;
-      const path = isLeft
-        ? isFull
-          ? this.LEFT_FULL
-          : this.LEFT_EMPTY
-        : isRight
-        ? isFull
-          ? this.RIGHT_FULL
-          : this.RIGHT_EMPTY
-        : isFull
-        ? this.MID_FULL
-        : this.MID_EMPTY;
-      const img = this.imageCache?.[path];
-      if (!img) continue;
-      const x = baseX + i * segW;
-      ctx.drawImage(img, x, baseY, segW, segH);
-    }
+    const { segW, segH } = this._getSegmentSize();
+    this._drawAllSegments(ctx, baseX, baseY, segW, segH);
+  }
+
+  /**
+   * Derives width and height based on the player's health bar.
+   * @param {object|null|undefined} chBar - The character health bar, if available.
+   * @private
+   */
+  _deriveSizeFromCharacterBar(chBar) {
+    if (!chBar) return;
+    const baseSegW = (chBar.width || 210) / 3;
+    const segW = Math.max(5, Math.round(baseSegW * this.scaleX));
+    this.width = segW * this.maxSegments;
+    this.height = Math.max(6, Math.round((chBar.height || 40) * this.scaleY));
+  }
+
+  /**
+   * Positions the health bar relative to the boss.
+   * @param {object} boss - The boss entity.
+   * @private
+   */
+  _positionToBoss(boss) {
+    this.x = boss.x + boss.width / 2 - this.width / 2;
+    this.y = boss.y - (this.height + 8);
+  }
+
+  /**
+   * Returns the per-segment size.
+   * @returns {{segW:number, segH:number}}
+   * @private
+   */
+  _getSegmentSize() {
+    return {
+      segW: Math.floor(this.width / this.maxSegments),
+      segH: this.height,
+    };
+  }
+
+  /**
+   * Draws all segments of the boss health bar.
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @param {number} baseX - Base x position.
+   * @param {number} baseY - Base y position.
+   * @param {number} segW - Segment width.
+   * @param {number} segH - Segment height.
+   * @private
+   */
+  _drawAllSegments(ctx, baseX, baseY, segW, segH) {
+    for (let i = 0; i < this.maxSegments; i++)
+      this._drawSegment(ctx, baseX, baseY, segW, segH, i);
+  }
+
+  /**
+   * Draws a single segment at index i.
+   * @param {CanvasRenderingContext2D} ctx - Canvas context.
+   * @param {number} baseX - Base x position.
+   * @param {number} baseY - Base y position.
+   * @param {number} segW - Segment width.
+   * @param {number} segH - Segment height.
+   * @param {number} i - Segment index.
+   * @private
+   */
+  _drawSegment(ctx, baseX, baseY, segW, segH, i) {
+    const isFull = i < this.segmentsFull;
+    const isLeft = i === 0;
+    const isRight = i === this.maxSegments - 1;
+    const path = this._resolveSegmentPath(isLeft, isRight, isFull);
+    const img = this.imageCache?.[path];
+    if (!img) return;
+    const x = baseX + i * segW;
+    ctx.drawImage(img, x, baseY, segW, segH);
+  }
+
+  /**
+   * Resolves the image path for a segment depending on position and fill state.
+   * @param {boolean} isLeft - Whether this is the leftmost segment.
+   * @param {boolean} isRight - Whether this is the rightmost segment.
+   * @param {boolean} isFull - Whether this segment is filled.
+   * @returns {string} Image path.
+   * @private
+   */
+  _resolveSegmentPath(isLeft, isRight, isFull) {
+    if (isLeft) return isFull ? this.LEFT_FULL : this.LEFT_EMPTY;
+    if (isRight) return isFull ? this.RIGHT_FULL : this.RIGHT_EMPTY;
+    return isFull ? this.MID_FULL : this.MID_EMPTY;
   }
 }

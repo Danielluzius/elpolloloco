@@ -1,3 +1,12 @@
+/**
+ * Zentrale Spiel-Initialisierung und Tastaturbindung.
+ *
+ * Dieses File hält den minimalen orchestrierenden Code für
+ * Start/Restart/Back und Keyboard-Events. UI-/Overlay-/Touch-
+ * Funktionen sind in scripts/game-ui.js ausgelagert, allgemeine
+ * Helpers in scripts/game-helpers.js.
+ */
+
 let canvas;
 let world;
 let keyboard = new Keyboard();
@@ -11,7 +20,7 @@ try {
 
 /**
  * Initialisiert Canvas und UI, bindet Events und zeigt den Startbildschirm.
- * @function init
+ * @returns {void}
  */
 function init() {
   canvas = document.getElementById('canvas');
@@ -28,7 +37,7 @@ function init() {
 
 /**
  * Cacht UI-Referenzen über spezialisierte Cache-Funktionen.
- * @function cacheUi
+ * @returns {void}
  */
 function cacheUi() {
   cacheOverlays();
@@ -39,7 +48,7 @@ function cacheUi() {
 
 /**
  * Bindet alle UI-Events, Death-UI, Context-Menü und Touch-Controls.
- * @function bindUi
+ * @returns {void}
  */
 function bindUi() {
   bindPrimaryUi();
@@ -51,7 +60,7 @@ function bindUi() {
 
 /**
  * Startet das Spiel, blendet Hero aus und initialisiert Welt und UI.
- * @function startGame
+ * @returns {void}
  */
 function startGame() {
   ensureInitIfMissing();
@@ -65,7 +74,7 @@ function startGame() {
 
 /**
  * Startet die Welt neu, ersetzt das Canvas und setzt die Spiel-UI.
- * @function restartGame
+ * @returns {void}
  */
 function restartGame() {
   hideAllOverlays();
@@ -83,7 +92,7 @@ function restartGame() {
 
 /**
  * Beendet das Spiel und stellt den Startbildschirm und UI-Status wieder her.
- * @function backToStart
+ * @returns {void}
  */
 function backToStart() {
   stopWorldSafe();
@@ -103,7 +112,7 @@ function backToStart() {
 
 /**
  * Ersetzt den Start-Button-Knoten und bindet einen frischen Click-Handler.
- * @function _rebindStartBtn
+ * @returns {void}
  */
 function _rebindStartBtn() {
   const startBtn = document.getElementById('startGameBtn');
@@ -116,126 +125,8 @@ function _rebindStartBtn() {
 }
 
 /**
- * Zeigt den Neustart-Button an.
- * @function showRestartBtn
- */
-function showRestartBtn() {
-  const b = ui.restartBtn;
-  if (!b) return;
-  b.style.display = 'inline-flex';
-  requestAnimationFrame(() => b.classList.add('stage-restart-btn--visible'));
-}
-
-/**
- * Verbirgt den Neustart-Button.
- * @function hideRestartBtn
- */
-function hideRestartBtn() {
-  const b = ui.restartBtn;
-  if (!b) return;
-  b.classList.remove('stage-restart-btn--visible');
-  b.style.display = 'none';
-}
-
-/**
- * Zeigt den Exit-Button an.
- * @function showExitBtn
- */
-function showExitBtn() {
-  const b = ui.exitBtn;
-  if (!b) return;
-  b.style.display = 'inline-flex';
-  requestAnimationFrame(() => b.classList.add('stage-exit-btn--visible'));
-}
-
-/**
- * Verbirgt den Exit-Button.
- * @function hideExitBtn
- */
-function hideExitBtn() {
-  const b = ui.exitBtn;
-  if (!b) return;
-  b.classList.remove('stage-exit-btn--visible');
-  b.style.display = 'none';
-}
-
-/**
- * Zeigt den Steuerungs-Umschalter und aktualisiert dessen Darstellung.
- * @function showControlsToggleBtn
- */
-function showControlsToggleBtn() {
-  const b = ui.controlsToggleBtn;
-  if (!b) return;
-  updateControlsToggleVisuals();
-  b.style.display = 'inline-flex';
-  requestAnimationFrame(() => b.classList.add('stage-controls-btn--visible'));
-}
-
-/**
- * Verbirgt den Steuerungs-Umschalter.
- * @function hideControlsToggleBtn
- */
-function hideControlsToggleBtn() {
-  const b = ui.controlsToggleBtn;
-  if (!b) return;
-  b.classList.remove('stage-controls-btn--visible');
-  b.style.display = 'none';
-}
-
-/**
- * Blendet alle Overlays aus und zeigt den Startbildschirm.
- * @function showStart
- */
-function showStart() {
-  hideAllOverlays();
-  ui.startOverlay?.classList.remove('hidden');
-  ui.imprintBtn?.classList.remove('hidden');
-}
-
-/**
- * Zeigt das Game-Over-Overlay und die Todes-Buttons.
- * @function showGameOver
- */
-function showGameOver() {
-  gameState = 'lose';
-  ui.gameOverOverlay?.classList.remove('hidden');
-  hideRestartBtn();
-  showDeathButtons();
-  try {
-    window.sound?.playMusic('player_lost_music', { loop: false, volume: 0.4 });
-  } catch (_) {}
-}
-
-/**
- * Zeigt das Win-Overlay und die Todes-Buttons.
- * @function showWin
- */
-function showWin() {
-  gameState = 'win';
-  ui.winOverlay?.classList.remove('hidden');
-  hideRestartBtn();
-  showDeathButtons();
-  try {
-    window.sound?.playMusic('player_won_music', { loop: false, volume: 0.4 });
-  } catch (_) {}
-}
-
-/**
- * Verbirgt alle Overlays und Todes-Buttons.
- * @function hideAllOverlays
- */
-function hideAllOverlays() {
-  ui.startOverlay?.classList.add('hidden');
-  ui.gameOverOverlay?.classList.add('hidden');
-  ui.winOverlay?.classList.add('hidden');
-  ui.howToModal?.classList.add('hidden');
-  ui.imprintModal?.classList.add('hidden');
-  hideDeathButtons();
-}
-
-/**
  * Startet die periodische Prüfung auf Sieg oder Niederlage.
- * @function hookWinLose
+ * @returns {void}
  */
 function hookWinLose() {
   let id;
@@ -244,7 +135,8 @@ function hookWinLose() {
 
 /**
  * Prüft Sieg/Niederlage und zeigt das passende Overlay.
- * @function evalWinLose
+ * @param {number} id - Interval-ID.
+ * @returns {void}
  */
 function evalWinLose(id) {
   const w = world;
@@ -262,209 +154,12 @@ function evalWinLose(id) {
   }
 }
 
-/**
- * Blendet die Todes-Buttons ein und fokussiert den Zurück-Button.
- * @function showDeathButtons
- */
-function showDeathButtons() {
-  const c = ui.deathBtnContainer;
-  if (!c) return;
-  c.removeAttribute('aria-hidden');
-  c.removeAttribute('inert');
-  c.classList.remove('hidden');
-  requestAnimationFrame(() => {
-    c.classList.add('death-btns--visible');
-    ui.deathBackBtn?.focus?.();
-  });
-}
+// Hinweis: UI-Overlay- und Death-Button-Funktionen sind in scripts/game-ui.js
 
 /**
- * Blendet die Todes-Buttons aus und deaktiviert Interaktionen.
- * @function hideDeathButtons
+ * Mapping von keyCode zu Keyboard-Flags.
+ * @type {Record<number, keyof Keyboard>}
  */
-function hideDeathButtons() {
-  const c = ui.deathBtnContainer;
-  if (!c) return;
-  try {
-    if (c.contains(document.activeElement)) {
-      document.activeElement.blur?.();
-    }
-  } catch (_) {}
-  c.classList.remove('death-btns--visible');
-  c.setAttribute('aria-hidden', 'true');
-  c.setAttribute('inert', '');
-  setTimeout(() => c.classList.add('hidden'), 300);
-}
-
-/**
- * Wechselt in bzw. aus dem Vollbildmodus.
- * @function toggleFullscreen
- */
-function toggleFullscreen() {
-  const el = document.documentElement;
-  if (!document.fullscreenElement) {
-    el.requestFullscreen?.();
-  } else {
-    document.exitFullscreen?.();
-  }
-}
-
-/**
- * Schaltet Ton stumm/aktiv und aktualisiert den Button.
- * @function toggleMute
- */
-function toggleMute() {
-  isMuted = !isMuted;
-  try {
-    window.sound?.setMuted(isMuted);
-  } catch (_) {}
-  const btn = ui.muteBtn;
-  if (!btn) return;
-  const isOn = !isMuted;
-  updateMuteBtn(btn, isOn);
-}
-
-/**
- * Wechselt zwischen Touch- und Tastaturmodus und aktualisiert UI.
- * @function toggleControlMode
- */
-function toggleControlMode() {
-  controlMode = controlMode === 'keyboard' ? 'touch' : 'keyboard';
-  try {
-    localStorage.setItem('controlMode', controlMode);
-  } catch (_) {}
-  updateControlsToggleVisuals();
-  applyControlModeVisuals();
-}
-
-/**
- * Aktualisiert Icons, Label und ARIA des Steuerungs-Umschalters.
- * @function updateControlsToggleVisuals
- */
-function updateControlsToggleVisuals() {
-  const btn = ui.controlsToggleBtn;
-  if (!btn) return;
-  const img = btn.querySelector('.btn-image');
-  const hint = btn.querySelector('.controls-hint');
-  const span = btn.querySelector('.controls-toggle-label');
-  const isTouch = controlMode === 'touch';
-  if (img)
-    img.src = './assets/img/logos/touch_button/button_toggle_controls.png';
-  if (hint) {
-    hint.src = isTouch
-      ? './assets/img/logos/touch_button/button_activate_keyboard.png'
-      : './assets/img/logos/touch_button/button_activate_touch.png';
-  }
-  const label = isTouch ? 'Enable keyboard controls' : 'Enable touch controls';
-  if (span) span.textContent = label;
-  btn.setAttribute('aria-label', label);
-}
-
-/**
- * Zeigt oder versteckt die Touch-Steuerung gemäß aktuellem Modus.
- * @function applyControlModeVisuals
- */
-function applyControlModeVisuals() {
-  if (controlMode === 'touch') showTouchControls();
-  else hideTouchControls();
-}
-
-/**
- * Zeigt die Touch-Steuerung an.
- * @function showTouchControls
- */
-function showTouchControls() {
-  const tc = ui.touchControls;
-  if (!tc) return;
-  tc.classList.remove('hidden');
-  tc.removeAttribute('aria-hidden');
-}
-
-/**
- * Verbirgt die Touch-Steuerung und setzt Tasten zurück.
- * @function hideTouchControls
- */
-function hideTouchControls() {
-  const tc = ui.touchControls;
-  if (!tc) return;
-  tc.classList.add('hidden');
-  tc.setAttribute('aria-hidden', 'true');
-  ['LEFT', 'RIGHT', 'UP', 'DOWN', 'SPACE', 'D', 'A', 'S', 'ONE', 'TWO'].forEach(
-    (k) => (keyboard[k] = false)
-  );
-}
-
-/**
- * Bindet Pointer-Events für die Touch-Buttons.
- * @function bindTouchButtons
- */
-function bindTouchButtons() {
-  const tc = ui.touchControls;
-  if (!tc) return;
-  const setKey = (k, v) => {
-    keyboard[k] = v;
-  };
-  const onPress = (e) => {
-    const k = e.currentTarget?.dataset?.key;
-    if (!k) return;
-    setKey(k, true);
-    e.preventDefault?.();
-    e.stopPropagation?.();
-  };
-  const onRelease = (e) => {
-    const k = e.currentTarget?.dataset?.key;
-    if (!k) return;
-    setKey(k, false);
-    e.preventDefault?.();
-    e.stopPropagation?.();
-  };
-  tc.querySelectorAll('.touch-btn').forEach((btn) => {
-    btn.addEventListener('pointerdown', onPress);
-    btn.addEventListener('pointerup', onRelease);
-    btn.addEventListener('pointercancel', onRelease);
-    btn.addEventListener('pointerleave', onRelease);
-    btn.addEventListener('contextmenu', (e) => e.preventDefault());
-  });
-}
-
-/**
- * Öffnet das In-Game-HowTo-Overlay und verbirgt Touch-Buttons.
- * @function openHowTo
- */
-function openHowTo() {
-  ui.howToModal?.classList.remove('hidden');
-  hideTouchControls();
-}
-
-/**
- * Schließt das In-Game-HowTo-Overlay und stellt Controls wieder her.
- * @function closeHowTo
- */
-function closeHowTo() {
-  ui.howToModal?.classList.add('hidden');
-  if (gameState === 'running') {
-    applyControlModeVisuals();
-  } else {
-    hideTouchControls();
-  }
-}
-
-/**
- * Öffnet das Impressum-Overlay.
- * @function openImprint
- */
-function openImprint() {
-  ui.imprintModal?.classList.remove('hidden');
-}
-
-/**
- * Schließt das Impressum-Overlay.
- * @function closeImprint
- */
-function closeImprint() {
-  ui.imprintModal?.classList.add('hidden');
-}
-
 const KEY_MAP = {
   39: 'RIGHT',
   37: 'LEFT',
@@ -480,6 +175,10 @@ const KEY_MAP = {
   98: 'TWO',
 };
 
+/**
+ * Is bindet Keyboard-Events und setzt die keyboard-Flags.
+ * @returns {void}
+ */
 window.addEventListener('keydown', (e) => {
   const key = KEY_MAP[e.keyCode];
   if (key) {
@@ -488,6 +187,10 @@ window.addEventListener('keydown', (e) => {
   }
 });
 
+/**
+ * Places the keyboard key up event listener to update the keyboard flags.
+ * @returns {void}
+ */
 window.addEventListener('keyup', (e) => {
   const key = KEY_MAP[e.keyCode];
   if (key) {

@@ -2,17 +2,64 @@
  * Represents the main character in the game, extending the MoveableObject class.
  */
 class Character extends MoveableObject {
+  /**
+   * Character height in pixels.
+   * @type {number}
+   */
   height = 200;
+
+  /**
+   * Character width in pixels.
+   * @type {number}
+   */
   width = 210;
+
+  /**
+   * Vertical position (y) of the character on the canvas.
+   * @type {number}
+   */
   y = 240;
+
+  /**
+   * Ground Y position (standing position).
+   * @type {number}
+   */
   groundY = 240;
+
+  /**
+   * Movement speed in pixels per tick.
+   * @type {number}
+   */
   speed = 10;
 
+  /**
+   * Current animation key/name.
+   * @type {string}
+   */
   animKey = 'stand';
+
+  /**
+   * Timestamp of the last player activity.
+   * @type {number}
+   */
   lastActivityAt = Date.now();
+
+  /**
+   * Milliseconds before switching to idle.
+   * @type {number}
+   */
   IDLE_AFTER_MS = 1500;
+
+  /**
+   * Milliseconds before switching to long-idle.
+   * @type {number}
+   */
   LONG_IDLE_AFTER_MS = 6000;
 
+  /**
+   * Sprite sheet config for normal idle animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   IDLE_SHEET = {
     path: 'assets/img/2_character_man/1_idle.png',
     frameW: 128,
@@ -21,16 +68,31 @@ class Character extends MoveableObject {
     rows: 1,
     count: 6,
   };
+
+  /**
+   * Sprite sheet config for long idle animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   LONG_IDLE_SHEET = {
     path: 'assets/img/2_character_man/2_idle_long.png',
     frameW: 128,
     frameH: 128,
   };
+
+  /**
+   * Sprite sheet config for walking/run animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   WALK_SHEET = {
     path: 'assets/img/2_character_man/7_run.png',
     frameW: 128,
     frameH: 128,
   };
+
+  /**
+   * Sprite sheet config for walking during intro sequence.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   WALK_INTRO_SHEET = {
     path: 'assets/img/2_character_man/9_walk.png',
     frameW: 128,
@@ -39,6 +101,11 @@ class Character extends MoveableObject {
     rows: 1,
     count: 9,
   };
+
+  /**
+   * Sprite sheet config for jump animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   JUMP_SHEET = {
     path: 'assets/img/2_character_man/6_jump.png',
     frameW: 128,
@@ -47,6 +114,11 @@ class Character extends MoveableObject {
     rows: 1,
     count: 10,
   };
+
+  /**
+   * Sprite sheet config for hurt animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   HURT_SHEET = {
     path: 'assets/img/2_character_man/4_hurt.png',
     frameW: 128,
@@ -55,6 +127,11 @@ class Character extends MoveableObject {
     rows: 1,
     count: 3,
   };
+
+  /**
+   * Sprite sheet config for attack animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   ATTACK_SHEET = {
     path: 'assets/img/2_character_man/3_attack_stand2.png',
     frameW: 128,
@@ -63,6 +140,11 @@ class Character extends MoveableObject {
     rows: 1,
     count: 3,
   };
+
+  /**
+   * Sprite sheet config for special attack animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   SPECIAL_SHEET = {
     path: 'assets/img/2_character_man/3_attack_stand.png',
     frameW: 128,
@@ -71,11 +153,21 @@ class Character extends MoveableObject {
     rows: 1,
     count: 5,
   };
+
+  /**
+   * Sprite sheet config for block animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   BLOCK_SHEET = {
     path: 'assets/img/2_character_man/10_block.png',
     frameW: 128,
     frameH: 128,
   };
+
+  /**
+   * Sprite sheet config for death animation.
+   * @type {{path:string,frameW:number,frameH:number,cols?:number,rows?:number,count?:number}}
+   */
   DEAD_SHEET = {
     path: 'assets/img/2_character_man/5_dead.png',
     frameW: 128,
@@ -85,7 +177,16 @@ class Character extends MoveableObject {
     count: 5,
   };
 
+  /**
+   * Horizontal attack range in pixels.
+   * @type {number}
+   */
   ATTACK_RANGE_X = 80;
+
+  /**
+   * Frame index where attack becomes active.
+   * @type {number}
+   */
   ATTACK_ACTIVE_START_FRAME = 1;
 
   /**
@@ -202,5 +303,44 @@ class Character extends MoveableObject {
    * Draws the current frame of the character on the canvas.
    * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
    */
-  drawFrame(ctx) {}
+  drawFrame(ctx) {
+    const info = this.getDrawImageInfo();
+    if (!info) return;
+    const pos = this.computeDrawPosition(info.img);
+    // draw current frame using computed source rect and destination position
+    ctx.drawImage(
+      info.img,
+      info.sx,
+      info.sy,
+      info.sw,
+      info.sh,
+      pos.dx,
+      pos.dy,
+      info.sw,
+      info.sh
+    );
+  }
+
+  /**
+   * Resolve the image and source rectangle for the current frame.
+   * @returns {{img:HTMLImageElement,sx:number,sy:number,sw:number,sh:number}|null}
+   */
+  getDrawImageInfo() {
+    const img = this.img || this.imageCache?.[this.IDLE_SHEET.path];
+    const rect = this.currentFrameRect;
+    if (!img || !rect) return null;
+    return { img, sx: rect.sx, sy: rect.sy, sw: rect.sw, sh: rect.sh };
+  }
+
+  /**
+   * Compute destination position for the current frame on canvas.
+   * @param {HTMLImageElement} img - Image used to compute offsets.
+   * @returns {{dx:number,dy:number}}
+   */
+  computeDrawPosition(img) {
+    const cam = this.world?.camera_x || 0;
+    const dx = Math.round(this.x + cam);
+    const dy = Math.round(this.y);
+    return { dx, dy };
+  }
 }

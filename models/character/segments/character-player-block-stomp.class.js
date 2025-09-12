@@ -14,11 +14,9 @@ class CharacterPlayerBlockStomp extends CharacterPlayer {
       !this.isSpecialAttacking &&
       !this.isAttacking &&
       !this.isHurt();
-
     if (this.shouldStartBlock(wantsBlock, canBlock)) {
       this.startBlock(now);
     }
-
     if (this.isBlocking) {
       this.handleBlockEnd(now, wantsBlock);
     }

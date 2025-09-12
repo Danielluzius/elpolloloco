@@ -226,13 +226,48 @@ class CharacterPlayerSpecial extends CharacterPlayer {
    */
   drawFrame(ctx) {
     if (!this.isSpecialAttacking) return;
-    const idx = Math.max(
+    const info = this.computeSpecialEffectData();
+    if (!info) return;
+    ctx.drawImage(info.img, info.dx, info.dy, info.w, info.h);
+  }
+
+  /**
+   * Compute image and position data for the special effect draw call.
+   * @returns {{img:HTMLImageElement,dx:number,dy:number,w:number,h:number}|null}
+   */
+  computeSpecialEffectData() {
+    const img = this.getSpecialEffectImage();
+    if (!img) return null;
+    const pos = this.computeSpecialPosition();
+    return { img, dx: pos.dx, dy: pos.dy, w: pos.w, h: pos.h };
+  }
+
+  /**
+   * Get the current special effect frame index clamped to available paths.
+   * @returns {number} The index to use for effect selection.
+   */
+  getSpecialEffectIndex() {
+    return Math.max(
       0,
       Math.min(this.SPECIAL_EFFECT_PATHS.length - 1, this.effectFrameIndex)
     );
+  }
+
+  /**
+   * Resolve the image for the current special effect frame.
+   * @returns {HTMLImageElement|null} The image or null when not loaded.
+   */
+  getSpecialEffectImage() {
+    const idx = this.getSpecialEffectIndex();
     const path = this.SPECIAL_EFFECT_PATHS[idx];
-    const img = this.imageCache?.[path];
-    if (!img) return;
+    return this.imageCache?.[path] || null;
+  }
+
+  /**
+   * Compute the dx/dy and size for the special effect based on state.
+   * @returns {{dx:number,dy:number,w:number,h:number}}
+   */
+  computeSpecialPosition() {
     const cam = this.world?.camera_x || 0;
     const baseX = this.otherDirection ? 0 : Math.round(this.x + cam);
     const baseY = Math.round(this.y);
@@ -246,6 +281,6 @@ class CharacterPlayerSpecial extends CharacterPlayer {
         this.SPECIAL_EFFECT_H +
         this.SPECIAL_EFFECT_FEET_OFFSET
     );
-    ctx.drawImage(img, dx, dy, this.SPECIAL_EFFECT_W, this.SPECIAL_EFFECT_H);
+    return { dx, dy, w: this.SPECIAL_EFFECT_W, h: this.SPECIAL_EFFECT_H };
   }
 }

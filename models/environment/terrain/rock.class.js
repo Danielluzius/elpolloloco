@@ -31,7 +31,6 @@ class Rock extends MoveableObject {
     const groundBottom = 440;
     this.y = options.y ?? groundBottom - this.height;
     this.x = x;
-
     this.offset = options.offset ?? { top: 6, right: 6, bottom: 0, left: 6 };
     this.disableGravity = true;
   }

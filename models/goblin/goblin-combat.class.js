@@ -129,23 +129,59 @@ class GoblinCombat extends GoblinAnim {
    */
   animateAttack(now) {
     const s = this.attackSheet;
+    this._ensureAttackImageReady();
+    if (now < this.attackWindupEndAt) return this.setSheetFrameAuto(s, 0);
+    this._advanceAttackFrameIfDue(now);
+    this._updateAttackSprite();
+    this._maybeApplyAttackHit();
+    this._maybeFinishAttack(now);
+  }
+
+  /**
+   * Ensures the attack image is swapped in when ready.
+   */
+  _ensureAttackImageReady() {
+    const s = this.attackSheet;
     const img = this.imageCache[s.path];
     if (this._attackReady && img) this.img = img;
-    if (now < this.attackWindupEndAt) return this.setSheetFrameAuto(s, 0);
-    if (now - this.attackLastAt >= this.ATTACK_FRAME_DELAY) {
-      this.attackFrameIdx = Math.min(
-        this.attackFrameIdx + 1,
-        (s.count || 1) - 1
-      );
-      this.attackLastAt = now;
-    }
-    this.setSheetFrameAuto(s, this.attackFrameIdx);
+  }
+
+  /**
+   * Advances the attack frame when the frame delay has elapsed.
+   * @param {number} now - Current timestamp.
+   */
+  _advanceAttackFrameIfDue(now) {
+    if (now - this.attackLastAt < this.ATTACK_FRAME_DELAY) return;
+    const maxIdx = (this.attackSheet.count || 1) - 1;
+    this.attackFrameIdx = Math.min(this.attackFrameIdx + 1, maxIdx);
+    this.attackLastAt = now;
+  }
+
+  /**
+   * Updates the displayed sprite frame for the current attack index.
+   */
+  _updateAttackSprite() {
+    this.setSheetFrameAuto(this.attackSheet, this.attackFrameIdx);
+  }
+
+  /**
+   * Applies attack damage once the hit frame is reached.
+   */
+  _maybeApplyAttackHit() {
+    const s = this.attackSheet;
     const hitFrame = Math.floor((s.count || 1) / 2);
-    if (!this.appliedAttackDamage && this.attackFrameIdx >= hitFrame) {
-      this.tryApplyAttackDamage();
-      this.appliedAttackDamage = true;
-    }
-    if (this.attackFrameIdx >= (s.count || 1) - 1) this.finishAttack(now);
+    if (this.appliedAttackDamage || this.attackFrameIdx < hitFrame) return;
+    this.tryApplyAttackDamage();
+    this.appliedAttackDamage = true;
+  }
+
+  /**
+   * Finishes the attack when the last frame is reached.
+   * @param {number} now - Current timestamp.
+   */
+  _maybeFinishAttack(now) {
+    const lastIdx = (this.attackSheet.count || 1) - 1;
+    if (this.attackFrameIdx >= lastIdx) this.finishAttack(now);
   }
 
   /**
