@@ -33,13 +33,20 @@
       this.library = new Map();
       this.active = new Set();
 
+      this._initializeMuteState();
+      this._registerDefaults();
+      this.preloadAll({ shallow: true });
+    }
+
+    /**
+     * Initializes the mute state from localStorage.
+     * @private
+     */
+    _initializeMuteState() {
       try {
         const m = localStorage.getItem('sound.muted');
         if (m === 'true') this.muted = true;
       } catch (_) {}
-
-      this._registerDefaults();
-      this.preloadAll({ shallow: true });
     }
 
     /**
@@ -89,23 +96,63 @@
      */
     setMuted(m) {
       this.muted = !!m;
+      this._persistMuteState();
+      this._handleMuteState();
+    }
+
+    /**
+     * Persists the mute state to localStorage.
+     * @private
+     */
+    _persistMuteState() {
       try {
         localStorage.setItem('sound.muted', String(this.muted));
       } catch (_) {}
+    }
+
+    /**
+     * Handles the mute state by pausing or resuming audio playback.
+     * @private
+     */
+    _handleMuteState() {
       if (this.muted) {
-        this.stopChannel('sfx');
-        this.stopChannel('ui');
-        const cur = this.channels.music.current;
-        if (cur) {
-          try {
-            cur.pause();
-            cur.currentTime = 0;
-          } catch (_) {}
-        }
+        this._stopNonMusicChannels();
+        this._pauseCurrentMusic();
       } else {
-        const cur = this.channels.music.current;
-        if (cur) this._safePlay(cur);
+        this._resumeCurrentMusic();
       }
+    }
+
+    /**
+     * Stops all sounds on non-music channels.
+     * @private
+     */
+    _stopNonMusicChannels() {
+      this.stopChannel('sfx');
+      this.stopChannel('ui');
+    }
+
+    /**
+     * Pauses the currently playing music.
+     * @private
+     */
+    _pauseCurrentMusic() {
+      const cur = this.channels.music.current;
+      if (cur) {
+        try {
+          cur.pause();
+          cur.currentTime = 0;
+        } catch (_) {}
+      }
+    }
+
+    /**
+     * Resumes the currently paused music.
+     * @private
+     */
+    _resumeCurrentMusic() {
+      const cur = this.channels.music.current;
+      if (cur) this._safePlay(cur);
     }
 
     /**
@@ -135,6 +182,10 @@
         this.master = Math.max(0, Math.min(1, value));
         return;
       }
+      this._setChannelVolume(channel, value);
+    }
+
+    _setChannelVolume(channel, value) {
       const ch = this.channels[channel];
       if (ch) ch.gain = Math.max(0, Math.min(1, value));
       if (channel === 'music' && this.channels.music.current) {
@@ -166,11 +217,24 @@
       const item = this.library.get(key);
       if (!item) return;
       this.stopChannel('music');
+      const a = this._createMusicNode(item, volume, loop);
+      this.channels.music.current = a;
+      if (!this.muted) this._safePlay(a);
+    }
+
+    /**
+     * Creates a music audio node with specified options.
+     * @param {Object} item - The sound item from the library.
+     * @param {number} volume - The volume level (0.0 to 1.0).
+     * @param {boolean} loop - Whether the music should loop.
+     * @returns {HTMLAudioElement} The created audio node.
+     * @private
+     */
+    _createMusicNode(item, volume, loop) {
       const a = item.baseAudio.cloneNode(true);
       a.loop = loop;
       a.volume = this._mixVolume(volume, 'music');
-      this.channels.music.current = a;
-      if (!this.muted) this._safePlay(a);
+      return a;
     }
 
     /**
@@ -197,11 +261,30 @@
       if (!item) return;
       const ch = this.channels[channel] ? channel : 'sfx';
       if (this.muted) return;
+      const node = this._createSoundNode(item, ch, volume, loop, allowOverlap);
+      this._playSoundNode(node);
+    }
+
+    /**
+     * Creates a sound audio node with specified options.
+     * @param {Object} item - The sound item from the library.
+     * @param {string} channel - The channel name ('sfx', 'ui').
+     * @param {number} volume - The volume level (0.0 to 1.0).
+     * @param {boolean} loop - Whether the sound should loop.
+     * @param {boolean} allowOverlap - Whether overlapping playback is allowed.
+     * @returns {HTMLAudioElement} The created audio node.
+     * @private
+     */
+    _createSoundNode(item, channel, volume, loop, allowOverlap) {
       const node = allowOverlap
         ? item.baseAudio.cloneNode(true)
         : item.baseAudio;
       node.loop = !!loop;
-      node.volume = this._mixVolume(volume, ch);
+      node.volume = this._mixVolume(volume, channel);
+      return node;
+    }
+
+    _playSoundNode(node) {
       this.active.add(node);
       node.addEventListener('ended', () => this.active.delete(node), {
         once: true,
@@ -216,16 +299,30 @@
      */
     stopChannel(channel) {
       if (channel === 'music') {
-        const cur = this.channels.music.current;
-        if (cur) {
-          try {
-            cur.pause();
-            cur.currentTime = 0;
-          } catch (_) {}
-          this.channels.music.current = null;
-        }
+        this._stopCurrentMusic();
         return;
       }
+      this._stopActiveNodes();
+    }
+
+    /**
+     * Stops the currently playing music.
+     */
+    _stopCurrentMusic() {
+      const cur = this.channels.music.current;
+      if (cur) {
+        try {
+          cur.pause();
+          cur.currentTime = 0;
+        } catch (_) {}
+        this.channels.music.current = null;
+      }
+    }
+
+    /**
+     * Stops all active sound nodes.
+     */
+    _stopActiveNodes() {
       this.active.forEach((node) => {
         try {
           node.pause();
@@ -253,7 +350,18 @@
       const cur = this.channels.music.current;
       if (!cur) return;
       target = Math.max(0, Math.min(1, target));
-      const start = cur.volume;
+      this._fadeVolume(cur, target, ms);
+    }
+
+    /**
+     * Fades the volume of an audio node to a target level over a duration.
+     * @param {HTMLAudioElement} audioNode - The audio node to fade.
+     * @param {number} target - The target volume level (0.0 to 1.0).
+     * @param {number} ms - The duration of the fade in milliseconds.
+     * @private
+     */
+    _fadeVolume(audioNode, target, ms) {
+      const start = audioNode.volume;
       const end = this._mixVolume(target, 'music');
       if (Math.abs(start - end) < 0.01) return;
       const steps = Math.max(1, Math.floor(ms / 16));
@@ -261,7 +369,7 @@
       const id = setInterval(() => {
         i++;
         const t = i / steps;
-        cur.volume = start + (end - start) * t;
+        audioNode.volume = start + (end - start) * t;
         if (i >= steps) clearInterval(id);
       }, 16);
     }
@@ -279,7 +387,7 @@
     }
 
     /**
-     * Safely plays an audio element.
+     * Plays the given audio node safely.
      * @param {HTMLAudioElement} audio - The audio element to play.
      * @private
      */
@@ -300,6 +408,10 @@
     }
   }
 
+  /**
+   * Exports the SoundHub class to the global window object for easy access.
+   * Also initializes a singleton instance as window.sound.
+   */
   if (typeof window !== 'undefined') {
     window.SoundHub = SoundHub;
     if (!window.sound) window.sound = SoundHub.get();

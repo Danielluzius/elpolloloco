@@ -13,7 +13,7 @@
   const qs = (s) => document.querySelector(s);
 
   /**
-   * Ensures the game is initialized by calling the init function if available.
+   * Ensures the game is initialized by calling the `init` function if it exists.
    */
   function ensureInit() {
     if (gameInitialized) return;
@@ -45,161 +45,91 @@
   }
 
   /**
-   * Sets up the imprint button functionality.
+   * Sets up the imprint modal functionality.
    */
   function setupImprint() {
     const b = qs('#imprintBtn');
     const overlay = qs('#imprintModal');
     const closeBtn = qs('#imprintCloseBtn');
     if (!b || !overlay) return;
+    setupImprintEventListeners(b, overlay, closeBtn);
+  }
+
+  /**
+   * Sets up event listeners for the imprint modal.
+   * @param {HTMLElement} b - The button to open the imprint modal.
+   * @param {HTMLElement} overlay - The imprint modal overlay.
+   * @param {HTMLElement} closeBtn - The button to close the imprint modal.
+   */
+  function setupImprintEventListeners(b, overlay, closeBtn) {
     const esc = (e) => {
-      if (e.key === 'Escape') hideImprint();
+      if (e.key === 'Escape') hideImprint(overlay);
     };
-    function showImprint() {
-      hideButtons([
-        L.startBtn,
-        L.howToBtn,
-        L.imprintBtn,
-        L.fullscreenBtn,
-        L.soundBtn,
-      ]);
-      if (L.hero) {
-        L.hero.dataset.prevVisibility = L.hero.style.visibility || '';
-        L.hero.style.visibility = 'hidden';
-      }
-      overlay.classList.remove('hidden');
-      document.addEventListener('keydown', esc);
-    }
-    function hideImprint() {
-      overlay.classList.add('hidden');
-      restoreButtons([
-        L.startBtn,
-        L.howToBtn,
-        L.imprintBtn,
-        L.fullscreenBtn,
-        L.soundBtn,
-      ]);
-      if (L.hero && !L.hero.classList.contains('hero--off')) {
-        L.hero.style.visibility = L.hero.dataset.prevVisibility || '';
-        delete L.hero.dataset.prevVisibility;
-      }
-      document.removeEventListener('keydown', esc);
-    }
-    b.addEventListener('click', showImprint);
-    closeBtn?.addEventListener('click', hideImprint);
+    b.addEventListener('click', () => showImprint(overlay, esc));
+    closeBtn?.addEventListener('click', () => hideImprint(overlay, esc));
   }
 
   /**
-   * Requests fullscreen mode for a given element.
-   * @param {HTMLElement} el - The element to request fullscreen for.
-   * @returns {Promise} - Resolves if fullscreen is successful, rejects otherwise.
+   * Displays the imprint modal and hides other buttons and the hero.
+   * @param {HTMLElement} overlay - The imprint modal overlay.
+   * @param {Function} esc - The function to handle the Escape key event.
    */
-  function requestFullscreen(el) {
-    if (el.requestFullscreen) return el.requestFullscreen();
-    return Promise.reject('no fs');
+  function showImprint(overlay, esc) {
+    hideButtons([
+      L.startBtn,
+      L.howToBtn,
+      L.imprintBtn,
+      L.fullscreenBtn,
+      L.soundBtn,
+    ]);
+    hideHero();
+    overlay.classList.remove('hidden');
+    document.addEventListener('keydown', esc);
   }
 
   /**
-   * Exits fullscreen mode.
-   * @returns {Promise} - Resolves if exiting fullscreen is successful, rejects otherwise.
+   * Hides the imprint modal and restores other buttons and the hero.
+   * @param {HTMLElement} overlay - The imprint modal overlay.
+   * @param {Function} esc - The function to handle the Escape key event.
    */
-  function exitFullscreen() {
-    if (document.exitFullscreen) return document.exitFullscreen();
-    return Promise.reject('no fs');
+  function hideImprint(overlay, esc) {
+    overlay.classList.add('hidden');
+    restoreButtons([
+      L.startBtn,
+      L.howToBtn,
+      L.imprintBtn,
+      L.fullscreenBtn,
+      L.soundBtn,
+    ]);
+    restoreHero();
+    document.removeEventListener('keydown', esc);
   }
 
   /**
-   * Updates the fullscreen button label and ARIA attributes.
-   * @param {HTMLElement} btn - The fullscreen button.
-   * @param {boolean} on - Whether fullscreen is active.
+   * Hides the hero element and stores its previous visibility state.
    */
-  function updateFsLabel(btn, on) {
-    const span = btn.querySelector('.fullscreen-label');
-    if (span) span.textContent = on ? 'Exit Fullscreen' : 'Enter Fullscreen';
-    btn.setAttribute('aria-label', on ? 'Exit Fullscreen' : 'Enter Fullscreen');
-  }
-
-  /**
-   * Sets up the fullscreen button functionality.
-   */
-  function setupFullscreen() {
-    const btn = qs('#fullscreenBtn');
-    if (!btn) return;
-    btn.addEventListener('click', async () => {
-      const s = btn.getAttribute('data-state') || 'off';
-      try {
-        if (s === 'off') {
-          await requestFullscreen(document.documentElement);
-          btn.setAttribute('data-state', 'on');
-          updateFsLabel(btn, true);
-        } else {
-          await exitFullscreen();
-          btn.setAttribute('data-state', 'off');
-          updateFsLabel(btn, false);
-        }
-      } catch (e) {}
-    });
-    document.addEventListener('fullscreenchange', () => {
-      const a = !!document.fullscreenElement;
-      btn.setAttribute('data-state', a ? 'on' : 'off');
-      updateFsLabel(btn, a);
-    });
-  }
-
-  /**
-   * Updates the sound button label and ARIA attributes.
-   * @param {HTMLElement} btn - The sound button.
-   * @param {boolean} on - Whether sound is enabled.
-   */
-  function updateSoundBtn(btn, on) {
-    const img = btn.querySelector('img');
-    const span = btn.querySelector('.sound-label');
-    if (img)
-      img.src = on
-        ? './assets/img/logos/sound_on.png'
-        : './assets/img/logos/sound_off.png';
-    if (span) span.textContent = on ? 'Mute' : 'Unmute';
-    btn.setAttribute('aria-label', on ? 'Mute' : 'Unmute');
-  }
-
-  /**
-   * Sets up the sound button functionality.
-   */
-  function setupSound() {
-    const btn = qs('#muteBtn');
-    if (!btn) return;
-    btn.addEventListener('click', () => {
-      const cur = btn.getAttribute('data-state') || 'on';
-      const next = cur === 'on' ? 'off' : 'on';
-      btn.setAttribute('data-state', next);
-      updateSoundBtn(btn, next === 'on');
-      try {
-        window.sound?.setMuted(!(next === 'on'));
-      } catch (e) {}
-      if (typeof window !== 'undefined') {
-        try {
-          window.isMuted = !(next === 'on');
-        } catch (e) {}
-      }
-      if (typeof toggleMute === 'function') {
-        try {
-          if (
-            (next === 'on' && window.isMuted) ||
-            (next === 'off' && !window.isMuted)
-          )
-            toggleMute();
-        } catch (e) {}
-      }
-    });
-    try {
-      const muted = !!window.SoundHub?.get()?.isMuted();
-      btn.setAttribute('data-state', muted ? 'off' : 'on');
-      updateSoundBtn(btn, !muted);
-    } catch (e) {
-      updateSoundBtn(btn, true);
+  function hideHero() {
+    if (L.hero) {
+      L.hero.dataset.prevVisibility = L.hero.style.visibility || '';
+      L.hero.style.visibility = 'hidden';
     }
   }
 
+  /**
+   * Restores the hero element's visibility state.
+   */
+  function restoreHero() {
+    if (L.hero && !L.hero.classList.contains('hero--off')) {
+      L.hero.style.visibility = L.hero.dataset.prevVisibility || '';
+      delete L.hero.dataset.prevVisibility;
+    }
+  }
+
+  // fullscreen and sound controls moved to scripts/landing-controls.js
+
+  /**
+   * Animates the intro sequence by showing layers and the hero.
+   */
   function animateIntro() {
     setTimeout(() => show(L.layer1), 600);
     setTimeout(() => show(L.layer2), 1200);
@@ -208,10 +138,17 @@
     setTimeout(() => show(L.hero), 2800);
   }
 
+  /**
+   * Adds an event listener to the enter button.
+   */
   function addEnter() {
     L.enterBtn?.addEventListener('click', onEnter);
   }
 
+  /**
+   * Computes the top position of the stage relative to the landing.
+   * @returns {number} - The top position as a percentage.
+   */
   function computeStageTop() {
     const h = L.hero?.getBoundingClientRect();
     const land = L.landing?.getBoundingClientRect();
@@ -220,6 +157,9 @@
     return ((c - land.top) / land.height) * 100;
   }
 
+  /**
+   * Prepares the stage for the game by adjusting styles and classes.
+   */
   function prepareStage() {
     const top = computeStageTop();
     L.enterBtn.style.display = 'none';
@@ -232,6 +172,9 @@
     }
   }
 
+  /**
+   * Caches references to stage-related buttons.
+   */
   function grabStageButtons() {
     L.startBtn = qs('#startGameBtn');
     L.howToBtn = qs('#howToPlayBtn');
@@ -242,6 +185,9 @@
     L.howToClose = qs('#howToCloseBtn');
   }
 
+  /**
+   * Shows the stage buttons with animations.
+   */
   function showStageButtons() {
     const b = L.startBtn;
     if (!b) return ensureInitAndMaybeStart();
@@ -254,12 +200,20 @@
     }, 400);
   }
 
+  /**
+   * Shows a button with a specific class.
+   * @param {HTMLElement} btn - The button to show.
+   * @param {string} cls - The class to add to the button.
+   */
   function showBtn(btn, cls) {
     if (!btn) return;
     btn.style.display = 'inline-flex';
     btn.classList.add(cls);
   }
 
+  /**
+   * Handles the enter button click event.
+   */
   function onEnter() {
     prepareStage();
     grabStageButtons();
@@ -268,6 +222,9 @@
     bindHowTo();
   }
 
+  /**
+   * Binds the start button click event to start the game.
+   */
   function bindStart() {
     const b = L.startBtn;
     if (!b) return;
@@ -285,10 +242,17 @@
     );
   }
 
+  /**
+   * Hides a button if it exists.
+   * @param {HTMLElement} btn - The button to hide.
+   */
   function hideIf(btn) {
     if (btn) btn.style.display = 'none';
   }
 
+  /**
+   * Ensures the game is initialized and starts it if possible.
+   */
   function ensureInitAndMaybeStart() {
     ensureInit();
     if (typeof startGame === 'function') {
@@ -298,12 +262,18 @@
     }
   }
 
+  /**
+   * Binds the how-to-play button click event to show the overlay.
+   */
   function bindHowTo() {
     if (!L.howToBtn || !L.howToOverlay) return;
     L.howToBtn.addEventListener('click', showHowTo);
     L.howToClose?.addEventListener('click', hideHowTo);
   }
 
+  /**
+   * Shows the how-to-play overlay and hides other buttons and the hero.
+   */
   function showHowTo() {
     hideButtons([
       L.startBtn,
@@ -312,14 +282,14 @@
       L.fullscreenBtn,
       L.soundBtn,
     ]);
-    if (L.hero) {
-      L.hero.dataset.prevVisibility = L.hero.style.visibility || '';
-      L.hero.style.visibility = 'hidden';
-    }
+    hideHero();
     L.howToOverlay.classList.remove('hidden');
     document.addEventListener('keydown', escHowTo);
   }
 
+  /**
+   * Hides the how-to-play overlay and restores other buttons and the hero.
+   */
   function hideHowTo() {
     L.howToOverlay.classList.add('hidden');
     restoreButtons([
@@ -329,17 +299,22 @@
       L.fullscreenBtn,
       L.soundBtn,
     ]);
-    if (L.hero && !L.hero.classList.contains('hero--off')) {
-      L.hero.style.visibility = L.hero.dataset.prevVisibility || '';
-      delete L.hero.dataset.prevVisibility;
-    }
+    restoreHero();
     document.removeEventListener('keydown', escHowTo);
   }
 
+  /**
+   * Handles the Escape key event to hide the how-to-play overlay.
+   * @param {KeyboardEvent} e - The keyboard event.
+   */
   function escHowTo(e) {
     if (e.key === 'Escape') hideHowTo();
   }
 
+  /**
+   * Hides an array of buttons and stores their previous display states.
+   * @param {HTMLElement[]} arr - The array of buttons to hide.
+   */
   function hideButtons(arr) {
     arr.forEach((b) => {
       if (!b) return;
@@ -348,6 +323,10 @@
     });
   }
 
+  /**
+   * Restores an array of buttons to their previous display states.
+   * @param {HTMLElement[]} arr - The array of buttons to restore.
+   */
   function restoreButtons(arr) {
     arr.forEach((b) => {
       if (!b) return;
@@ -360,18 +339,27 @@
   }
 
   /**
-   * Binds all necessary functionalities on DOMContentLoaded.
+   * Binds all necessary event listeners and initializes the landing page.
    */
   function bind() {
     cacheNodes();
     setupImprint();
-    setupFullscreen();
-    setupSound();
+    try {
+      window.LandingControls?.setupFullscreen();
+      window.LandingControls?.setupSound();
+    } catch (_) {}
     animateIntro();
     addEnter();
     try {
       window.sound?.playMusic('intro_music', { loop: true, volume: 0.4 });
     } catch (_) {}
+    setupIntroMusicKickstart();
+  }
+
+  /**
+   * Sets up a mechanism to kickstart the intro music on user interaction.
+   */
+  function setupIntroMusicKickstart() {
     const kickIntroMusic = () => {
       try {
         if (typeof gameState !== 'undefined' && gameState === 'running') return;
@@ -384,6 +372,5 @@
     window.addEventListener('pointerdown', kickIntroMusic, { once: true });
     window.addEventListener('keydown', kickIntroMusic, { once: true });
   }
-
   window.addEventListener('DOMContentLoaded', bind);
 })();
