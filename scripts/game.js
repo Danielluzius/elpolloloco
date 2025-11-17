@@ -1,12 +1,3 @@
-/**
- * Zentrale Spiel-Initialisierung und Tastaturbindung.
- *
- * Dieses File hält den minimalen orchestrierenden Code für
- * Start/Restart/Back und Keyboard-Events. UI-/Overlay-/Touch-
- * Funktionen sind in scripts/game-ui.js ausgelagert, allgemeine
- * Helpers in scripts/game-helpers.js.
- */
-
 let canvas;
 let world;
 let keyboard = new Keyboard();
@@ -19,7 +10,7 @@ try {
 } catch (_) {}
 
 /**
- * Initialisiert Canvas und UI, bindet Events und zeigt den Startbildschirm.
+ * Initializes canvas and UI, binds events and shows the start screen.
  * @returns {void}
  */
 function init() {
@@ -36,7 +27,7 @@ function init() {
 }
 
 /**
- * Cacht UI-Referenzen über spezialisierte Cache-Funktionen.
+ * Caches UI references via specialized cache functions.
  * @returns {void}
  */
 function cacheUi() {
@@ -47,7 +38,7 @@ function cacheUi() {
 }
 
 /**
- * Bindet alle UI-Events, Death-UI, Context-Menü und Touch-Controls.
+ * Binds all UI events, Death UI, context menu and touch controls.
  * @returns {void}
  */
 function bindUi() {
@@ -59,7 +50,7 @@ function bindUi() {
 }
 
 /**
- * Startet das Spiel, blendet Hero aus und initialisiert Welt und UI.
+ * Starts the game, fades out hero and initializes world and UI.
  * @returns {void}
  */
 function startGame() {
@@ -73,7 +64,7 @@ function startGame() {
 }
 
 /**
- * Startet die Welt neu, ersetzt das Canvas und setzt die Spiel-UI.
+ * Restarts the world, replaces the canvas and sets the game UI.
  * @returns {void}
  */
 function restartGame() {
@@ -91,7 +82,7 @@ function restartGame() {
 }
 
 /**
- * Beendet das Spiel und stellt den Startbildschirm und UI-Status wieder her.
+ * Ends the game and restores the start screen and UI status.
  * @returns {void}
  */
 function backToStart() {
@@ -111,7 +102,7 @@ function backToStart() {
 }
 
 /**
- * Ersetzt den Start-Button-Knoten und bindet einen frischen Click-Handler.
+ * Replaces the start button node and binds a fresh click handler.
  * @returns {void}
  */
 function _rebindStartBtn() {
@@ -125,7 +116,7 @@ function _rebindStartBtn() {
 }
 
 /**
- * Startet die periodische Prüfung auf Sieg oder Niederlage.
+ * Starts periodic checking for win or loss.
  * @returns {void}
  */
 function hookWinLose() {
@@ -134,8 +125,8 @@ function hookWinLose() {
 }
 
 /**
- * Prüft Sieg/Niederlage und zeigt das passende Overlay.
- * @param {number} id - Interval-ID.
+ * Checks win/loss and shows the appropriate overlay.
+ * @param {number} id - Interval ID.
  * @returns {void}
  */
 function evalWinLose(id) {
@@ -154,10 +145,10 @@ function evalWinLose(id) {
   }
 }
 
-// Hinweis: UI-Overlay- und Death-Button-Funktionen sind in scripts/game-ui.js
+// Note: UI-Overlay and Death-Button functions are in scripts/game-ui.js
 
 /**
- * Mapping von keyCode zu Keyboard-Flags.
+ * Mapping from keyCode to Keyboard flags.
  * @type {Record<number, keyof Keyboard>}
  */
 const KEY_MAP = {
@@ -176,7 +167,7 @@ const KEY_MAP = {
 };
 
 /**
- * Is bindet Keyboard-Events und setzt die keyboard-Flags.
+ * Binds keyboard events and sets the keyboard flags.
  * @returns {void}
  */
 window.addEventListener('keydown', (e) => {

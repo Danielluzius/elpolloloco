@@ -1,19 +1,5 @@
 /**
- * UI- und Steuerungs-Helferfunktionen für den Spiel-Flow.
- *
- * Dieses Modul kapselt Anzeige-Logik (Overlays, Buttons),
- * Steuerungs-Umschalter (Touch/Keyboard) sowie Fullscreen- und Mute-Schaltungen.
- *
- * Es nutzt die globalen Variablen aus game.js:
- * - canvas, world, keyboard, gameState, ui, isMuted, controlMode
- *
- * Alle Funktionen sind global verfügbar und werden von game.js und
- * game-helpers.js aufgerufen. Reihenfolge der Skripte (defer) in index.html sicherstellt,
- * dass dieses File vor game.js geladen wird.
- */
-
-/**
- * Zeigt den Startbildschirm und blendet alle anderen Overlays aus.
+ * Shows the start screen and hides all other overlays.
  * @returns {void}
  */
 function showStart() {
@@ -23,7 +9,7 @@ function showStart() {
 }
 
 /**
- * Zeigt das Game-Over-Overlay und die Todes-Buttons.
+ * Shows the Game-Over overlay and the death buttons.
  * @returns {void}
  */
 function showGameOver() {
@@ -37,7 +23,7 @@ function showGameOver() {
 }
 
 /**
- * Zeigt das Win-Overlay und die Todes-Buttons.
+ * Shows the Win overlay and the death buttons.
  * @returns {void}
  */
 function showWin() {
@@ -51,7 +37,7 @@ function showWin() {
 }
 
 /**
- * Verbirgt alle Overlays und blendet die Todes-Buttons aus.
+ * Hides all overlays and fades out the death buttons.
  * @returns {void}
  */
 function hideAllOverlays() {
@@ -64,7 +50,7 @@ function hideAllOverlays() {
 }
 
 /**
- * Zeigt den Neustart-Button an.
+ * Shows the restart button.
  * @returns {void}
  */
 function showRestartBtn() {
@@ -75,7 +61,7 @@ function showRestartBtn() {
 }
 
 /**
- * Verbirgt den Neustart-Button.
+ * Hides the restart button.
  * @returns {void}
  */
 function hideRestartBtn() {
@@ -86,7 +72,7 @@ function hideRestartBtn() {
 }
 
 /**
- * Zeigt den Exit-Button an.
+ * Shows the exit button.
  * @returns {void}
  */
 function showExitBtn() {
@@ -97,7 +83,7 @@ function showExitBtn() {
 }
 
 /**
- * Verbirgt den Exit-Button.
+ * Hides the exit button.
  * @returns {void}
  */
 function hideExitBtn() {
@@ -108,7 +94,7 @@ function hideExitBtn() {
 }
 
 /**
- * Zeigt den Steuerungs-Umschalter (Touch/Keyboard) und aktualisiert dessen Darstellung.
+ * Shows the control toggle button (Touch/Keyboard) and updates its appearance.
  * @returns {void}
  */
 function showControlsToggleBtn() {
@@ -120,7 +106,7 @@ function showControlsToggleBtn() {
 }
 
 /**
- * Verbirgt den Steuerungs-Umschalter.
+ * Hides the control toggle button.
  * @returns {void}
  */
 function hideControlsToggleBtn() {
@@ -131,7 +117,7 @@ function hideControlsToggleBtn() {
 }
 
 /**
- * Blendet die Todes-Buttons ein und fokussiert den Zurück-Button.
+ * Fades in the death buttons and focuses the back button.
  * @returns {void}
  */
 function showDeathButtons() {
@@ -147,7 +133,7 @@ function showDeathButtons() {
 }
 
 /**
- * Blendet die Todes-Buttons aus und deaktiviert Interaktionen.
+ * Fades out the death buttons and disables interactions.
  * @returns {void}
  */
 function hideDeathButtons() {
@@ -165,7 +151,7 @@ function hideDeathButtons() {
 }
 
 /**
- * Wechselt in bzw. aus dem Vollbildmodus.
+ * Toggles fullscreen mode on or off.
  * @returns {void}
  */
 function toggleFullscreen() {
@@ -178,7 +164,7 @@ function toggleFullscreen() {
 }
 
 /**
- * Schaltet Ton stumm/aktiv und aktualisiert den Button.
+ * Toggles sound mute/unmute and updates the button.
  * @returns {void}
  */
 function toggleMute() {
@@ -193,7 +179,7 @@ function toggleMute() {
 }
 
 /**
- * Wechselt zwischen Touch- und Tastaturmodus und aktualisiert UI.
+ * Switches between touch and keyboard mode and updates UI.
  * @returns {void}
  */
 function toggleControlMode() {
@@ -206,7 +192,7 @@ function toggleControlMode() {
 }
 
 /**
- * Aktualisiert Icons, Label und ARIA des Steuerungs-Umschalters.
+ * Updates icons, label and ARIA of the control toggle button.
  * @returns {void}
  */
 function updateControlsToggleVisuals() {
@@ -218,9 +204,9 @@ function updateControlsToggleVisuals() {
 }
 
 /**
- * Setzt Bilder und Hinweis-Icons des Steuerungs-Umschalters.
- * @param {HTMLElement} btn - Button-Element
- * @param {boolean} isTouch - true, wenn Touch-Modus aktiv ist
+ * Sets images and hint icons of the control toggle button.
+ * @param {HTMLElement} btn - Button element
+ * @param {boolean} isTouch - true if touch mode is active
  * @returns {void}
  */
 function _setControlsImages(btn, isTouch) {
@@ -236,9 +222,9 @@ function _setControlsImages(btn, isTouch) {
 }
 
 /**
- * Setzt Label-Text und ARIA für den Steuerungs-Umschalter.
- * @param {HTMLElement} btn - Button-Element
- * @param {boolean} isTouch - true, wenn Touch-Modus aktiv ist
+ * Sets label text and ARIA for the control toggle button.
+ * @param {HTMLElement} btn - Button element
+ * @param {boolean} isTouch - true if touch mode is active
  * @returns {void}
  */
 function _setControlsLabel(btn, isTouch) {
@@ -249,7 +235,7 @@ function _setControlsLabel(btn, isTouch) {
 }
 
 /**
- * Zeigt oder versteckt die Touch-Steuerung gemäß aktuellem Modus.
+ * Shows or hides the touch controls according to current mode.
  * @returns {void}
  */
 function applyControlModeVisuals() {
@@ -258,7 +244,7 @@ function applyControlModeVisuals() {
 }
 
 /**
- * Zeigt die Touch-Steuerung an.
+ * Shows the touch controls.
  * @returns {void}
  */
 function showTouchControls() {
@@ -269,7 +255,7 @@ function showTouchControls() {
 }
 
 /**
- * Verbirgt die Touch-Steuerung und setzt Tasten zurück.
+ * Hides the touch controls and resets keys.
  * @returns {void}
  */
 function hideTouchControls() {
@@ -282,12 +268,8 @@ function hideTouchControls() {
   );
 }
 
-// Hinweis: Binding der Touch-Buttons (Event-Listener) ist in scripts/game-helpers.js
-// enthalten (bindTouchButtons, touchOnPress, touchOnRelease). Dieses Modul steuert nur
-// deren Sichtbarkeit und globale Control-Mode-Zustände.
-
 /**
- * Öffnet das In-Game-HowTo-Overlay und verbirgt Touch-Buttons.
+ * Opens the in-game HowTo overlay and hides touch buttons.
  * @returns {void}
  */
 function openHowTo() {
@@ -296,7 +278,7 @@ function openHowTo() {
 }
 
 /**
- * Schließt das In-Game-HowTo-Overlay und stellt Controls wieder her.
+ * Closes the in-game HowTo overlay and restores controls.
  * @returns {void}
  */
 function closeHowTo() {
@@ -309,7 +291,7 @@ function closeHowTo() {
 }
 
 /**
- * Öffnet das Impressum-Overlay.
+ * Opens the Imprint overlay.
  * @returns {void}
  */
 function openImprint() {
@@ -317,7 +299,7 @@ function openImprint() {
 }
 
 /**
- * Schließt das Impressum-Overlay.
+ * Closes the Imprint overlay.
  * @returns {void}
  */
 function closeImprint() {

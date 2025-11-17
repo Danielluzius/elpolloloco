@@ -1,5 +1,5 @@
 /**
- * Cacht Overlay-Elemente (Start, GameOver, Win).
+ * Caches overlay elements (Start, GameOver, Win).
  * @function cacheOverlays
  */
 function cacheOverlays() {
@@ -9,7 +9,7 @@ function cacheOverlays() {
 }
 
 /**
- * Cacht allgemeine UI-Buttons und Touch-Container.
+ * Caches general UI buttons and touch container.
  * @function cacheButtons
  */
 function cacheButtons() {
@@ -25,7 +25,7 @@ function cacheButtons() {
 }
 
 /**
- * Cacht HowTo- und Impressum-Elemente.
+ * Caches HowTo and Imprint elements.
  * @function cacheHowToImprint
  */
 function cacheHowToImprint() {
@@ -38,7 +38,7 @@ function cacheHowToImprint() {
 }
 
 /**
- * Cacht die Elemente der Todes-Buttons.
+ * Caches death button elements.
  * @function cacheDeathButtons
  */
 function cacheDeathButtons() {
@@ -48,7 +48,7 @@ function cacheDeathButtons() {
 }
 
 /**
- * Bindet Start/Retry/Back, Fullscreen/Mute, HowTo und Impressum.
+ * Binds Start/Retry/Back, Fullscreen/Mute, HowTo and Imprint.
  * @function bindPrimaryUi
  */
 function bindPrimaryUi() {
@@ -59,7 +59,7 @@ function bindPrimaryUi() {
 }
 
 /**
- * Bindet Start-, Retry- und Zurück-Buttons.
+ * Binds Start, Retry and Back buttons.
  * @function bindStartRetryBack
  */
 function bindStartRetryBack() {
@@ -69,7 +69,7 @@ function bindStartRetryBack() {
 }
 
 /**
- * Bindet Vollbild- und Ton-Umschalter.
+ * Binds fullscreen and sound toggle.
  * @function bindFullscreenMute
  */
 function bindFullscreenMute() {
@@ -78,7 +78,7 @@ function bindFullscreenMute() {
 }
 
 /**
- * Bindet Öffnen und Schließen des HowTo-Dialogs.
+ * Binds opening and closing of the HowTo dialog.
  * @function bindHowTo
  */
 function bindHowTo() {
@@ -89,7 +89,7 @@ function bindHowTo() {
 }
 
 /**
- * Bindet Öffnen und Schließen des Impressums.
+ * Binds opening and closing of the Imprint.
  * @function bindImprint
  */
 function bindImprint() {
@@ -98,7 +98,7 @@ function bindImprint() {
 }
 
 /**
- * Bindet Restart, Exit und Control-Mode-Umschalter im Spiel.
+ * Binds Restart, Exit and Control Mode toggle in the game.
  * @function bindGameUi
  */
 function bindGameUi() {
@@ -112,7 +112,7 @@ function bindGameUi() {
 }
 
 /**
- * Bindet die Todes-Buttons für Restart und Zurück.
+ * Binds death buttons for Restart and Back.
  * @function bindDeathUi
  */
 function bindDeathUi() {
@@ -127,7 +127,7 @@ function bindDeathUi() {
 }
 
 /**
- * Unterdrückt das Kontextmenü auf der Stage.
+ * Suppresses the context menu on the stage.
  * @function bindStageContextMenu
  */
 function bindStageContextMenu() {
@@ -140,7 +140,7 @@ function bindStageContextMenu() {
 }
 
 /**
- * Initialisiert Canvas und UI bei Bedarf.
+ * Initializes Canvas and UI if needed.
  * @function ensureInitIfMissing
  */
 function ensureInitIfMissing() {
@@ -152,7 +152,7 @@ function ensureInitIfMissing() {
 }
 
 /**
- * Prüft, ob das Spiel bereits läuft.
+ * Checks if the game is already running.
  * @function alreadyRunning
  */
 function alreadyRunning() {
@@ -160,7 +160,7 @@ function alreadyRunning() {
 }
 
 /**
- * Blendet den Hero-Bereich aus und deaktiviert Interaktionen.
+ * Fades out the hero area and disables interactions.
  * @function fadeOutHero
  */
 function fadeOutHero() {
@@ -174,7 +174,7 @@ function fadeOutHero() {
 }
 
 /**
- * Setzt Spielstatus und UI nach dem Start auf aktiv.
+ * Sets game status and UI to active after start.
  * @function setupGameAfterStart
  */
 function setupGameAfterStart() {
@@ -185,7 +185,7 @@ function setupGameAfterStart() {
 }
 
 /**
- * Erzeugt die Spielwelt und startet die Win/Lose-Überwachung.
+ * Creates the game world and starts Win/Lose monitoring.
  * @function startWorld
  */
 function startWorld() {
@@ -197,7 +197,7 @@ function startWorld() {
 }
 
 /**
- * Zeigt Spiel-Buttons und setzt die Steuerungsdarstellung.
+ * Shows game buttons and sets control display.
  * @function postStartUi
  */
 function postStartUi() {
@@ -208,7 +208,7 @@ function postStartUi() {
 }
 
 /**
- * Stoppt die Spielwelt, falls vorhanden.
+ * Stops the game world if it exists.
  * @function stopWorldSafe
  */
 function stopWorldSafe() {
@@ -220,7 +220,7 @@ function stopWorldSafe() {
 }
 
 /**
- * Startet die Spielwelt ohne Canvas-Austausch.
+ * Starts the game world without canvas replacement.
  * @function quickStartNewWorld
  */
 function quickStartNewWorld() {
@@ -228,7 +228,7 @@ function quickStartNewWorld() {
 }
 
 /**
- * Erzeugt ein neues Canvas und ersetzt das alte im DOM.
+ * Creates a new canvas and replaces the old one in the DOM.
  * @function createAndSwapCanvas
  */
 function createAndSwapCanvas(stage, oldCanvas) {
@@ -241,7 +241,7 @@ function createAndSwapCanvas(stage, oldCanvas) {
 }
 
 /**
- * Setzt Status auf idle und leert das Canvas.
+ * Sets status to idle and clears the canvas.
  * @function softResetToIdle
  */
 function softResetToIdle() {
@@ -251,7 +251,7 @@ function softResetToIdle() {
 }
 
 /**
- * Löscht den Canvas-Inhalt.
+ * Clears the canvas content.
  * @function clearCanvas
  */
 function clearCanvas() {
@@ -262,7 +262,7 @@ function clearCanvas() {
 }
 
 /**
- * Zeigt den Hero-Bereich für den Startbildschirm an.
+ * Shows the hero area for the start screen.
  * @function showHeroIdle
  */
 function showHeroIdle() {
@@ -275,7 +275,7 @@ function showHeroIdle() {
 }
 
 /**
- * Zeigt die Buttons im Startbildschirm an.
+ * Shows the buttons on the start screen.
  * @function showStageButtonsOnStart
  */
 function showStageButtonsOnStart() {
@@ -295,7 +295,7 @@ function showStageButtonsOnStart() {
 }
 
 /**
- * Setzt Anzeige eines Buttons und fügt die Sichtbarkeitsklasse hinzu.
+ * Sets button display and adds visibility class.
  * @function showBtnInline
  */
 function showBtnInline(el, cls) {
@@ -305,7 +305,7 @@ function showBtnInline(el, cls) {
 }
 
 /**
- * Verbirgt Spiel-Buttons und Touch-Steuerung im Idle-Zustand.
+ * Hides game buttons and touch controls in idle state.
  * @function hideUiForIdle
  */
 function hideUiForIdle() {
@@ -316,7 +316,7 @@ function hideUiForIdle() {
 }
 
 /**
- * Reagiert auf Startklick, blendet Buttons aus und startet das Spiel.
+ * Reacts to start click, hides buttons and starts the game.
  * @function onStartBtnClick
  */
 function onStartBtnClick(btn) {
@@ -333,7 +333,7 @@ function onStartBtnClick(btn) {
 }
 
 /**
- * Versteckt eine Liste von Elementen durch display:none.
+ * Hides a list of elements with display:none.
  * @function hideElements
  */
 function hideElements(arr) {
@@ -343,7 +343,7 @@ function hideElements(arr) {
 }
 
 /**
- * Aktualisiert Icon, Label und State des Mute-Buttons.
+ * Updates icon, label and state of the mute button.
  * @function updateMuteBtn
  */
 function updateMuteBtn(btn, isOn) {
@@ -359,7 +359,7 @@ function updateMuteBtn(btn, isOn) {
 }
 
 /**
- * Bindet Pointer-Events für die Touch-Buttons.
+ * Binds pointer events for the touch buttons.
  * @function bindTouchButtons
  */
 function bindTouchButtons() {
@@ -370,7 +370,7 @@ function bindTouchButtons() {
 }
 
 /**
- * Markiert die zugeordnete Taste beim Touch-Button als gedrückt.
+ * Marks the assigned key as pressed for the touch button.
  * @function touchOnPress
  */
 function touchOnPress(e) {
@@ -382,7 +382,7 @@ function touchOnPress(e) {
 }
 
 /**
- * Markiert die zugeordnete Taste beim Touch-Button als losgelassen.
+ * Marks the assigned key as released for the touch button.
  * @function touchOnRelease
  */
 function touchOnRelease(e) {
@@ -394,7 +394,7 @@ function touchOnRelease(e) {
 }
 
 /**
- * Bindet Pointer-Events an eine Liste von Touch-Buttons.
+ * Binds pointer events to a list of touch buttons.
  * @function addTouchListeners
  */
 function addTouchListeners(btns, onPress, onRelease) {
@@ -408,7 +408,7 @@ function addTouchListeners(btns, onPress, onRelease) {
 }
 
 /**
- * Startet die periodische Prüfung auf Sieg oder Niederlage.
+ * Starts periodic checking for win or loss.
  * @function hookWinLose
  */
 function hookWinLose() {
@@ -417,7 +417,7 @@ function hookWinLose() {
 }
 
 /**
- * Prüft Sieg/Niederlage und zeigt das passende Overlay.
+ * Checks win/loss and shows the appropriate overlay.
  * @function evalWinLose
  */
 function evalWinLose(id) {
